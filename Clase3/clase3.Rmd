@@ -1,0 +1,459 @@
+---
+title: R aplicado al análisis cualitativo / FCS-UdelaR
+subtitle: Clase 3 - Educación Permanente FCS
+   
+output: 
+        beamer_presentation: 
+                theme: "Antibes"
+                colortheme: "seagull"
+                fonttheme: "structurebold"
+urlcolor: blue
+---
+
+
+```{r echo=FALSE}
+knitr::knit_hooks$set(mysize = function(before, options, envir) {
+  if (before) 
+    return(options$size)
+})
+```
+
+
+```{r include=FALSE}
+knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
+
+```
+
+
+
+<center>
+
+![](imagenes/eg.png){ width=25% } 
+</center>
+
+
+**Mag. Elina Gómez (UMAD/FCS)**
+
+[elina.gomez@cienciassociales.edu.uy](elina.gomez@cienciassociales.edu.uy)
+
+[www.elinagomez.com](www.elinagomez.com)
+
+
+#
+
+
+![](imagenes/by-nc-sa.png){ width=18% }  
+
+Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
+
+
+
+# Objetivos de hoy
+
+- Fuentes de datos: _rtweet_
+- Procesamiento de strings
+
+
+# Credenciales
+
+1. Creamos la App en Twitter Dev
+2. Copiamos el bearer token
+3. Corremos la función rtweet_app() asignada a un objeto
+4. Guardamos con la función auth_save() 
+5. Cada vez cargamos con auth_as() 
+
+# Credenciales
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+auth <- rtweet_app(bearer token)
+auth_save(auth,"authRCuali")
+auth_as("authRCuali") 
+
+```
+
+# search_tweets()
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+fa <- search_tweets("@Frente_amplio", n = 18000, include_rts = FALSE)
+
+#Si quiero más límite:
+#retryonratelimit=TRUE
+
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(rtweet)
+load("~/rcuali2022/Clase3/Material/fa.RData")
+
+```
+
+# search_tweets()
+
+Los grafico usando la función _ts_plot_ para hacer series de tiempo.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,fig.asp = .50}
+library(ggplot2)
+library(dplyr)
+fa %>%
+ts_plot("5 hours") +
+ggplot2::theme(plot.title = ggplot2::element_text(face = "bold")) +
+ggplot2::labs(x = NULL, y = NULL,
+title = "Frecuencia de @Frente_Amplio de los últimos 9 días",
+caption = "Recuento de tweets en intervalos de 5 horas")
+
+```
+
+# search_tweets()
+
+Los grafico usando la función _ts_plot_ para hacer series de tiempo.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE,fig.asp = .50}
+fa %>%
+ts_plot("5 hours") +
+ggplot2::theme(plot.title = ggplot2::element_text(face = "bold")) +
+ggplot2::labs(x = NULL, y = NULL,
+title = "Frecuencia de @Frente_Amplio de los últimos 9 días",
+caption = "Recuento de tweets en intervalos de 5 horas")
+
+```
+
+# get_followers()
+
+Esta función nos da un data.frame con el id de lxs usuarixs. Es importante poner el argumento _n = Inf_ para que incluya a todxs lxs usuarixs. 
+
+```{r eval=FALSE}
+
+fa_flw = get_followers("Frente_Amplio", n = Inf)
+#también retryonratelimit=TRUE para > 75000
+
+#para saber a quién sigue, sería:
+fa_frnd = get_friends("Frente_Amplio", n = Inf) 
+
+```
+
+# lookup_users()
+
+La función _lookup_users()_ nos permite obtener información de esos usuarixs. El primer argumento de la función es el nombre del objeto que contiene los ids de lxs seguidorxs. 
+
+```{r eval=FALSE}
+
+fa_flw_data = lookup_users(fa_flw$from_id)
+
+```
+
+# lookup_users()
+
+Con esta función podemos procesar información de diversa índole como:
+
+- Cantidad de seguidorxs
+
+- Cantidad de Tweets (incluidos los retweets) emitidos por el usuario
+
+- La fecha que la cuenta de usuario fue creada en Twitter
+
+- Localización
+
+Para ver todas las variables que incluye:
+
+[Todas las variables que incluye](https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/user-object.html) 
+
+
+
+# Cantidad de seguidorxs
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+library(RColorBrewer)
+require(forcats)
+library(ggplot2)
+
+ggplot(seguidores, aes(fct_infreq(candi)))+ geom_bar(fill= c("#FFB5E8","85E3FF")) +
+  geom_text(stat='count', aes(label=..count..), vjust=-1)+
+   xlab("Politicxs") +
+  ylab("Cantidad de seguidorxs")
+
+```
+
+
+# get_favorites()
+
+Obtengo los _n_ estados favoritos más recientes de unx usuarix. 
+
+```{r eval=FALSE}
+ dm_fav = get_favorites("Frente_Amplio", n = 2000)
+```
+
+
+# get_timelines()
+
+Obtengo los últimos 3200 estados de Twitter de unx o más usuarixs, para graficar series de tiempo con su frecuencia, según periodicidad de interés. 
+
+
+# get_timelines()
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+#serie <- get_timelines(c("CosseCarolina", "LuisLacallePou"), n = 3200, retryonratelimit=TRUE)
+library(tidyverse)
+load("~/rcuali2022/Clase3/Material/swriecclp.RData")
+
+serie %>%
+  dplyr::filter(created_at > "2021-07-01") %>%
+  dplyr::group_by(screen_name,created_at) %>%
+  summarize(n=n())%>%
+  group_by(week = cut(created_at, "week"),screen_name) %>% summarise(value = sum(n))%>%
+  ggplot(ggplot2::aes(x = as.Date(week), y = value, group=screen_name,colour=screen_name)) +
+  geom_line()+
+  ggplot2::geom_point() +
+  scale_x_date(date_breaks = "4 month")+
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.title = ggplot2::element_blank(),
+    legend.position = "bottom",
+    plot.title = ggplot2::element_text(face = "bold")) +
+  ggplot2::labs(
+    x = NULL, y = NULL,
+    title = "Frecuencia de los estados de Twitter publicados",
+    subtitle = "Recuento de estados de Twitter agregados por semana - Julio 2021/Noviembre 2022"
+  )
+
+
+```
+
+
+# Distribución espacial
+
+Estas consultas también pueden ser trabajadas por lo menos a nivel orientativo espacialmente, pudiendose obtener diversos [mapeos](http://www.rpubs.com/HAVB/mapeo_tweets)
+
+*Referencias:*
+
+- <https://rpubs.com/camilamila/tweets>
+- <https://github.com/mkearney/rtweet>
+- <https://mkearney.github.io/nicar_tworkshop/#1>
+
+
+
+# Procesamiento de _strings_
+
+
+Antes de realizar un análisis o de construir un modelo de aprendizaje, la discusión de datos es un paso crítico para preparar los datos de texto sin procesar en un formato apropiado.
+
+El texto puede ser considerado como una colección de documentos y un documento puede ser analizado en cadenas. En la limpieza de texto, los patrones de búsqueda se definen en expresiones regulares (abreviadas como regex() o regexp()) para "encontrar y eliminar" o "buscar y reemplazar" cadenas.
+
+
+# grep
+
+__grep(patrón, cadena)__ devuelve por defecto una lista de índices. Si la expresión regular, patrón, coincide con un elemento particular en la cadena vectorial, devuelve el índice del elemento.
+
+Para devolver los valores reales de los elementos coincidentes, establezca la opción value=TRUE.
+
+- Creamos un vector "strings" y asignamos cuatro valores (string) a la variable.
+strings <- c("abcd", "cdab", "cabd", "c abd")
+
+# grep
+
+- Buscamos los valores que contengan 'ab', y nos indica sus posiciones
+grep("ab", strings)
+
+- Que es lo mismo que...
+grep("ab", strings, value = FALSE)
+
+-Mientras que para obtener los valores usaremos...
+ grep("ab", strings, value = TRUE)
+
+
+
+# sub() y gsub()
+
+__gsub(patrón, remplazo, string)__ devuelve la cadena modificada después de reemplazar cada ocurrencia de patrón con reemplazo en cadena.
+
+__sub(patrón, remplazo, string)__ reemplaza la primera aparición del patrón.
+
+
+# Stringr
+
+Funciones para separar un texto:
+
+```{r eval=FALSE}
+library(stringr)
+
+str_split(x, "\r")
+
+str_split(x, boundary("word"))
+
+##type = c("character", "line_break", "sentence", "word")
+
+```
+
+
+# Stringr
+
+Funciones para combinar un texto:
+
+```{r eval=FALSE}
+library(stringr)
+
+str_c("x", "y", sep = ", ")
+> [1] "x, y"
+##sep para controlar
+```
+
+
+# Stringr
+
+Funciones para reemplazar un texto:
+
+```{r eval=FALSE}
+library(stringr)
+#la primer coincidencia
+str_replace(string, pattern, replacement)
+
+#todas las coincidencias
+str_replace_all(string, pattern, replacement)
+
+```
+
+# Stringr
+
+Funciones para pasar mayúscula/minúscula:
+
+```{r eval=FALSE}
+library(stringr)
+
+str_to_upper(c("i", "ı"))
+#> [1] "I" "I"
+
+str_to_lower(c("I", "I"))
+#> [1] "i" "ı"
+
+```
+
+# Stringr
+
+Funciones para pasar eliminar espacios en blanco:
+
+```{r eval=FALSE}
+library(stringr)
+
+str_trim(string, side = c("both", "left", "right"))
+
+str_trim(" String with trailing and leading white space\t")
+#> [1] "String with trailing and leading white space"
+str_trim("\n\nString with trailing and leading white space\n\n")
+#> [1] "String with trailing and leading white space"
+
+```
+
+# Stringr
+
+Funciones para pasar eliminar espacios en blanco:
+
+```{r eval=FALSE}
+library(stringr)
+
+str_squish(" String with trailing, middle,   and leading white space\t")
+#> [1] "String with trailing, middle, and leading white space"
+str_squish("\n\nString with excess, trailing and leading white space\n\n")
+#> [1] "String with excess, trailing and leading white space"
+
+```
+
+# Caracteres especiales
+
+Para construir consultas que incluyan metacaracteres, i.e.
+
+`\\$ \\* \\+ \\. \\? \\[ \\] \\^ \\{ \\} \\| \\( \\)`
+
+Se debe agregar una retrobarra  `\\`
+
+# Metacaracteres especiales
+
+`\\t` : Tabulador
+
+`\\n` : Nueva línea
+
+`\\v` : Tabulación vertical
+
+`\\f` : Salto de formulario
+
+`\\r` : Salto de línea
+
+
+<!-- # Cuantificadores -->
+
+<!-- Los Cuantificadores especifican cuantas veces el patrón consultado pueda ocurrir. -->
+
+<!-- `*` : coincide al menos 0 veces. -->
+
+<!-- `+` : coincide al menos 1 vez. -->
+
+<!-- `?` : coincide a lo sumo 1 vez. -->
+
+<!-- `{n}` : coincide exactamente $n$ veces. -->
+
+<!-- `{n,}` : coincide al menos $n$ veces. -->
+
+<!-- `{,m}` : coincide a lo sumo $m$ vez. -->
+
+<!-- `{n,m}` : coincides entre $n$ y $m$ veces. -->
+
+<!-- # Posición -->
+
+<!-- `^` : Al inicio de la cadena. -->
+
+<!-- `$` : Al final de la cadena. -->
+
+<!-- `\b` : En los extremos de la palabra. -->
+
+<!-- `\B` : No en los extremos de la palabra. -->
+
+<!-- `\<` : Al inicio de la palabra. -->
+
+<!-- `\>` : Al final de la palabra. -->
+
+
+<!-- # Caracteres por clases -->
+
+<!-- `[[:digit:]] or \\d or [0-9]` : digitos 0 1 2 3 4 5 6 7 8 9 -->
+<!-- `\\D or [^0-9]` : no-digitos -->
+
+<!-- `[[:lower:]] or [a-z]` : letras minúsculas -->
+<!-- `[[:upper:]] or [A-Z]` : letras mayúsculas -->
+<!-- `[[:alpha:]] or [[:lower:][:upper:]] or [A-z]` : caracteres alfabeticos -->
+
+<!-- # Caracteres por clases -->
+
+<!-- `[[:alnum:]] or [[:alpha:][:digit:]] or [A-z0-9]`: caracteres alfanuméricos -->
+
+<!-- `\\w or [[:alnum:]_] or [A-z0-9_]` : caracteres de palabra -->
+<!-- `\\W or  [^A-z0-9_]` : No caracteres de palabra -->
+
+<!-- `[[:xdigit:]] or [0-9A-Fa-f]` :  dígitos hexadecimales (base 16) 0 1 2 3 4 5 6 7 8 9 A B C D E F a b c d e f -->
+
+<!-- # Caracteres y espacios -->
+
+<!-- `[[:blank:]]` : espacios y tabulaciones -->
+
+<!-- `[[:space:]] or \s` : todo tipo de caracteres de espaciado: tabulación, nueva línea, tabulación vertical, salto de formulario, Salto de linea, espacios -->
+
+<!-- `\\S` : Caracteres que no sean espacios -->
+
+<!-- `[[:punct:]]` :  caracteres de punctuación -->
+<!-- `! " # $ % & ( ) * + , - . / : ; < = > ? @ [  ] ^ _  { | } ~` -->
+
+<!-- # Caracteres y espacios -->
+
+<!-- `[[:graph:]] or [[:alnum:][:punct:]]` : caracteres gráficos (legibles) -->
+
+<!-- `[:print:]] or [[:alnum:][:punct:]\\s]` : caracteres sin espacios -->
+
+<!-- `[[:cntrl:]] or \\c` :  caracteres de control, como `\n` or `\r`, etc. -->
+
+<!-- # Materiales extra -->
+
+<!-- [Hoja de ruta stringr](https://github.com/rstudio/cheatsheets/raw/master/translations/spanish/strings_Spanish.pdf) -->
+
+
+

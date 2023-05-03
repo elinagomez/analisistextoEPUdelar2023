@@ -1,0 +1,303 @@
+---
+title: R aplicado al análisis cualitativo / FCS-UdelaR
+subtitle: Clase 5 - Educación Permanente FCS
+   
+output: 
+        beamer_presentation: 
+                theme: "Antibes"
+                colortheme: "seagull"
+                fonttheme: "structurebold"
+urlcolor: blue
+---
+
+
+```{r echo=FALSE}
+knitr::knit_hooks$set(mysize = function(before, options, envir) {
+  if (before) 
+    return(options$size)
+})
+```
+
+
+```{r include=FALSE}
+knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
+
+```
+
+
+
+<center>
+
+![](imagenes/eg.png){ width=25% } 
+</center>
+
+
+**Mag. Elina Gómez (UMAD/FCS)**
+
+[elina.gomez@cienciassociales.edu.uy](elina.gomez@cienciassociales.edu.uy)
+
+[www.elinagomez.com](www.elinagomez.com)
+
+
+#
+
+
+![](imagenes/by-nc-sa.png){ width=18% }  
+
+Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
+
+
+
+# Objetivos de hoy
+
+- Presentación del paquete **quanteda** para el análisis de textos. 
+- Nubes de palabras
+- Asociaciones
+- Redes
+
+
+# Paquete quanteda
+
+- **quanteda** es un paquete R para administrar y analizar datos textuales desarrollados por _Kenneth Benoit_ y otros colaboradores. Su desarrollo inicial fue apoyado por la beca del Consejo Europeo de Investigación.
+
+- El paquete está diseñado para usuarios de R que necesitan aplicar el procesamiento de lenguaje natural a los textos, desde los documentos originales hasta el análisis final. 
+
+- Sus capacidades coinciden o superan las que se ofrecen en muchas aplicaciones de software para usuarios finales, muchas de las cuales son caras y no de código abierto. 
+
+- [Documentación quanteda](https://cran.r-project.org/web/packages/quanteda/quanteda.pdf)
+- [Más infrormación](https://quanteda.io/) 
+
+
+# Caso práctico: LUC en el Senado
+
+- Análisis de los discursos vinculados a la discusión de la _Ley de Urgente Consideración (LUC)_ en la Cámara de Senadores del 5 de junio de 2020.
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+
+load("~/rcuali2022/Clase5/Material/intervenciones.RData")
+
+```
+
+
+# _"Limpieza"_ del texto
+
+
+- Creo un Document feature matrix (DFM), aplicando algunos argumentos que me permiten limpiar las palabras que no me interesan al efecto del análisis. 
+    - Homogeinizo las palabras en minúscula
+    - Elimino números
+    - Elimino puntuaciones 
+    - Elimino stopwords (por defecto y lista propia con palabras varias (ej. "Risas"))
+    - Elimino palabras con pocos caracteres (1 y 2)
+
+
+# _"Limpieza"_ del texto
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+dfm_intervenciones <- quanteda::dfm(quanteda::tokens(intervenciones$speech,
+remove_punct = TRUE, ##saco puntuación
+remove_numbers = TRUE), #saco números
+tolower=TRUE, #paso a minúsculas
+verbose = FALSE) %>% 
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),tolower(intervenciones$legislator)),
+  min_nchar=3)%>% ##saco palabras específicas
+   quanteda::dfm_trim(min_termfreq = 6)%>% 
+  quanteda::dfm_group(groups = intervenciones$party) #defino grupos
+```
+
+
+```{r dfm, message=FALSE, warning=FALSE, include=FALSE}
+
+library(quanteda) 
+library(readtext) 
+library(stringr)
+library(dplyr)
+library(ggplot2)
+library(quanteda.textstats)
+library(quanteda.textplots)
+library(knitr)
+library(kableExtra)
+dfm_intervenciones <- quanteda::dfm(quanteda::tokens(intervenciones$speech,
+                                                     remove_punct = TRUE,
+                                                     remove_numbers = TRUE),
+                                    tolower=TRUE,
+                                    verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c("señor","señora","presidente","presidenta",quanteda::stopwords("spanish"),tolower(intervenciones$legislator)),min_nchar=3)%>%
+  quanteda::dfm_trim(min_termfreq = 6)%>% 
+  quanteda::dfm_group(groups = intervenciones$party)
+
+```
+
+
+# Nubes de palabras: general
+
+Las nubes de palabras las hago con la función **textplot_wordcloud** del paquete **quanteda.textplot**
+
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+quanteda.textplots::textplot_wordcloud(dfm_intervenciones, min.count = 2,max_words = 200,
+   random.order = FALSE,colors = RColorBrewer::brewer.pal(8,"Dark2"),comparison = F)
+```
+
+# Nubes de palabras: general
+
+```{r wcgeneral, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.height = 10, fig.width = 10, fig.align = "center",out.width = "150%"}
+ quanteda.textplots::textplot_wordcloud(dfm_intervenciones, min.count = 2,max_words = 200,
+   random.order = FALSE,colors = RColorBrewer::brewer.pal(8,"Dark2"),comparison = F)
+```
+
+
+
+# Nubes de palabras: grupos
+
+Para hacer nubes de palabras comparando entre grupos de interés, agregamos el argumento **comparison = T**
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+quanteda.textplots::textplot_wordcloud(dfm_intervenciones, min.count = 2,max_words = 500,
+      random.order = FALSE,colors = RColorBrewer::brewer.pal(8,"Dark2"),comparison = T)
+```
+
+
+
+# Nubes de palabras: partidos
+
+```{r wccomp, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+quanteda.textplots::textplot_wordcloud(dfm_intervenciones, min.count = 2,max_words = 500,
+      random.order = FALSE,colors = RColorBrewer::brewer.pal(8,"Dark2"),comparison = T)
+```
+
+
+
+# Palabras más frecuentes
+
+Para analizar las palabras más frecuentes utilizo la función _topfeatures()_
+
+```{r message=FALSE, warning=FALSE,eval=FALSE}
+
+topfeatures(dfm_intervenciones,20)
+
+```
+
+
+
+# Palabras más frecuentes: 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#creo un objeto con la 20 principales palabras 
+top = data.frame(topfeatures(dfm_intervenciones,20))
+
+#las defino como rownames
+top$palabra = rownames(top)
+
+#hago el gráfico con ggplot
+topplot = top[1:20, ] %>%
+  ggplot(aes(x = reorder(palabra, topfeatures.dfm_intervenciones..20.), 
+             y = topfeatures.dfm_intervenciones..20., fill = palabra)) + 
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  geom_text(aes(hjust = -0.1, label = topfeatures.dfm_intervenciones..20.)) +
+  theme_minimal() +
+  theme(axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text = element_text(size = 15)) +
+  ggtitle("Palabras más frecuentes (n=20)") +
+  scale_fill_manual(values = c(rep("#D7B5D8",20)))
+topplot
+```
+ 
+ 
+
+# Asociación de palabras
+
+- Buscamos la asociación de palabras en los documentos
+- Analizamos la asociación con las palabras: _sindicato_, _reforma_
+# Asociación de palabras
+
+- Utilizamos la función _textstat_simil_ del paquete **quanteda.textstats**, cuyos argumentos son el/los términos con los que quiere buscar una asociación en un _dfm_ determinado.
+- Defino el método de similitud ("correlation", "cosine", "jaccard", "ejaccard", "dice", "edice", "hamman", "simple matching")
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+quanteda.textstats::textstat_simil(dfm_intervenciones,selection = "sindicato",
+                                   method = "correlation",margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(15)
+
+```
+
+# Asociaciónde palabras: $sindicato
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.asp=0.60}
+
+quanteda.textstats::textstat_simil(dfm_intervenciones,selection = "sindicato",
+                                   method = "correlation",margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(10)%>%
+  kbl() %>%
+  kable_minimal()
+
+
+```
+
+
+# Asociación de palabras: $reforma
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.asp=0.60}
+quanteda.textstats::textstat_simil(dfm_intervenciones,selection = "reforma",
+                                   method = "correlation",margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(10) %>%
+  kbl() %>%
+  kable_minimal()
+
+
+```
+
+
+# Contexto de la palabra: kwic
+
+
+- Con la función [`quanteda::kwic()`]() podemos ver el contexto de aparición de una palabra, término o frase, según una ventana (cantidad de palabras previas y posteriores) determinada. 
+
+- Extraer el contexto de ciertos términos puede ser de utilidad para construir un nuevo corpus y realizar un análisis focalizado y/o comparativo.
+
+
+```{r message=FALSE, warning=FALSE, eval=FALSE}
+
+quanteda::kwic(quanteda::tokens(intervenciones$speech,
+remove_punct = TRUE,
+remove_numbers = TRUE), 
+pattern = quanteda::phrase(c("ley de urgente consideración")),
+window = 5)
+
+```
+
+
+# Contexto de la palabra: redes de co-ocurrencia
+
+
+- Con la función [`quanteda.textplots::textplot_network`]() podemos hacer redes de co-ocurrencia entre términos. 
+
+
+# Contexto de la palabra: redes de co-ocurrencia
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+base_fcm= dfm_intervenciones%>% ##armo una matriz de co-ocurrencia
+  fcm(context = "document")
+
+feat <- names(topfeatures(base_fcm, 25)) 
+base_fcm_select <- fcm_select(base_fcm, pattern = feat, selection = "keep")
+size <- log(colSums(dfm_select(base_fcm, feat, selection = "keep")))
+
+set.seed(144)
+quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, vertex_size = size / max(size) * 3,
+                                     edge_color="#ff9d5c")
+
+
+```
+
+
+
+

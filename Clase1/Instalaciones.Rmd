@@ -1,0 +1,69 @@
+---
+title: "Instalaciones - Curso R aplicado al análisis cualitativo (FCS/UdelaR)"
+author: "Mag. Elina Gómez"
+date: "Noviembre 2022"
+output: pdf_document
+urlcolor: blue
+number_sections: true
+---
+
+
+## 1. R y RStudio
+
+- Instalar el R básico desde el repositorio CRAN: [Última versión R 4.2.1](https://cran.r-project.org/)
+- [Instalar RStudio](https://www.rstudio.com/products/rstudio/download/)
+
+(para ambos casos existen indicaciones para el sistema operativo específico)
+
+## 2. Librerías 
+
+```{r eval=FALSE}
+
+##Desde CRAN
+
+install.packages(c("knitr","tidyverse","quanteda",
+"quanteda.textplots","quanteda.textstats",
+"readtext","pdftools","devtools","stringi","gridExtra","knitr",
+"kableExtra","rvest","speech","rtweet",
+"gmodels","forcats","gdeltr2",
+"RSQLite", "DBI","stringi", "igraph"))
+
+
+##Desde GitHub
+
+remotes::install_github("Nicolas-Schmidt/puy")
+
+
+```
+
+
+
+\newpage
+
+## 3. RQDA
+
+```{r eval=FALSE}
+
+##1) Instalar RTools 4.0: https://cran.r-project.org/bin/windows/Rtools/rtools40.html
+##2)Instalación desde repositorio Microsoft
+
+url="https://cran.microsoft.com/snapshot/2021-12-15/bin/windows/contrib/4.1/RGtk2_2.20.36.2.zip"
+install.packages(url, repos=NULL)
+
+library(RGtk2)
+##OK + Instalar, luego reiniciar R.
+
+##3)
+devtools::install_github("jverzani/gWidgets2RGtk2", INSTALL_opts = "--no-multiarch")
+##4)
+devtools::install_github("RQDA/RQDA", INSTALL_opts = "--no-multiarch")
+
+##5)
+library(RQDA) ##Cargo y chequeo que esté bien
+RQDA() #Abro interfaz
+
+
+```
+
+
+
