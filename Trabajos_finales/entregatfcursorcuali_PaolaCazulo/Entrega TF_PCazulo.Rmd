@@ -1,0 +1,391 @@
+---
+title: 'Trabajo Final: R aplicado al análisis cualitativo'
+author: "Paola Cazulo"
+date: "2023-02-17"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# install.packages("quanteda")
+# install.packages("readtext")
+# install.packages("stringr")
+# install.packages("dplyr")
+# install.packages("ggplot2")
+# install.packages("quanteda.textstats")
+# install.packages("quanteda.textplots")
+# install.packages("stringi")
+# install.packages("rmarkdown")
+# install.packages("tinytex")
+# tinytex::install_tinytex()
+
+library(quanteda) 
+library(readtext) 
+library(stringr)
+library(dplyr)
+library(ggplot2)
+library(quanteda.textstats)
+library(quanteda.textplots)
+library(stringi)
+library(rmarkdown)
+library(tinytex)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# Cargo base
+load("//sa0cdl/00_PISA/01_PISA_2022/99_Equipo/05_DataMgmnt/Paola/Trainings/R/Curso R Cuali/TF/Datos/pisa2018_recorte.RData")
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# Exploración
+head(pisa2018_recorte)
+dim(pisa2018_recorte)
+str(pisa2018_recorte)
+
+pisa2018_recorte$n = c(rep(1,6550))
+group_by(pisa2018_recorte, SCHID) %>% 
+  summarize(prueba=sum(n, na.rm = TRUE)) %>% 
+  print(n=192)
+```
+# Introducción
+
+Para este trabajo utilizamos una muestra de la base de datos de PISA 2018. La misma contiene 37 variables con información sociodemográfica de 6550 jóvenes de 15 años que cursaban en 2018 algún grado de la educación media.
+
+En particular, observamos información relativa a la ocupación de las madres de estos jóvenes y las expectativas de empleo de los jóvenes a la edad de 30 años. Esta información se obtiene a partir de preguntas abiertas autocompletadadas por los propios jóvenes. Para pasar de las respuestas brutas a información factible de analizar se requirió un trabajo detallado de depuración de estas variables (corrección de tildes, mayúsculas-minúsculas, espacios, errores de sintáxis, errores de tipeo, etc.). 
+
+También se utiliza información sobre el nivel educativo de las madres de los jóvenes codificado según la Clasificación internacional normalizada de la educación (CINE), ISCED por sus siglas en inglés. 
+
+A continuación se observa la distribución de los jóvenes según sexo y según nivel educativo de la madre:
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+tabla_sexo=table(pisa2018_recorte$ST004Q01TA)
+
+knitr::kable(tabla_sexo, caption = "Distribución por sexo", col.names = c("","N"))
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+tabla_edumadre=table(pisa2018_recorte$ST005Q01TA)
+
+knitr::kable(tabla_edumadre, caption = "Distribución por nivel educativo de la madre", col.names = c("","N"))
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# Manipulación
+# saco tildes
+pisa2018_recorte$ST014Q01TA = stri_trans_general(str = pisa2018_recorte$ST014Q01TA, id = "Latin-ASCII")
+pisa2018_recorte$ST114Q01TA = stri_trans_general(str = pisa2018_recorte$ST114Q01TA, id = "Latin-ASCII")
+
+# paso todo a minuscula
+pisa2018_recorte$ST014Q01TA = tolower(pisa2018_recorte$ST014Q01TA)
+pisa2018_recorte$ST114Q01TA = tolower(pisa2018_recorte$ST114Q01TA)
+
+# corrijo faltas
+pisa2018_recorte$ST014Q01TA = str_replace_all(
+  pisa2018_recorte$ST014Q01TA,
+  c("cuda auna senora" = "cuida a una señora","amadecasa" = "ama de casa", "limpa" = "limpia", "limpeadora" = "limpiadora", 
+    "limpiesa" = "limpieza", "pion" = "peon", "benta" = "venta", "ausiliar" = "auxiliar", "auciliar" = "auxiliar", "hama" = "ama", 
+    "cosinera" = "cocinera", "cosina" = "cocina", "empliada" = "empleada", "enpleada" = "empleada", "empreza" = "empresa", 
+    "mestra" = "maestra", "maetra" = "maestra", "nears" = "nurse", "nerds" = "nurse", "ners" = "nurse", "caasa" = "casa", "duena" = "dueña",
+    "dueno" = "dueño", "cas " = "casa", "nose" = "no lo se"))
+
+pisa2018_recorte$ST114Q01TA = str_replace_all(
+  pisa2018_recorte$ST114Q01TA,
+  c("cuda auna senora" = "cuida a una señora","amadecasa" = "ama de casa", "limpa" = "limpia", "limpeadora" = "limpiadora", 
+    "limpiesa" = "limpieza", "pion" = "peon", "benta" = "venta", "ausiliar" = "auxiliar", "auciliar" = "auxiliar", "hama" = "ama", 
+    "cosinera" = "cocinera", "cosina" = "cocina", "empliada" = "empleada", "enpleada" = "empleada", "empreza" = "empresa", 
+    "mestra" = "maestra", "maetra" = "maestra", "nears" = "nurse", "nerds" = "nurse", "ners" = "nurse", "caasa" = "casa", "duena" = "dueña",
+    "dueno" = "dueño", " cas " = "casa", "nose" = "no lo se"))
+
+View(data.frame(pisa2018_recorte$ST014Q01TA, pisa2018_recorte$ST114Q01TA))
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+######## M A D R E ########
+#### Tokenizo (considero palabras compuestas) 
+toks_madre <- quanteda::tokens(pisa2018_recorte$ST014Q01TA,
+                         remove_punct = TRUE,
+                         remove_numbers = TRUE,
+                         remove_symbols = TRUE)
+
+toks_madre <- quanteda::tokens_compound(toks_madre, pattern = phrase(c("peon de campo", "peon rural", "productor rural", "trabajadora rural", 
+                                                                       "ama de casa", "dama de casa", "trabaja en casa", "vendedora ambulante", 
+                                                                       "empleada domestica", "auxiliar de cocina", "asistente de cocina", 
+                                                                       "auxiliar de servicio", "auxiliar de limpieza", "auxiliar de ventas", 
+                                                                       "gerente de ventas", "limpiadora domestica", "encargada de limpieza", 
+                                                                       "encargada de ventas", "hace ropa", "jefa de cocina", "atencion al cliente", 
+                                                                       "atencion al publico", "auxiliar contable", "auxiliar administrativo", 
+                                                                       "asistente personal" , "no trabaja", "no tiene", "no tiene trabajo", 
+                                                                       "nunca trabajo", "no lo se")))
+toks_madre
+
+#### Genero matriz de terminos de ocupacion de madre
+dfm_pisa2018_madre <- quanteda::dfm(toks_madre,tolower = TRUE)
+
+dim(dfm_pisa2018_madre)  #6550 1703
+
+quanteda::stopwords("spanish")
+dfm_pisa2018_madre <- quanteda::dfm(toks_madre,tolower = TRUE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),"madre","trabaja","trabajaba","trabajo","hace","senora","ninos","casa","casas","ahora","actualmente","etc","ultimo"), min_nchar=3) %>%
+  quanteda::dfm_trim(min_termfreq = 6) 
+
+dim(dfm_pisa2018_madre)  #6550 190
+
+topfeatures(dfm_pisa2018_madre,50)
+
+View(data.frame(dfm_pisa2018_madre))
+
+# Matriz de términos agrupada por nivel edu madre
+dfm_pisa2018_madre_xedu = dfm_pisa2018_madre %>%
+  quanteda::dfm_group(groups = pisa2018_recorte$ST005Q01TA)
+
+dim(dfm_pisa2018_madre_xedu)  #5 190
+View(data.frame(dfm_pisa2018_madre_xedu))
+
+# Matriz de términos agrupada por centro
+dfm_pisa2018_madre_xcentro = dfm_pisa2018_madre %>%
+  quanteda::dfm_group(groups = pisa2018_recorte$SCHID)
+
+dim(dfm_pisa2018_madre_xcentro)  #192 190
+View(data.frame(dfm_pisa2018_madre_xcentro))
+```
+
+# Ocupación de las madres de los jóvenes PISA 2018
+## Nubes de palabras - Total
+Cuando observamos al conjunto de madres de los estudiantes PISA, la ocupación que predomina es la de __*ama de casa*__. En un segundo nivel, sobresalen ocupaciones como: __*maestra*__ y __*empleada doméstica*__. 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+quanteda.textplots::textplot_wordcloud(dfm_pisa2018_madre, 
+                                       min.count = 2, 
+                                       max_words = 200,
+                                       random.order = FALSE, 
+                                       colors = RColorBrewer::brewer.pal(8,"Dark2"),
+                                       comparison = F)
+```
+
+
+## Gráfico de las 20 ocupaciones más frecuentes 
+
+El gráfico muestra las 20 ocupaciones con mayor frecuencia de aparición. El mismo confirma lo observado en la nube anterior, __*ama de casa*__ es la ocupación de mayor reporte, con 658 apariciones.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+top20 = data.frame(topfeatures(dfm_pisa2018_madre_xedu,20))
+top20$mayorfreq = rownames(top20)
+
+topplot = top20[1:20, ] %>%
+  ggplot(aes(x = reorder(mayorfreq, topfeatures.dfm_pisa2018_madre_xedu..20.),
+             y = topfeatures.dfm_pisa2018_madre_xedu..20., fill = mayorfreq)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  geom_text(aes(hjust = 0.1, label = topfeatures.dfm_pisa2018_madre_xedu..20.), nudge_y = 1) +
+  theme_gray() +
+  theme(axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text = element_text(size = 10)) +
+  ggtitle("Ocupaciones más frecuentes (Top 20)") +
+  scale_fill_manual(values = c(rep("#D7B5D8",20)))
+
+topplot
+```
+
+
+## Nubes de palabras - Por nivel educativo de la madre
+Cuando agrupamos a las madres por nivel educativo alcanzado, se observa una clara diferenciación en las ocupaciones. Por un lado, en aquellas madres que no completaron educación primaria, predominan las __*amas de casa*__, o quienes se dedican a tareas de limpieza. En el otro extremo, en aquellas que tienen al menos secundaria completa, tanto técnica como general, predominan las ocupaciones relativas a la educación (__*maestra*__, __*profesora*__, __*educadora*__), ocupaciones desempeñadas por profesionales universitarias (__*ingeniera*__, __*médica*__, __*psicóloga*__, etc.), y las que implican un cargo de mediana-alta jerarquía (__*directora*__, __*gerenta*__, __*supervisora*__, etc.)
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+quanteda.textplots::textplot_wordcloud(dfm_pisa2018_madre_xedu, 
+                                       min.count = 2, 
+                                       max_words = 300,
+                                       random.order = FALSE, 
+                                       colors = RColorBrewer::brewer.pal(8,"Dark2"),
+                                       comparison = T)
+```
+
+
+## Asociación entre ocupaciones
+
+La tabla que sigue muestra la asocioación entre ocupaciones cuando la unidad de análisis son las ocupaciones de las madres de los estudiantes de un mismo centro educativo. 
+
+Al hacer el ejercicio con el término \"**cuida**\", vemos que las palabras que más se asocian son \"**mayor**\", \"**mayores**\" y \"**ancianos**\".
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+tabla_cuida=quanteda.textstats::textstat_simil(dfm_pisa2018_madre_xcentro, selection = "cuida", method = "correlation",margin = "features") %>% 
+  as.data.frame() %>%                                                              
+  dplyr::arrange(-correlation) %>%                   
+  dplyr::top_n(15) 
+
+knitr::kable(tabla_cuida, caption = "Ocupaciones cuida", col.names = c("","","correlación"))
+```
+
+Cuando hacemos el ejercicio con el término \"**gerenta**\", vemos que este término se asocia fuertemente con profesiones como \"**escribana**\", \"**psicóloga**\" y \"**contadora**\". 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+tabla_gerenta=quanteda.textstats::textstat_simil(dfm_pisa2018_madre_xcentro, selection = "gerenta", method = "correlation",margin = "features") %>% 
+  as.data.frame() %>%                                                              
+  dplyr::arrange(-correlation) %>%                   
+  dplyr::top_n(15) 
+
+knitr::kable(tabla_gerenta, caption = "Ocupaciones gerenta", col.names = c("","","correlación"))
+```
+
+De forma análoga, podemos ver los vínculos entre las ocupaciones a través de la siguiente red:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+red= dfm_pisa2018_madre_xcentro %>%
+  fcm(context = "document")
+
+feat <- names(topfeatures(red, 22))
+red_select <- fcm_select(red, pattern = feat, selection = "keep")
+size <- log(colSums(dfm_select(red, feat, selection = "keep")))  
+
+set.seed(144)
+quanteda.textplots::textplot_network(red_select, min_freq = 0.8, vertex_size = size / max(size) * 3, edge_color="#ff9d5c")
+```
+
+
+# Vínculo entre las expectativas ocupacionales de los hijos y nivel educativo de las madres
+
+A continuación pretendemos aproximarnos al vínculo entre las expectativas laborales de los jóvenes en función del nivel educativo de las madres. Para ello, comenzamos clasificando las ocupaciones en grandes grupos. Tomamos como referencia los 9 grupos de la Clasificación Internacional Uniforme de Ocupaciones (CIUO-OIT) y agregamos dos categorías adicionales, una que incluye a las madres que no se encuentran trabajando y otra que incluye a las madres cuyos hijos no saben a qué se dedican.
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+### Armo un diccionario de ocupaciones (9 categorias similares a las de CIUO + 2 adicionales)
+Dicc_nivelesocup = dictionary(list(isco_1 = c("jefa","jefe","directora","directora","duena","dueno","empresaria","empresario","gerente","gerenta"),
+                                   isco_2 = c("abogada","abogado","abogacia","escribana","escribano","analista","arquitecta","arquitecto","arquitectura","asesor","asesora",
+                                              "asistente social","bibliotecologa","bibliotecologo","contador","contadora","contabilidad","contaduria","dentista","docente",
+                                              "doctor","doctora","medicina","economista","economia","educador","educadora","enfermera","enfermero","endocrinologo",
+                                              "endocrinologa","escritor","escritora","fisioterapeuta","ingeniera","ingeniero","maestra","maestro",
+                                              "medico","medica","medicina","nurse","odontologa","odontologo","partera","pediatra","profesora","profesor",
+                                              "psicologa","psicologo","psicologia","veterinaria","veterinario"),
+                                   isco_3 = c("aseguradora","asegurador","agente","auxiliar","asistente","ayudante","chef","corredor","corredora",
+                                              "decoradora","despachante","encargada","encargado","inspectora","inspector","instrumentista",
+                                              "laboratorio","laboratorista","organizadora","organizar","archivo"),
+                                   isco_4 = c("administradora","administrador","administracion","administrar","administrativa","administrativo","atencion_al_cliente",
+                                              "atencion_al_publico","auxiliar_contable","auxiliar_administrativo","bancaria","bancario","empleado","empleada","funcionaria",
+                                              "funcionario","oficinista","recepcionista","secretaria","telefonista"),
+                                   isco_5 = c("acompañante","almacen","almacenera","almacenero","asistente_de_cocina","asistente_personal","cajera","cajero","carnicera",
+                                              "carnicero","cocina","cocinera","cocinero","cuida","cuidadora","cuidador","cuida","feriante","gobernanta","guardia","seguridad",
+                                              "masajista","mesera","mesero","moza","mozo","niñera","panadera","panadero","panaderia","peluquera","peluquero","podologa",
+                                              "policia","supermercado","vendedor","vendedora","vender"),
+                                   isco_6 = c("forestal","forestacion","agricultor","agricultora","avicultura","productor_rural","productora_rural","patrona","estancia"),
+                                   isco_7 = c("albanil","albanileria","artesana","artesano","carnicero","carnicera","confeccionista","costurera","sastre","modista","costura",
+                                              "ropa","confitera","frigorifico","pizzero","pizzera","pizzeria","respostera","repostero","sanitario","vestimenta","zapatera","zapatero"),
+                                   isco_8 = c("camionera","camionero","chofer","chofera","conductor","conductora","envasador","envasadora","manejar","maquinista","fletes","taxista","uber"),
+                                   isco_9 = c("dama_de_casa","ama_de_casa","asistente_de_cocina","auxiliar_de_cocina","auxiliar_de_limpieza","auxiliar_de_servicio","bachera",
+                                              "dama_de_casa","domestica","empeada_domestica","peon_rural","empleada_rural","empleado_rural","peon","peona","lavandera","limpiadora",
+                                              "limpiar","limpieza","mucama","obrero","obrera","tisanera","repartidor","repartidora","mucama"),
+                                   desemp = c("ninguno","no tiene","no tiene trabajo","no trabaja"),
+                                   ignora = c("no lo se")))
+```
+
+
+## Clasificación ocupacional de madres según CIUO 
+
+En la siguiente tabla, vemos cómo se distribuyen las ocupaciones (clasificadas) de las madres según nivel educativo. La tabla confirma lo ya observado en la nube de puntos, donde madres con niveles educativos más bajos predominan en ocupaciones elementales (ISCO 9). 
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+Dicc_result_madres = dfm_lookup(dfm_pisa2018_madre,dictionary=Dicc_nivelesocup)
+Dicc_result_madres = convert(Dicc_result_madres, to = "data.frame")
+
+tabla_ocupmadre_xedumadre = Dicc_result_madres  %>%
+  group_by(pisa2018_recorte$ST005Q01TA)%>%
+  summarise(isco_1 = sum(isco_1),  
+            isco_2 = sum(isco_2),
+            isco_3 = sum(isco_3),
+            isco_4 = sum(isco_4),
+            isco_5 = sum(isco_5),
+            isco_6 = sum(isco_6),
+            isco_7 = sum(isco_7),
+            isco_8 = sum(isco_8),
+            isco_9 = sum(isco_9),
+            desemp = sum(desemp),
+            ignora = sum(ignora))
+
+knitr::kable(tabla_ocupmadre_xedumadre, caption = "Ocupación de las madres por CIUO según su nivel educativo")
+```
+
+## Vínculo entre expectativas y nivel educativo de la madre 
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+######## E S T U D I A N T E ########
+#### Genero matriz de terminos de expectativa del hijo
+View(data.frame(pisa2018_recorte$ST114Q01TA))
+
+toks_stud <- quanteda::tokens(pisa2018_recorte$ST114Q01TA,
+                               remove_punct = TRUE,
+                               remove_numbers = TRUE,
+                               remove_symbols = TRUE)
+
+toks_stud <- quanteda::tokens_compound(toks_stud, pattern = phrase(c("peon de campo", "peon rural", "productor rural", "trabajadora rural", 
+                                                                     "ama de casa", "dama de casa", "trabaja en casa", "vendedora ambulante", 
+                                                                     "empleada domestica", "auxiliar de cocina", "asistente de cocina", 
+                                                                     "auxiliar de servicio", "auxiliar de limpieza", "auxiliar de ventas", 
+                                                                     "gerente de ventas", "limpiadora domestica", "encargada de limpieza", 
+                                                                     "encargada de ventas", "hace ropa", "jefa de cocina", "atencion al cliente", 
+                                                                     "atencion al publico", "auxiliar contable", "auxiliar administrativo", 
+                                                                     "asistente personal" , "no trabaja", "no tiene", "no tiene trabajo", 
+                                                                     "nunca trabajo", "no lo se")))
+toks_stud
+
+#### Genero matriz de terminos de expectativas estudiante
+dfm_pisa2018_stud = quanteda::dfm(toks_stud,tolower = TRUE)
+
+dim(dfm_pisa2018_stud)  #6550 2117
+
+dfm_pisa2018_stud = quanteda::dfm(toks_stud,tolower = TRUE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),"espero", "tener","gustaria", "relacionado", "trabajar","trabajo","trabajando","ser", "hacer","ninos","casa","casas","etc","quiero","general"), min_nchar=3) %>%
+  quanteda::dfm_trim(min_termfreq = 6) 
+
+dim(dfm_pisa2018_stud)  #6550 249
+
+topfeatures(dfm_pisa2018_stud,50)
+
+View(data.frame(dfm_pisa2018_stud))
+
+# Matriz de términos de expectativas estudiante agrupada por nivel edu madre
+dfm_pisa2018_stud_xedumadre = dfm_pisa2018_stud %>%
+  quanteda::dfm_group(groups = pisa2018_recorte$ST005Q01TA)
+
+dim(dfm_pisa2018_stud_xedumadre)  #5 249
+View(data.frame(dfm_pisa2018_stud_xedumadre))
+```
+
+La siguiente tabla muestra cómo se distribuyen las expectativas ocupacionales de los hijos, de acuerdo a la clasificación creada, según nivel educativo de la madre. En términos generales, no se observa una correspondencia biunívoca. En general, se observa que las expectativas de los estudiantes se agrupan en torno a ocupaciones que exigen cierta formación educativa, independientemente del nivel educativo que tengan las madres. 
+
+Para profundizar en torno a la relación de las expectativas de los jóvenes y el nivel educativo del hogar de origen, sería necesario incorporar en el análisis las ocupaciones de los padres. 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+Dicc_result_stud = dfm_lookup(dfm_pisa2018_stud,dictionary=Dicc_nivelesocup)
+Dicc_result_stud = convert(Dicc_result_stud, to = "data.frame")
+
+tabla_expstud_xedumadre = Dicc_result_stud  %>%
+  group_by(pisa2018_recorte$ST005Q01TA)%>%
+  summarise(isco_1 = sum(isco_1),  
+            isco_2 = sum(isco_2),
+            isco_3 = sum(isco_3),
+            isco_4 = sum(isco_4),
+            isco_5 = sum(isco_5),
+            isco_6 = sum(isco_6),
+            isco_7 = sum(isco_7),
+            isco_8 = sum(isco_8),
+            isco_9 = sum(isco_9),
+            desemp = sum(desemp),
+            ignora = sum(ignora))
+
+knitr::kable(tabla_expstud_xedumadre, caption = "Expectativa ocupacional de los jóvenes según Ocupación de las madres por CIUO")
+```
+
+(Quise hacer la correspondencia entre ocupación-madre y expectativa-hijo a nivel individual pero no lo logré!)

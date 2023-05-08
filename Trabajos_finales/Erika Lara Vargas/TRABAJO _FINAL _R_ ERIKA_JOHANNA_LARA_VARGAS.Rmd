@@ -1,0 +1,363 @@
+---
+title: "**Trabajo Final R aplicado al análisis cualitativo**"
+author: "Erika Johanna Lara Vargas"
+date: "29/9/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## **Introducción**
+
+El presente trabajo tiene como objetivo desarrollar un análisis cualitativo de dos archivos de textos brutos tomados del ámbito parlamentario y vinculados a la menstruación, en particular a los productos usados para su gestión. Ambos textos se enmarcan en contextos diferentes y formulaciones parlamentarias distintas, teniendo en cuenta que el primero de ellos corresponde a una intervención realizada por el senador Rubén Martínez Huelmo en el año 2018 en Uruguay que tenía como fin llamar la atención sobre las tasas impositivas (por ejemplo, el Impuesto de Valor Agregado –IVA- o las tasas aduaneras) adjudicadas a los productos de gestión menstrual en el país, y el segundo hace referencia a un proyecto de ley denominado Derecho a la gestión menstrual presentado en el 2021 en el congreso colombiano, el cual busca garantizar el acceso por parte de las personas menstruantes a distintos productos de gestión menstrual. 
+
+Para la consecución del objetivo planteado, se utilizaron las nubes de palabras y las palabras frecuentes en cada texto, con el fin de dar cuenta de los elementos que componen el discurso alrededor de los productos de gestión menstrual y, a su vez, de la menstruación, teniendo en cuenta que según Wood (2020), la gestión menstrual se encuentra fuertemente vinculada a los tabús culturales y las representaciones elaboradas sobre la sangre menstrual.  Asimismo, se desarrolló una nube de palabras utilizando ambos textos, con el fin de comparar los elementos que componían el discurso tanto oral (en el caso de la intervención parlamentaria en Uruguay) como escrito (en el caso del proyecto de ley colombiano) referente a estos productos. Finalmente, se procedió a realizar la técnica de asociación de palabras para reportar aquellas palabras, encontradas en ambos textos, que se encontraran fuertemente relacionadas con la palabra menstruación. 
+
+## **Extracción y pre-procesamiento**
+
+Inicialmente se establecieron los paquetes de R necesarios para el análisis propuesto y se realizó un proceso de extracción de los textos, donde se introdujeron ambos textos en formato PDF para luego convertirlos a formato .txt y guardarlos para proseguir con las técnicas estipuladas. 
+
+```{r Extracción, message=FALSE, warning=FALSE, include=FALSE}
+
+library(readtext)
+library(Rcpp)
+library(pdftools)
+
+
+setwd("C:/Users/Usuario/Desktop/ESCRITORIO-TRABAJO FINAL R EN EL ANÁLISIS CUALITATIVO")
+
+pdf_MartinezHuelmo <-"ImpuestosPGM.pdf"
+
+txt_MH <-readtext(pdf_MartinezHuelmo)
+cat(txt_MH[,2])
+TamponTax=capture.output(cat(txt_MH[,2]))
+
+txt_pdftools <-pdf_text(pdf_MartinezHuelmo)
+cat(txt_pdftools[1])
+
+txtMH <- pdf_text(pdf_MartinezHuelmo)
+cat(txtMH[1])
+
+
+pdf_DerechoGestionMenstrual <-"Derecho a gestión mentrual.pdf"
+
+txt_DGM <-readtext(pdf_DerechoGestionMenstrual)
+cat(txt_DGM[,2])
+GestionMenstrual=capture.output(cat(txt_MH[,2]))
+
+txt_pdftools2 <-pdf_text(pdf_DerechoGestionMenstrual)
+cat(txt_pdftools2[1])
+
+
+txtDGM <- pdf_text(pdf_DerechoGestionMenstrual)
+cat(txtDGM[1])
+
+
+write.csv(txt_DGM, "C:/Users/Usuario/Desktop/ESCRITORIO-TRABAJO FINAL R EN EL ANÁLISIS CUALITATIVO/ARCHIVOSTXT/GESTIONMENSTRUAL.txt")
+
+
+write.csv(txt_MH, "C:/Users/Usuario/Desktop/ESCRITORIO-TRABAJO FINAL R EN EL ANÁLISIS CUALITATIVO/ARCHIVOSTXT/IMPUESTOSPGM.txt")
+
+```
+
+Posteriormente, se continuó con la limpieza de ambos textos, con el fin de remover aquellas palabras u elementos cuyo contenido no aportara mayores interpretaciones sobre los textos, como es el caso de las preposiciones u otras *stop words* y palabras como “senadora”, “senador”, “señor” y “señora”. Asimismo, se eliminaron los signos de puntuación y los números. 
+
+```{r Pre-procesamiento, message=FALSE, warning=FALSE, include=FALSE}
+
+library(quanteda) 
+library(readtext) 
+library(stringr)
+library(dplyr)
+library(ggplot2)
+library(quanteda.textstats)
+library(quanteda.textplots)
+
+setwd("C:/Users/Usuario/Desktop/ESCRITORIO-TRABAJO FINAL R EN EL ANÁLISIS CUALITATIVO")
+
+mytfImpuestos <-read.csv("ARCHIVOSTXT/IMPUESTOSPGM.txt")
+
+
+stop = read.csv("C:/Users/Usuario/Documents/1.ESTUDIOS/CURSOS, TALLERES Y FORMACIÓN PERMANENTE/R APLICADO AL ANALISIS CUALITATIVO/CLASE 5/stopes.csv", sep = ";")
+vector = as.character(stop$X0)
+
+mydfmImpuestos <- quanteda::dfm(quanteda::tokens(mytfImpuestos$text,
+                                                 remove_punct = TRUE,
+                                                 remove_numbers = TRUE),
+                                tolower=TRUE,
+                                verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"), 
+                                   vector,"se?or","se?ora", "presidenta", "senador", "senadora"), 
+                       min_nchar = 3) #%>%
+
+
+mytfGestionMenstrual <-read.csv("ARCHIVOSTXT/GESTIONMENSTRUAL.txt")
+
+mydfmGestionMenstrual <- quanteda::dfm(quanteda::tokens(mytfGestionMenstrual$text,
+                                                        remove_punct = TRUE,
+                                                        remove_numbers = TRUE),
+                                       tolower=TRUE,
+                                       verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"), 
+                                   vector,"se?or","se?ora", "presidenta", "senador", "senadora"), 
+                       min_nchar = 3) #%>%
+
+
+mytfGeneral <- rbind(mytfImpuestos,mytfGestionMenstrual)
+
+mydfmGeneral <- quanteda::dfm(quanteda::tokens(mytfGeneral$text,
+                                               remove_punct = TRUE,
+                                               remove_numbers = TRUE),
+                              tolower=TRUE,
+                              verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"), 
+                                   vector,"señor","señora", "presidenta", "senador", "senadora"), 
+                       min_nchar = 3) %>%
+  quanteda::dfm_group(groups = mytfGeneral$doc_id)
+
+```
+
+## **Análisis cualitativo**
+
+### **Intervención parlamentaria sobre los impuestos en productos de gestión menstrual en Uruguay**
+
+#### **_Nube de palabras_**
+
+De forma inicial, se realizó una nube de palabras con el fin de denotar las palabras asociadas a la temática de la menstruación, específicamente en lo referente a los impuestos atribuidos a los productos usados para la gestión de la sangre menstrual. 
+
+```{r Nube de palabras Impuestos, echo=FALSE, message=FALSE, warning=FALSE}
+quanteda.textplots::textplot_wordcloud(mydfmImpuestos, min_count = 2, max_words = 150, min_size = 1, max_size = 5, random_order = TRUE, rot.per = .50, colors = RColorBrewer::brewer.pal(8,"Dark2"))
+
+```
+
+Como resultado de la aplicación de dicha técnica, se evidencia, por un lado, que el producto de gestión menstrual más enunciado por el senador Martínez Huelmo en su intervención son las “compresas”. Asimismo, se constató el uso recurrente de palabras asociadas a la tributación, como “impuesto”, “iva”, “pagar”, “pagan”, “arancelaria” y “recargo”.
+
+Además, destaca la notable importancia de la palabra “necesidad” y la presencia en el texto de la palabra “suntuario”, dado que dentro de la teoría vinculada a la menstruación se demarca que es imperativo establecer que la menstruación es un proceso biológico involuntario, así como un fenómeno socio-histórico, en el que los productos de gestión menstrual se convierten en elementos necesarios para proseguir, si así es deseado, con el desarrollo de la vida en el ámbito público (trabajo, estudio, participación política, entre otras), en lugar de considerarse como un lujo (Crawford & Spivack, 2018; Ooi, 2018). La enunciación de los productos de gestión menstrual como una necesidad en contraposición a la concepción de dichos artículos como suntuosos es relevante en el contexto de la tributación en Uruguay si se tiene en cuenta que dentro del Decreto N°220/998 (2018) que reglamenta el IVA en el país los llamados artículos esenciales cuentan con una tasa reducida de IVA del 10%; no obstante, los productos de gestión menstrual, al no estar contemplados en dicha categoría por no considerarlos necesarios, tributan un 22%.
+
+Un segundo aspecto positivo de la intervención, se vincula al uso de palabras como “salud”, “acceso”, “pública” y “sociales”, dado que no solo saca a la menstruación del espacio privado en el que siempre estuvo confinada para ubicarla en el ámbito pública, sino que también incluye aspectos que permiten comprender a la menstruación como un proceso que va más allá de lo biológico, aspectos que son tenidos en cuenta por teóricas como Hennengan y colaboradoras (2021) para elaborar una definición de salud menstrual, la cual es entendida como un estado de completo bienestar mental, físico y social (no solamente la ausencia de enfermedad) en relación con el ciclo menstrual, así como también se vincula con el acceso a la información referida a la menstruación, el cuidado de los cuerpos durante este proceso, el acceso a diagnósticos y tratamientos de malestares asociados al ciclo menstrual, las experiencias positivas y respetuosas del medio ambiente respecto al ciclo menstrual que estén libres del estigma social y de la angustia psicológica, y la decisión de si participar y cómo hacerlo en las esferas de la vida pública durante el ciclo menstrual, sin vivenciar exclusión, violencia o discriminación por ello.  En este sentido, la inclusión de las palabras mencionadas permite una mirada más holística de la menstruación y es un primer paso que posibilitará nuevas interpretaciones de las necesidades vinculadas a este proceso desde la agenda pública.
+
+En contraposición a los aspectos positivos evidenciados en el texto de la intervención, se encuentran algunos elementos que reproducen ideas y representaciones negativas o erróneas sobre la menstruación y sobre quienes la vivencian.  Tal es el caso de la palabra “mujeres”, la cual reproduce la idea de que la menstruación solo es vivenciada por las mujeres cuando, en realidad, la vivencian los varones trans, personas no binarias y algunas con determinados espectros de la intersexualidad (Bobel, 2010; Bobel & Fahs, 2018; Hunter, 2016; Sala, 2020; Sanyal, 2012). Otra palabra vinculada nuevamente a esta visión genérica y binaria es “femenina”, la cual puede estar vinculada a la noción del cuerpo culturalmente asociado a las mujeres (Butler, 2016; Héritier, 2016). Asimismo, se encuentra la palabra “higiene”, la cual reproduce representaciones sociales negativas de la menstruación vinculadas a la Crisis de higiene, que contempla como idea fundamental la creencia de que las mujeres deben preocuparse por reemplazar su tampón o sus toallas higiénicas y esa situación es fuente de incomodidad (Idoiaga & Belasko, 2019). Dentro de este tipo de representaciones, en la cultura occidental, se evidencia una asociación con el mercado menstrual, donde se estipula un manejo efectivo con dichos productos para evitar las manchas, la suciedad, el olor y la vergüenza (Beausang & Razor, 2000; Jackson & Falmagne, 2013; Havens & Swenson, 1988). De esta forma, se mantiene una perspectiva y una terminología higienista, la cual ha sido muy criticada, sobre todo en las últimas décadas, desde los estudios críticos de la menstruación por diversas autoras (Bobel, 2019; Thomson, Amery, Channon, & Puri, 2019). Finalmente, no se evidencia en la nube de palabras la palabra “menstruación” a pesar de ser una discusión estrechamente relacionada a dicha temática.
+
+#### **_Palabras frecuentes_**
+
+Como análisis complementario a la nube de palabras, se realizó un análisis de las palabras frecuentes.
+
+```{r Palabras frecuentes Impuestos, echo=FALSE, message=FALSE, warning=FALSE}
+
+topfeatures(mydfmImpuestos, 20)
+
+coloree = c(rep("#D7B5D8",20))
+
+topImpuestos = data.frame(topfeatures(mydfmImpuestos, 20))
+
+topImpuestos$palabra = rownames(topImpuestos)
+
+Impuestospplot = topImpuestos[1:20, ] %>%
+  ggplot(aes(x = reorder(palabra, topfeatures.mydfmImpuestos..20.), 
+             y = topfeatures.mydfmImpuestos..20., fill = palabra)) + 
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  geom_text(aes(hjust = -0.1, label = topfeatures.mydfmImpuestos..20.)) +
+  theme_minimal() +
+  theme(axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text = element_text(size = 15)) +
+  ggtitle("Palabras más frecuentes en Intervención sobre Impuestos en PGM(n=20)") +
+  scale_fill_manual(values = coloree)
+
+Impuestospplot
+
+```
+
+
+En dicho análisis, se puede resaltar que las palabras utilizadas para referir a los productos de gestión menstrual son “productos” (11), “artículos” (6), “tampones” (4) y “compresas” (3). Es factible que, al referirse a estos productos, el senador en su intervención deje de lado productos con un impacto mercantil más reducido desde la visión más capitalista como, por ejemplo, la copa menstrual. Por otro lado, tanto “acceso”, “pública”, “sociales” y “salud” tienen tres menciones cada una, lo cual las ubica como elementos centrales en la formulación de la intervención, al igual que “impuesto” e “impuestos” que suman entre las dos 7 reiteraciones. 
+
+Nuevamente se evidencia la notable frecuencia de la palabra “mujeres” (7 enunciaciones), lo cual denota una interpretación binaria de la menstruación en la cual no se tiene en cuenta las personas de género diverso que también experimentan este proceso (Bobel & Fahs, 2018; Sala, 2020; Sanyal, 2012). Asimismo, se destacan las palabras “femenina” (2 menciones) e “higiene” (2 menciones), las cuales se vinculan, por un lado, con una percepción del cuerpo de forma binaria y, por el otro, con representaciones negativas de la menstruación vinculadas a la crisis de higiene. Adicionalmente, cabe resaltar que la palabra “menstruación” no se encuentra dentro de las veinte palabras frecuentes, a pesar de ser un tema directamente vinculado a este proceso.
+
+Finalmente, se plantea las palabras “Uruguay”, “país” y “mundo” con alta frecuencia, lo cual puede referir a la contextualización de la temática en Uruguay en comparación con los lineamientos llevados a cabo en el resto del mundo.
+
+### **Proyecto de ley de Derecho a la gestión menstrual en Colombia**
+
+#### **_Nube de palabras_**
+
+En el marco de la nube de palabras generada sobre el texto del proyecto de ley vinculado a la gestión menstrual, se puede evidenciar un abordaje más complejo, en el sentido de Morin (2009), sobre la menstruación y la gestión menstrual. 
+
+```{r Nube de palabras Derecho gestion menstrual, echo=FALSE, message=FALSE, warning=FALSE}
+quanteda.textplots::textplot_wordcloud(mydfmGestionMenstrual, min_count = 2, max_words = 150, min_size = 1, max_size = 5, random_order = TRUE, rot.per = .50, colors = RColorBrewer::brewer.pal(8,"Dark2"))
+
+```
+
+Dicha complejidad puede evidenciarse al presentarse palabras como “salud”, “educación”, “pública”, “política”, “social”, “promoción”, “campañas”, “pedagogía”, “provisión” y “programas”, las cuales se relacionan de forma más estrecha con la conceptualización de salud menstrual presentada por Hennengan y colaboradoras (2021) al abarcar elementos vinculados al bienestar desde distintos frentes, tal y como lo proponen las autoras. 
+
+Las palabras utilizadas para referirse a los productos de gestión menstrual son “insumos”, “insumo” y “productos”. Asimismo, se enuncia la palabra “necesarias” probablemente para referir a la concepción planteada por autoras como Crawford y Spivack (2018) o Ooi (2018) en la cual estos productos son considerados necesarios más que un lujo. 
+
+Además, cabe destacar, que se menciona la palabra “menstruación” de manera recurrente, así como “menstrual”, lo cual le brinda un espacio de enunciación que rompe con la conspiración cultural del silencio (Unger & Crawford, 1996) que pretende el ocultamiento de la menstruación y restringe la posibilidad de hablar de la misma en el espacio público (Chrisler, 2008; Chrisler, Marván, Gorman, & Rossini, 2015; Jackson, 2018; Kissling, 1996; Stubbs & Costos, 2004). A su vez, incluye palabras como “romper” y “estigmas”, lo cual da cuenta del paso a una visibilización del tabú que rodea la menstruación, el cual se relaciona con la profunda aversión e incomodidad con la menstruación, que conlleva, de manera directa o indirecta, a la imposición de una carga sobre las mujeres a modo casi de castigo (Hunter, 2016; Ooi, 2018). También pone de manifiesto la visibilización de de las representaciones clásicas que pueden construirse de la menstruación, las cuales manejan un discurso negativo y medicalizado, por una parte, orientado hacia los aspectos psicológicos y biológicos de la menstruación, y, por otro lado, estipula a la menstruación como una crisis de higiene (Chrisler, 2008; Idoiaga & Belasko, 2019; Lee, 2009).
+
+Asimismo, se destaca el aspecto género diverso, ya que la palabra “personas” (probablemente refiriéndose a las personas menstruantes) tiene una mayor presencia en comparación a la palabra “mujeres” y aparece la palabra “diversidad”, lo cual denota un reconocimiento de la menstruación como un proceso que se vincula a un cuerpo feminizado que no necesariamente corresponde solo al de las mujeres, sino que puede vincularse a personas que no siempre responden a las imposiciones del sistema binario de género (Bobel, 2010; Bobel & Fahs, 2018; Butler, 2016; Héritier, 2016; Hunter, 2016; Sala, 2020; Sanyal, 2012). Además, existe un componente generacional, debido a que se incluye la palabra “niñas” dentro del texto presentado. 
+
+En cuanto al aspecto económico, aparecen palabras como “socioeconómicas”, “tributario”, “impuesto”, “exento”, y “gratuidad”, las cuales pueden marcar, en cierto sentido, el camino a transitar para finalmente garantizar el acceso a estos productos sin obstáculos por parte de las personas menstruantes. Ya que la sola exención impositiva no es medida suficiente para garantizar dicho acceso, lo cual no reduce su valor como medida práctica de género, la gratuidad de estos productos debe ser la meta si de cambios estructurales en las relaciones de género, por lo menos en materia tributaria, se trata (Lara-Vargas, 2021).
+
+#### **_Palabras frecuentes_**
+
+Como ejercicio complementario a la nube de palabras antes descrita, se utilizó la técnica de palabras frecuentes. 
+
+```{r Palabras frecuentes gestion menstrual, echo=FALSE, message=FALSE, warning=FALSE}
+topfeatures(mydfmGestionMenstrual, 20)
+
+coloree = c(rep("#D7B5D8",20))
+
+topGestionMenstrual = data.frame(topfeatures(mydfmGestionMenstrual, 20))
+
+topGestionMenstrual$palabra = rownames(topGestionMenstrual)
+
+GestionMenstrualpplot = topGestionMenstrual [1:20, ] %>%
+  ggplot(aes(x = reorder(palabra, topfeatures.mydfmGestionMenstrual..20.), 
+             y = topfeatures.mydfmGestionMenstrual..20., fill = palabra)) + 
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  geom_text(aes(hjust = -0.1, label = topfeatures.mydfmGestionMenstrual..20.)) +
+  theme_minimal() +
+  theme(axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text = element_text(size = 15)) +
+  ggtitle("Palabras más frecuentes en Proyecto sobre Derecho a la Gestión Menstrual(n=20)") +
+  scale_fill_manual(values = coloree)
+
+GestionMenstrualpplot
+
+```
+
+Adicional a lo encontrado en la nube de palabras, se pueden destacar dos elementos en particular. El primero de ellos es la mención de las palabras “menstrual” (14 veces), menstruación (5 reiteraciones) y menstruantes (4 menciones) que posicionan a la menstruación como un tema de interés público y legislativo, y que, como se mencionó anteriormente, generan una ruptura no solo con la cultura del ocultamiento sino también con la del silencio, el cual ha mantenido a la menstruación como un asunto privado (Brooks-Gunn & Ruble,1982; Chrisler, 2008; Chrisler et al., 2015; Sala, 2020; Unger & Crawford, 1996; Jackson, 2018; Kissling, 1996; Stubbs & Costos, 2004; Williams, 1983). El segundo elemento a rescatar es la enunciación general de quienes experimentan la menstruación a través de palabras como “personas” (6), “mujeres” y “niñas”, lo cual quebranta la imposición cultural del sistema binario que organiza y construye los cuerpos y, bajo el cual, está establecido que solo las mujeres menstrúan. 
+
+### **Conjugación de ambos textos**
+
+#### **_Nube de palabras_**
+
+Para analizar ambos textos de manera conjunto, se utilizó la nube de palabras para comparar las palabras que utilizaban ambos textos y poder dar cuenta de la cercanía a nivel de discurso.
+
+```{r Nube de palabras ambos textos, echo=FALSE, message=FALSE, warning=FALSE}
+quanteda.textplots::textplot_wordcloud(mydfmGeneral, min_count = 2, max_words = 150, min_size = 1, max_size = 5, random_order = TRUE, rot.per = .50, colors = RColorBrewer::brewer.pal(8,"Dark2"), comparison = T)
+
+```
+
+En cuanto a los elementos compartidos, se encuentran principalmente dos categorías. La primera vinculada a las mujeres, donde aparecen palabras como “mujeres” y “mujer” en proporciones diferenciales, siendo la intervención parlamentaria del senador Martínez Huelmo la que mayor énfasis realiza en estos elementos. Una segunda categoría abarca los elementos vinculados a lo tributario con palabras como “iva”, “recargo”, “impuesto”, “tributario”, “pagan” y “exento”, lo cual denota la relevancia que ha tomado la circunstancia tributaria de los productos de gestión menstrual en el marco de la política pública.
+
+En general, ambos textos abordan a los productos de gestión, en el marco de lo impositivo y en cuanto al derecho a la gestión menstrual, desde lugares muy distintos, en donde el texto referente a gestión menstrual abarca elementos que pueden resultar siendo garantes de una buena salud menstrual y componentes que son más propositivos en cuanto al acceso a estos productos. Cabe resaltar que dicha diferencia también puede deberse al tipo de recurso parlamentario, en el que uno es un proyecto de ley, el cual per se debe ser propositivo, y el otro es una intervención corta que no necesariamente requiere un abordaje a profundidad.
+
+#### **_Asociación de palabras_**
+
+Finalmente, para completar el análisis propuesto como objetivo del presente trabajo, se prosiguió a establecer la asociación de palabras con la palabra menstruación.
+
+```{r Asociacion de palabras ambos textos, echo=FALSE, message=FALSE, warning=FALSE}
+asociacionMenstruacionGeneral = mydfmGeneral %>%
+  quanteda.textstats::textstat_simil(selection = "menstruación",
+                                     margin = "features", method = "cosine") %>%
+  as.data.frame()%>%  
+  arrange(-cosine)%>%
+  top_n(6)%>%
+  rename(valor = cosine,palabra=feature1,menstruaciÓn=feature2) %>%
+  select(palabra,valor)%>%
+  ggplot2::ggplot(aes(x = reorder(palabra,valor),
+                      y = round(valor,2))) +
+  geom_col(show.legend = FALSE,colour='#eb6864',size=0.6,fill="#999999") +
+  coord_flip() +
+  theme_minimal() +
+  scale_y_continuous(limits = c(0, 2))+
+  theme(axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text = element_text(size = 10)) +
+  ggtitle(paste("Asociación de palabras con la palabra menstruaciÓn en ambos textos"))
+
+asociacionMenstruacionGeneral
+```
+
+En la presente asociación se destaca, en primer lugar, la relación existente con la palabra “social”, lo cual pone en evidencia la compresión de la menstruación como fenómeno socio-histórico y no solo como proceso biológico (Sanyal, 2012). Una segunda vinculación a subrayar es la que existe con la palabra “nacional”, situación que demarca la importancia que debe cobrar esta temática en los territorios en los que se están discutiendo (Uruguay y Colombia) así como ha sucedido en distintos países como por ejemplo Argentina, donde se ha empezado a discutir el tema de la exención del IVA en los productos de gestión menstrual y la entrega gratuita de este tipo de artículos, y México, en donde recientemente fue aprobada la Ley de Menstruación Digna en la Cámara de Diputados, proyecto que tiene como fin la distribución de productos de gestión menstrual en las escuelas públicas (Barragán, 2021; Economía Feminita, 2021). La última relación a destacar es la que existe entre “menstruación” y “mujer”, que nuevamente visibiliza como continúan permeándose las imposiciones culturales sobre los cuerpos y las ideas erróneas que llevan a creer que solo las mujeres menstrúan.
+
+## **Conclusiones**
+
+A modo de conclusión podemos evidenciar una transformación en la construcción de la temática de los productos de gestión menstrual y la menstruación en si desde 2018, año en que sucedió la intervención del senador Martínez Huelmo en Uruguay, hasta el 2021, lo cual no solo se evidencia en el texto del proyecto de ley correspondiente al Derecho de Gestión Menstrual son también en los avances que se han ido elaborando en el mundo y más precisamente en América Latina y el Caribe. Dentro de las transformaciones encontradas, resaltan, en primer lugar, las vinculadas a la cuestión de género, lo cual transmuta hacia la noción de personas menstruantes, incorporando así a las personas género diversas que también vivencian la menstruación y superando la idea que adjudica a las mujeres, de manera única, el proceso menstrual. 
+
+Un segundo elemento a resaltar es la ampliación de la mirada y la complejidad para abordar la temática de la menstruación y los productos usados para su gestión, permitiendo la incorporación de conceptualizaciones mucho menos biologicistas y más críticas frente a los elementos culturales que estructuran la comprensión de la misma, así como conceptos más holísticos que pueden facilitar la formulación de políticas públicas que realmente correspondan a una medida estratégica de género. Tal es el caso de las palabras vinculadas al concepto de salud menstrual anteriormente desarrollado, el cual, si bien se puede evidenciar en ambos textos, tiene una presencia mucho más fuerte en el proyecto de ley sobre derecho a la gestión menstrual en Colombia. Asimismo, se destaca de este último texto la inclusión de palabras como “estigma”, que permiten dar cuenta de las representaciones sociales construidas sobre a menstruación que tienen resultados sociales que pueden ser regresivos para las personas menstruantes.
+
+Cabe destacar que la consecución de una comprensión más amplia sobre la menstruación y los productos de gestión menstrual en el texto referente al proyecto de ley en Colombia puede también deberse al momento histórico social que está viviendo el país con respecto a las políticas vinculadas a la menstruación. Desde el año 2018 se han generado distintas discusiones referentes al tema y se logró, ese mismo año la eliminación del IVA en los productos de gestión menstrual más comerciales (toallas y tampones), logró que pudo extenderse a la copa menstrual en el año 2021(Redacción Judicial, 2018; Redacción Judicial, 2021). Asimismo, en el ámbito parlamentario se están desarrollando distintos proyectos vinculados al concepto de salud menstrual, como lo son la propuesta de Ley de Endometriosis, que busca garantizar el diagnóstico oportuno y el tratamiento adecuado para las personas que poseen esta enfermedad vinculado con los procesos menstruales, y el proyecto de licencia menstrual a estudiantes, para que todas aquellas personas que presenten malestares fuertes durante su ciclo menstrual puedan tener la posibilidad de recuperarse sin afectaciones (Infobae, 2021; Redacción Política, 2021). Para el caso de Uruguay, si bien existe un proyecto de ley vinculado a la endometriosis desde 2019, el único proyecto de ley que cursa en el parlamento sobre menstruación es el propuesto por la diputada María Eugenia Roselló en junio de 2020 que busca crear una “canasta de higiene menstrual”, la cual se constituirá como un aporte monetario para todas las personas menstruantes con Tarjeta MIDES que necesiten acceder a productos de gestión menstrual (Cámara de Representantes, 2019; Partido Colorado, 2020).
+
+En este sentido, el prontuario legislativo sobre la temática de menstruación en Uruguay, en contraposición a lo logrado en Colombia, aún se encuentra en construcción y todavía en el proceso de comprender la menstruación como un fenómeno histórico-social que tiene implicaciones culturales y que no debe ser asociado solamente con las mujeres ni tampoco con representaciones negativas de asco o suciedad que demanden el uso de terminologías higienistas. 
+
+## **Referencias bibliográficas**
+
+Barragán, A. (29 de abril de 2021). México busca repartir compresas y tampones gratis en las escuelas públicas. El País. Recuperado de https://elpais.com/mexico/2021-04-30/mexico-distribuira-compresas-y-tampones-gratis-en-las-escuelas-publicas.html#:~:text=La%20Ley%20Menstruaci%C3%B3n%20Digna%20pretende,de%20mujeres%20en%20el%20pa%C3%ADs&text=Una%20mujer%20menstr%C3%BAa%202.535%20d%C3%ADas%20de%20su%20vida%2C%20aproximadamente.
+
+Beausang, C., & Razor, A. (2000). Young Western women’s experiences of menarche and menstruation. Health Care for Women International, 21, 517-528.
+
+Bobel, C. (2010). New blood: third-wave feminism and the politics of menstruation. New Brunswick: Rutgers University Press.
+
+Bobel, C. (2019). The managed body: developing girls and menstrual health in the global south. Londres: Palgrave Macmillan.
+
+Bobel, C., & Fahs, B. (2018). The messy politics of menstrual activism. En J. Reger (Eds), Nevertheless, they persisted. Feminisms and continued resistance in the U.S. women’s movement (pp.151-169).
+
+Brooks-Gunn, J., & Ruble, D. (1982). The development of menstrual-related beliefs and behaviors during early adolescence. Child Development, 53, 1567-1577.
+
+Butler, J. (2016). El género en disputa. El feminismo y la subversión de la identidad. Madrid: Paidós.
+
+Cámara de Representantes (2019). Endometriosis. Recuperado de https://legislativo.parlamento.gub.uy/temporales/Cam-11652424913.pdf
+
+Chrisler, J. (2008). The menstrual cycle in a biopsychosocial context. En F. Denmark y M. Paludi (eds), Psychology of women: a handbook of issues and theories (pp.400-439). Westport: Praeger. 
+
+Chrisler, J., Marván, M., Gorman, J., & Rossini, M. (2015). Body appreciation and attitudes toward menstruation. Body Image, 12, 78-81.
+
+Crawford, B., & Spivack, C. (2018). Human rights and taxation of menstrual hygiene products in an unequal world. En P. Alston y N. Reisch (Eds), Human rights and tax in an unequal world. Cambridge: Oxford University Press.
+
+Decreto N°220/998. Dirección General Impositiva (DGI), Montevideo, Uruguay, Julio de 2018. Recuperado de https://www.dgi.gub.uy/wdgi/afiledownload?2,146,1239,O,S,0,13963%3BS%3B99%3B115,
+
+Economia Feminita (2021). Proyectos de ley. Recuperado de https://economiafeminita.com/menstruaccion/proyecto-de-ley/
+
+Havens, B., & Swenson, I. (1988). Imagery associated with menstruation in advertising targeted to adolescent women. Adolescence, 23, 89-97.
+
+Hennegan, J., Winkler, I., Bobel, C., Keise, D., Hampton, J., Larsson, G., ..., Mahon, T. (2021). Menstrual health: a definition for policy, practice, and research. Sexual and Reproductive Health Matters, 21 (1), 1-8.
+
+Héritier, F. (2016). Diferencia de sexos. Buenos Aires: Capital intelectual.
+
+Hunter, L. (2016). Tampon tax: public discourse of policies concerning menstrual taboo. Hickley Journal of Politics, 17, 11-18.
+
+Idoiga, N., & Belasko, M. (2019). Understanding menstruation: influence of gender and ideological factors. A study of young people’s social representations. Feminism & Psychology, 29(3), 357-373.
+
+Infobae (14 de Agosto de 2021). El Proyecto de ley que busca una licencia menstrual para estudiantes en Colombia. Infobae. Recuperado de https://www.infobae.com/america/colombia/2021/08/15/el-proyecto-de-ley-que-busca-una-licencia-menstrual-para-estudiantes-en-colombia/
+
+Jackson, T. (2018). Policing a menstrual monster: how working class girls discuss their menstrual reactions and experiences. Journal of Young Studies, 22(2), 153-170.
+
+Jackson, T., & Falmagne, R. (2013). Women wearing white: discourses of menstruation and the experience of menarche. Feminism & Psychology, 23, 379-398.
+
+Kissling, E. (1996). Bleeding out loud: communication about menstruation. Feminism & Psychology, 6, 481-504.
+
+Lara-Vargas, E. (2021). El Impuesto de Valor Agregado (IVA) en los productos de gestión menstrual en Uruguay: políticas públicas “neutras” al género vs feminismo estatal. Revista Límbica, 2, (2), 47-65.
+
+Lee, J. (2009). Bodies at menarche: stories of shame, concealment, and sexual maturation. Sex Roles, 60, 615-627.
+
+Morin, E. (2009) Introducción al pensamiento complejo. Madrid: Gedisa.
+
+Ooi, J. (2018). Bleeding women dry: tampon taxes and menstrual inequity. Northwestern University Law Review, 113(1), 109- 154.
+
+Partido Colorado (2020). Diputada colorada presentó proyecto de canasta de higiene menstrual para hogares con tarjeta Mides. Recuperado de https://partidocolorado.uy/diputada-colorada-presento-proyecto-de-canasta-de-higiene-menstrual-para-hogares-con-tarjeta-de-mides/
+
+Redacción Política (6 de septiembre de 2021). Proyecto de ley propone incluir la endometriosis en el Plan Básico de Salud. El Tiempo. Recuperado de https://www.eltiempo.com/politica/congreso/proyecto-de-ley-propone-incluir-la-endometriosis-en-el-pbs-615520
+
+Redacción Judicial (14 de noviembre de 2018). Corte constitucional tumba el IVA del 5% a las toallas y tampones. El Espectador. Recuperado de https://www.elespectador.com/noticias/judicial/corte-constitucional-tumba-el-iva-del-5-las-toallas-y-tampones-articulo-814506?fbclid=IwAR3qQkhFv6A7usfP05Ug4XhDEk6CX5FEyczI5drOoMHItIHLYTYl9v4BPAI
+
+Redacción Judicial (21 de abril de 2021). Copa menstrual no tendrá IVA, decide la Corte Constitucional. El Espectador. Recuperado de https://www.elespectador.com/noticias/judicial/copa-menstrual-no-tendra-iva-decide-la-corte-constitucional/
+
+Sala, N. (2020). Menstruación decolonial. Revista Estudos Feministas, 28(1), 1-13.
+
+Sanyal, M. (2012). Vulva. La revelación del sexo invisible. Barcelona: Anagrama.
+
+Stubbs, M., & Costos, D. (2004). Negative attitudes towards menstruation: implications for disconnection within girls and between women. Women & Therapy, 27(2-4), 37-54.
+
+Thomson, J., Amery, F., Channon, M., & Puri, M. (2019). What’s missing in MHM? Moving beyond hygiene in menstrual hygiene management. Sexual and Reproductive Health Matters, 27(1), 1-4.
+
+Unger, R., & Crawford, M. (1996). Women and gender: a feminist psychology. Nueva York: McGraw-Hill.
+
+Williams, L. (1983). Beliefs and attitudes of young girls regarding menstruation. En S. Golub (Eds), Menarche (pp. 139-148). Lexington: Lexington Books.
+
+Wood, J. (2020). (In)visible bleeding: the menstrual concealment imperative. En C. Bobel, I. Winkler, B. Fahs, K. Hasson, E. Kissling y T. Roberts (Eds), The Palgrave handbook of critical menstruation studies (pp. 318-336). Londres: Palgrave Macmillan.
+
+
+
+
+
+
+

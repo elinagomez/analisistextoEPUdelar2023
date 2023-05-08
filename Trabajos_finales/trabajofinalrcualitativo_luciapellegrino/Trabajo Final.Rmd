@@ -1,0 +1,190 @@
+---
+title: "Trabajo Final"
+author: "Lucía Pellegrino Ceppi"
+date: "2023-02-17"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+# Introducción
+
+El presente documento es el trabajo final para el curso "R aplicado al análisis cualitativo", dictado por la docente Elina Gómez a través del área de Educación Permanente de la Facultad de Ciencias Sociales (UdelaR).
+Como objetivo se plantea realizar un análisis del discurso parlamentario efectuado en la sesión de la cámara de Representantes sobre la denominada Ley de Humanización Carcelaria, discutida el 27 de Julio de 2005.
+A continuación se irán explicando los pasos y presentando los resultados obtenidos.
+
+# Fuente de datos: extracción y reconstrucción de la información
+
+Mediante la técnica de scrapeo parlamentario se identifica, en primer lugar, la url dónde está contenido el archivo pdf con la sesión a analizar. Las url dejaron de funcionar días antes de la entrega del presente trabajo, por este motivo descargué el pdf de la sesión y trabajé a partir de él. Posteriormente, utilizando el paquete speech y la función speech_build se procede a construir un data frame con las intervenciones de los parlamentarios que participaron en la discusión. Finalmente, con el paquete puy y la función add_party se agrega el partido político de cada legislador interviniente.
+
+```{r, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#Defino el directorio de trabajo
+setwd("C:/Users/Lucia/Documents/RCuali")
+pdf_leyHSC = "Sesion.PDF"
+library(speech)
+sesion_leyHSC <- speech_build(file = pdf_leyHSC,
+                       #paso el url a pdf
+                       compiler = FALSE,
+                       #dejo sin compilar los discursos de unx mismx legisladorx
+                       quality = TRUE,
+                       #aporta dos índices de calidad
+                       add.error.sir = c("SEf'IOR"),
+                       #forma errónea que lo que identifica a el/la legisladorx
+                       rm.error.leg = c("PRtSIDENTE", "SUB", "PRfSlENTE"))
+                       #identifica a el/la legisladorx que debe eliminarse
+library(puy)
+sesion_leyHSC = puy::add_party(sesion_leyHSC)
+```
+
+Mediante este proceso se obtuvo una base con 298 intervenciones y 12 variables. 
+
+```{r, message=FALSE, warning=FALSE}
+summary(sesion_leyHSC)
+```
+# Creación de datos textuales tabulados y pre-procesamiento
+
+Porcedo a crear un corpus de datos textuales tabulados y observo las palabras utilizadas para poder realizar una depuración de las mismas para el análisis. Mediante este procedimiento de limpieza del texto se eliminan un total de 28 palabras. 
+
+```{r, message=FALSE, warning=FALSE}
+#cargo librerías
+library(quanteda) 
+library(readtext) 
+library(stringr)
+library(dplyr)
+library(ggplot2)
+library(quanteda.textstats)
+library(quanteda.textplots)
+#Creo un corpus de datos textuales tabulados 
+dfm_intervenciones <- quanteda::dfm(quanteda::tokens(sesion_leyHSC$speech,
+                                                     remove_punct = TRUE,
+                                                     remove_numbers = TRUE),
+                                    tolower=TRUE,
+                                    verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),tolower(sesion_leyHSC$legislator)),min_nchar=3)%>%
+  quanteda::dfm_trim(min_termfreq = 6)%>% 
+  quanteda::dfm_group(groups = sesion_leyHSC$party)
+
+#veo sus dimensiones y las 20 palabras principales
+dim(dfm_intervenciones) 
+topfeatures(dfm_intervenciones,20)
+#Realizo una depuración de las intevenciones para quitar palabras genéricas y obtener un análisis más limpio
+dfm_intervenciones_depuradas <- quanteda::dfm(quanteda::tokens(sesion_leyHSC$speech,
+                                                     remove_punct = TRUE,
+                                                     remove_numbers = TRUE),
+                                    tolower=TRUE,
+                                    verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),tolower(sesion_leyHSC$legislator),"proyecto", "ley", "señ*", "hoy", "presidenta", "diputad*", "ser", "artículo", "hace*", "decir", "tema", "sino", "quiero", "creo", "voy", "tener", "ñor"),min_nchar=3)%>%
+  quanteda::dfm_trim(min_termfreq = 6)%>% 
+  quanteda::dfm_group(groups = sesion_leyHSC$party)
+#Vuelvo a ver las dimensiones y las 20 principales palabras para evaluar la depuración
+dim(dfm_intervenciones_depuradas) 
+topfeatures(dfm_intervenciones_depuradas,20)
+
+```
+
+# Resultados
+
+Realizo un gráfico de barras con las 20 palabras más mencionadas. A través del gráfico podemos observar que las cuatro palabras más mencionadas en la discusión parlamentaria sobre esta ley fueron: seguridad, sociedad, gobierno y penal.
+
+```{r}
+##Grafico palabras más frecuentes
+
+#creo un objeto con la 20 principales palabras 
+top = data.frame(topfeatures(dfm_intervenciones_depuradas,20))
+
+#las defino como rownames
+top$palabra = rownames(top)
+View(top)
+
+#hago el gráfico con ggplot
+topplot = top[1:20, ] %>%
+  ggplot(aes(x = reorder(palabra, topfeatures.dfm_intervenciones_depuradas..20.), 
+             y = topfeatures.dfm_intervenciones_depuradas..20., fill = palabra)) + 
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  geom_text(aes(hjust = -0.1, label = topfeatures.dfm_intervenciones_depuradas..20.)) +
+  theme_minimal() +
+  theme(axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text = element_text(size = 15)) +
+  ggtitle("Palabras más frecuentes (n=20)") +
+  scale_fill_manual(values = c(rep("#D7B5D8",20)))
+
+plot(topplot)
+```
+
+A continuación realizo dos nubes de palabras, una general sin desagregar y otra según partido político. En concordancia con el gráfico anterior, las palabras que más resaltan en las intervenciones sin desagregar son gobierno, sociedad, seguridad y penal. Si lo vemos según el partido político del interviniente es posible destacar que el Frente Amplio menciona en mayor medida las palabras sociedad, política, seguridad y penal.
+
+```{r, message=FALSE, warning=FALSE}
+##Nubes de palabras sin desagregación
+quanteda.textplots::textplot_wordcloud(dfm_intervenciones_depuradas, min.count = 2,max_words = 200,
+                                       random.order = FALSE,colors = RColorBrewer::brewer.pal(8,"Dark2"),comparison = F)
+
+##Nubes de palabras por grupos
+
+quanteda.textplots::textplot_wordcloud(dfm_intervenciones_depuradas, min.count = 2,max_words = 500,
+                                       random.order = FALSE,colors = RColorBrewer::brewer.pal(8,"Dark2"),comparison = T)
+```
+
+Seguridad es la palabra más mencionada en esta sesión, por lo que busco su correlación con otras palabras en el documento. Las dos palabras que correlacionan más son vida y reinserción.
+
+```{r, message=FALSE, warning=FALSE}
+quanteda.textstats::textstat_simil(dfm_intervenciones_depuradas,selection = "seguridad",
+                                   method = "correlation",margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(15)
+
+```
+
+Realizo una búsqueda del contexto para conocer las cinco palabras previas y posteriores que aparecen en las intervenciones donde se hace referencia a la palabra más mencionada: seguridad. 
+
+```{r, message=FALSE, warning=FALSE}
+kwic_SEG = quanteda::kwic(quanteda::tokens(sesion_leyHSC$speech,
+                                          remove_punct = TRUE,
+                                          remove_numbers = TRUE), 
+                         pattern = quanteda::phrase(c("seguridad")),
+                         window = 5)
+
+library (DT)
+datatable(kwic_SEG)
+
+```
+
+Realizo una red de co-ocurrencia entre términos. En concordancia con la asociación de palabras, en la red puede observarse la vinculación entre los términos seguridad, sociedad y gobierno.
+
+```{r, message=FALSE, warning=FALSE}
+base_fcm= dfm_intervenciones_depuradas%>%
+  fcm(context = "document")
+
+feat <- names(topfeatures(base_fcm, 25))
+base_fcm_select <- fcm_select(base_fcm, pattern = feat, selection = "keep")
+size <- log(colSums(dfm_select(base_fcm, feat, selection = "keep")))
+
+set.seed(144)
+quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.9, vertex_size = size / max(size) * 3,
+                                     edge_color="#ff9d5c")
+
+```
+
+Por último, utilizo el diccionario LWIC-Spanish para identificar las emociones en las intervenciones según partido político y grafico el resultado. Con este análisis puede observarse que en todos los partidos políticos son más frecuentes las emociones positivas, aunque en las intervenciones del Partido Independiente la relación es más pareja.
+
+```{r, message=FALSE, warning=FALSE}
+lwic <- readRDS("C:/Users/Lucia/Documents/RCuali/EmoPosNeg_SPA.rds")
+sent_dfm <- dfm_lookup(dfm_intervenciones, dictionary = lwic)
+sent_int=convert(sent_dfm, to = "data.frame")
+
+Partido <- c("Frente Amplio", "Partido Colorado", "Partido Independiente", "Partido Nacional")
+Emocion <- c(rep("Negativa", 4), rep("Positiva", 4))
+Valor <- c(517, 261, 19, 360, 609, 328, 20, 545)
+
+tab_sent_int <- data.frame (Partido=Partido, Emocion=Emocion, Valor=Valor)
+
+library(ggplot2)
+
+ggplot(tab_sent_int, aes(x=Partido, y=Valor, fill=Emocion))+
+  geom_bar(position="dodge", stat="identity")+
+  scale_fill_manual(values = c("#EB594D", "#98E898"))
+
+```
+

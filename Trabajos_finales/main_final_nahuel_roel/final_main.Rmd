@@ -1,0 +1,1543 @@
+---
+title: "Trabajo Final - Curso de de R para el Análisis Cualitativo"
+subtitle: "Prof. Elina Gómez // Educación Permanente - FCS - Universidad de la República"
+author: "Nahuel Roel"
+date: "2023-02"
+output: pdf_document
+---
+
+```{r START/INTERVENCIONES, echo=FALSE, include=FALSE}
+#Cargar librerias
+library(quanteda.textstats)
+library(quanteda.textplots)
+library(topicmodels)
+library(ggnetwork)
+library(gridExtra)
+library(wordcloud)
+library(rmarkdown)
+library(markdown)
+library(quanteda)
+library(readtext)
+library(reshape2)
+library(magrittr)
+library(stringr)
+library(ggplot2)
+library(syuzhet)
+library(cowplot)
+library(speech)
+library(ggpubr)
+library(rvest)
+library(tidyr)
+library(rlang)
+library(dplyr)
+library(purrr)
+library(grid)
+library(stm)
+
+###################### AMBAS CAMARAS
+#Cargar sesion
+#Construir los datos tabulados con el paquete speech
+dip <- speech::speech_build(file = "C:/Users/nahur/OneDrive/Main/Maestría/Cursos/EP - R CUALI/main_final/diputados.pdf", quality = T)
+sen <- speech::speech_build(file = "C:/Users/nahur/OneDrive/Main/Maestría/Cursos/EP - R CUALI/main_final/senadores.pdf", quality = T)
+
+#Extraer las intervenciones relacionadas a la forestacion
+count_dip <- str_count(dip$speech, "fore")
+count_dip <- as.logical(count_dip)
+dip <- subset(dip, count_dip)
+count_sen <- str_count(sen$speech, "fore")
+count_sen <- as.logical(count_sen)
+sen <- subset(sen, count_sen)
+
+#Limpiar objetos, elementos repetidos
+rm(count_dip, count_sen)
+dip$legislator <- ifelse(startsWith(dip$speech, "SEÑOR RODRIGUEZ (Conrado)"), "RODRIGUEZ_PC", dip$legislator)
+
+##Agregar partido (de forma manual)
+dip <- dip %>%
+  transform(party_affiliation = case_when(
+    legislator == "MOLINELLI ROTUNDO" ~ "PC", legislator == "POSADA PAGLIOTTI" ~ "PI", legislator == "GOÑI REYES" ~ "PN", 
+    legislator == "VEGA" ~ "PERI", legislator == "FRATTI" ~ "FA", legislator == "MENENDEZ" ~ "CA", legislator == "GERHARD" ~ "FA",
+    legislator == "LUST HITTA" ~ "CA", legislator == "MORENO" ~ "PC", legislator == "BACIGALUPE" ~ "PN", legislator == "SABINI" ~ "FA",
+    legislator == "ORTIZ" ~ "PN", legislator == "PASQUET" ~ "PC", legislator == "PERRONE CABRERA" ~ "CA",
+    legislator == "FROS ALVAREZ" ~ "PN", legislator == "RODRIGUEZ_PC" ~ "PC", legislator == "SCHIPANI" ~ "PC",
+    legislator == "LORENZO PARODI" ~ "PN", legislator == "COLMAN" ~ "PN", legislator == "RODRIGUEZ" ~ "PN"))
+sen <- sen %>%
+  transform(party_affiliation = case_when(
+    legislator == "ANDRADE" ~ "FA", legislator == "BERGARA" ~ "FA", legislator == "DELLA VENTURA" ~ "FA", 
+    legislator == "MAHIA" ~ "FA", legislator == "RUBIO" ~ "FA", legislator == "LAZO" ~ "FA",
+    legislator == "SANCHEZ" ~ "FA", legislator == "BATLLE" ~ "PC", legislator == "CIANCIARULLO" ~ "PC",
+    legislator == "COUTINHO" ~ "PC", legislator == "BOTANA" ~ "PN", legislator == "DA SILVA" ~ "PN",
+    legislator == "GANDINI" ~ "PN", legislator == "STRANEO" ~ "PN", legislator == "MANINI RIOS" ~ "CA",
+    legislator == "DOMENECH" ~ "CA"))
+
+#Removemos PI y el PERI para concentrarnos en los 4 principales partidos.
+dip <- subset(dip, party_affiliation != "PI")
+dip <- subset(dip, party_affiliation != "PERI")
+```
+
+# Breve análisis de la discusión parlamentaria sobre el proyecto de Ley Forestal de 2020: perspectivas desde el análisis cualitativo mediante R.
+
+## 1. Introducción
+
+El presente documento, presentado como proyecto de trabajo final del curso de Educación Permanente "R aplicado al análisis cuantitativo", se enfoca en analizar las intervenciones en el parlamento relativas a las sesiones en las cuales se aprobó (en diputados y senadores) el proyecto de Ley Forestal de 2020, promovido por Cabildo Abierto (CA), apoyado por el Frente Amplio (FA), y rechazado por el Partido Nacional (PN) y el Parido Colorado (PC). Luego de su aprobación en ámbas cámaras, el proyecto de ley sería vetado por el presidente Luis Lacalle Pou en diciembre de 2021.
+
+El proyecto de ley en cuestión fue elaborado por el diputado de CA Rafael Menéndez, y responde al aumento sostenido de la actividad forestal en el Uruguay desde de la promulgación de la Ley Nº 15.939 en 1988. Con esa motivación, el proyecto busca regular con mayor detalle la actividad de la industria forestal, y evitar el ejercicio de esta industria fuera de zonas designadas como prioritarias para su desarrollo. Tal como señala La Diaria (2020), el proyecto en concreto contaba con tres artículos. En el primero se creaban herramientas para limitar la aprobación de proyectos forestales, restringiendo la actividad a zonas con "suelos de prioridad forestal" y estableciendo que las áreas forestadas no pueden alcanzar cierto umbral en el índice de productividad CONEAT, que calcula la capacidad productiva de los suelos. A su vez, pautaba una distancia mínima entre los límites de las áreas forestadas y los cursos de agua. El segundo artículo definía que los emprendimientos forestales estaban obligados a realizar proyectos de rotación de cultivos. Finalmente, el tercer artículo proponía más regulaciones a la aprobación de los proyectos forestales de montes, señalando que los organismos a cargo de las aprobaciones "deberán considerar en todos los casos, prioritariamente, la voluntad de los habitantes de la zona afectada a la forestación”.
+
+Cabe destacar que la principal novedad que trajo aparejada el proyecto de ley no estuvo relacionada estrictamente a su contenido, sino a la configuración de fuerzas que permitió su aprobación en la cámara baja en diciembre de 2020, y posteriormente en la cámara alta en diciembre de 2021. Esto debido a esta inusual alianza entre el FA y CA, partidos que frecuentemente se distancian en sus preferencias de política pública, y que se conciben como ubicados en las antípodas de la escala ideológica (Nocetto et al., 2020). A su vez, la configuración de fuerzas resultante significó que la coalición gobernante (compuesta por el Partido Nacional (PN), el Partido Colorado (PC), CA, y dos partidos menores) quedara en minoría, ante el realineamiento de CA en relación con este proyecto.
+
+El motivo de la promoción del proyecto de ley por parte de CA resulta bastante claro. Tal como menciona Amorín (2022), desde el nacimiento de CA a principios de 2019 el partido ha mostrado un discurso de enfrentamiento con las multinacionales forestales (que CA ha denominado como el “lobby celulósico”), y las ha culpado del vaciamiento rural del interior del país debido a la explotación extensiva y la concentración de la tierra. Esto surge como un nuevo intento de CA de alterar los equilibrios tradicionales en las comunidades rurales. Además, otro de los propósitos de CA ha sido oponerse a la concentración y extranjerización de la tierra (Amorín, 2022) y reivindicar el capital nacional frente a la inversión de empresas foráneas. La posición de CA es también producto de sus prioridades productivas. En diálogo con La Diaria (2020), el legislador de CA Rafael Menéndez expresó que si la inversión realizada en la segunda planta de celulosa de la empresa UPM se hubiera destinado a otros sectores productivos como tambos, ovinocultura, producción ganadera, “el producto bruto interno del Uruguay se hubiera incrementado por dos o tres”. 
+
+Sin embargo, el posterior respaldo del FA resulta más intrincado de comprender. Durante los tres períodos de gobierno en los que el FA estuvo al frente del Ejecutivo se promovió con vigor la instalación de industrias de producción de celulosa (Santos, 2020), profundizando los vinculos con los empresarios de la forestación (la mayoría de ellos extranjeros), generando un clima cada vez más propicio para ese tipo de inversiones, e incluso proyectando (a fines del tercer período) enormes esquemas de transporte férreo para facilitar la logística de las industrias de producción de celulosa que hoy se encuentran en construcción. Esta contradicción del FA (relacionada con sostener una postura distinta dirigida ahora a limitar y regular la industria forestal) fue identificada y cuestionada por los legisladores de CA. Consultado por Montevideo Portal (2020) sobre el apoyo del Frente Amplio, el legislador cabildante Eduardo Lust contestó: "La actitud del Frente (Amplio) puede tener algún motivo que desconozco. Lo que a mí me parece, con el razonamiento que yo conozco, es que el Frente Amplio lo hizo para atacar la coalición de gobierno o dividir la coalición o lo que marca la hipocresía de la política. Ellos durante quince años vendieron el 42% de las areas productivas a capitales extranjeros y promovieron la forestación y luego presentaron un proyecto de ley que prohíbe vender tierras a los extranjeros y limitan la forestación. ¿Por qué un partido político actual de esa forma? En algún aspecto es una muestra notoria de la hipocresía de la política porque no creo que los hayamos convencido". Esto muestra que, lejos de asumir una atitud conciliadora, CA y FA votan en conjunto en tanto priorizan las implicancias del proyecto de ley sobre las políticas públicas. No obstante, los legisladores del FA señalan que no se trata de una contradicción, ni tampoco de un ataque a la coalición. Por el contrario, se trataría de una voluntad genuina de mejorar la regulación del sector, pensando sobre todo en las consecuencias ambientales que han surgido. Frente al medio La Diaria (2021) el senador frenteamplista Enrique Rubio señaló que no se debe olvidar que estamos ante una “transición ecológica”, y por tanto “no parece ninguna tontería que se fijen determinados límites y regulaciones que impidan el daño de los suelos uruguayos”. En el mismo sentido, el senador del FA Alejandro Sánchez señaló que Uruguay se encuentra en “un lugar con las áreas de pastizales de mayor extensión del mundo”, y que se realizó “una intervención” con la plantación de eucaliptos en bosques forestales. En atención a esto, el legislador indicó que la actividad forestal debe continuar regulándose “por los impactos ambientales que genera”.
+
+En atención a lo expresado, se propone realizar un análisis cualitativo de las intervenciones parlamentarias expuestas en las sesiones en las que se fue aprobando este proyecto que ha sido descrito, entendiendo que el mismo guarda interés en tanto dividió a la coalición y distorsionó el funcionamiento de los clásicos bloques centroderecha-centroizquierda (tal como los describen Nocetto et al., 2020). Con esta base, se intentó determinar cuáles fueron las orientaciones del debate, es decir, definir qué temáticas fueron clave en la promoción de la ley y en su rechazo (centrándose principalmente en si el discurso se orienta hacia el sector productivo, hacia las consecuencias ambientales de la forestación, o hacia aspectos relativos al devenir político y al debate parlamentario). A la vez, se busca complementar el análisis de texto con conceptos  y secciones del debate que sean útiles para la comprensión de los lineamientos principales de esta discusión legislativa.
+
+El proceso de construcción de los resultados visibles en este documento comenzó con la identificación de las sesiones parlamentarias relevantes y la recuperación de la información contenida en los documentos a partir del paquete speech (Schmidt, Luján y Moraes). Posteriormente, se realizaron diversos análisis a partir del procesamiento de la información obtenida, utilizando herramientas propias del análisis cualitativo de texto. En ese sentido, el análisis propuesto se desarrolla en varias etapas, relativas a: nubes de palabras de las intervenciones, frecuencia de utilización de palabras, asociación entre palabras, redes de co-ocurrencia, uso de diccionarios generados para el caso, identificación de emociones y modelado de tópicos. Estas herramientas se aplican a todas las intervenciones relacionadas con la forestación, expresadas en ambas cámaras en aquellas sesiones parlamentarias en las cuales se dio aprobación al proyecto de ley (diciembre de 2020 y diciembre de 2021). Posteriormente, se procede a utilizar las mismas herramientas en relación con el texto del veto presidencial, presentado por Luis Lacalle Pou en diciembre de 2021.
+
+## 2. Nubes de palabras y términos más frecuentes
+
+En base a las intervenciones en el parlamento se generaron nubes de palabras compiladas por partido. Esto nos permite observar los términos más utilizados por cada partido y la variedad de esos términos, así como comparar estos factores entre los cuatro principales partidos del sistema político uruguayo. 
+
+```{r WORDCLOUD PREPARATIONS, echo=FALSE, include=FALSE}
+###################### NUBE DE PALABRAS
+#Crear funcion para trazado de wordcloud
+minchar <- function(string, min = 3){
+  string <- stringr::str_remove_all(string, "[[:punct:]]")
+  string <- unlist(strsplit(string, " "))
+  string[nchar(string) > min]
+}
+
+#Vector de stopwords endemicas a las intervenciones
+stoppers_dip <- c("acá", "actividad", "adelante", "además", "ahí", "ahora", "algun*", "all*", "año*", "aquel", "aquí", "artículo", "así", "base", "basta", "bien", "buen*", "cabildo", "cada", "cantidad", "caso", "ciert*", "cien", "cinco", "claro", "colorado", "comisi*", "correct*", "cosa", "cosas", "creemos", "creo", "cuál", "cuarenta", "cualquie*", "cuan*", "cuestiones", "dar", "dan", "deci*", "decí*", "debe*", "demás", "dejar", "dentro", "desde", "después", "día", "digo", "días", "dice", "diciembre", "dicho", "dijo", "dio", "distint*", "diputad*", "donde", "dos", "entonces", "estamos", "están", "estas", "estos", "exist*", "forestación", "forestal*", "forma", "frente","gente", "gracias", "gran", "grandes", "haber", "había", "habla*", "hace*", "hacia", "haciendo", "hasta", "hecho", "hemos", "hicieron", "hitta", "hizo", "hoy", "iba*", "igual", "jorge", "lado", "largo", "leer", "ley", "línea", "lleva*", "lust", "mal", "manera", "mayor", "menos", "meses", "miles", "muchas", "mucho*", "n.º", "nadie", "necesi*", "ningún*", "nivel", "nosotr*", "noventa", "nuestr*", "número", "ocho", "otras", "otros", "país", "parece", "parte", "partir", "pereira", "podemos", "porque", "president*", "primer*", "proyecto", "puede*", "punto", "queremos", "cambiar", "quienes", "quier*", "quince", "quizás", "rafael", "realmente", "refier*", "resuelv*", "sabem*", "salir", "sector", "senador*", "señor*", "ser", "siempre", "silva", "sino", "sobre", "sola*", "solo", "tal", "también", "tan*", "tanto", "tema", "temas", "tenemos", "tener", "tiene", "tipo", "tod*", "treinta",  "tres", "últimos", "uno", "uruguay", "usd", "vamos", "van", "veinte", "vemos", "cuenta", "venir", "ver", "verdad", "vez", "vía", "viendo", "viene*", "vista", "visto", "vota*", "voy", "hora*", "alfredo", "luego", "recibi*", "legisl*", "sabe*", "través", "ope", "país*", "lugar", "dimos", "general", "semana", "mismo", "pedi*", "podr*", "marzo", "abri*", "reiter*", "establec*", "perrone", "actual", "pued*", "realidad", "siguiente", "claramente", "dimos", "alguien", "reglas", "favor", "fuerza", "entr*", "ningun*", "respecto", "tiempo*", "mañana", "pasa", "abierto", "dónde", "diciendo", "mano", "vengan", "diferentes", "sesión", "conjunt*", "intención", "eduardo", "delegaciones", "unid*", "increment*", "sentido")
+
+stoppers_sen <- c("acá", "actividad", "adelante", "además", "ahora", "algun*", "allí", "año*", "aquel", "aquí", "artículo", "así", "base", "basta", "bien", "buen*", "cada", "cantidad", "cómo", "caso", "ciert*", "cien", "cinco", "claro", "colorado", "correct*", "cosa", "cosas", "creemos", "creo", "cuál", "cuarenta", "cualquie*", "cuando", "cuestiones", "dar",  "deci*", "decí*", "debe", "demás", "dentro", "desde", "después", "día", "días", "digo", "dice", "diciembre", "dicho", "dijo", "distint*", "donde", "dos", "entonces", "estamos", "están", "estas", "estos", "exist*",  "forestación", "forestal*", "forma", "frente","gente", "gracias", "gran", "grandes", "haber", "había", "hablamos", "hace*", "hacia", "haciendo", "hasta",  "hecho", "hemos", "hicieron", "hizo", "hoy", "iba*", "jorge", "lado", "largo", "leer", "ley", "línea", "mal", "manera", "mayor", "menos", "miles", "muchas", "mucho*", "n.º", "nadie", "necesi*", "ningún*", "nivel", "nosotr*", "noventa", "nuestr*", "otras", "otros", "país", "partir", "pereira", "podemos", "porque", "president*", "primer*", "proyecto", "puede*", "punto", "queremos", "quienes", "quiero", "quince", "quizás", "realmente", "refier*", "resuelv*", "sabem*", "salir", "sector", "senador*", "señor*", "ser", "siempre", "segur*", "silva", "sino", "sobre", "sola", "solo", "tal", "también", "tan", "tanto", "tema", "temas", "tenemos", "tener", "tiene", "tipo", "tod*", "tres",  "últimos", "uno", "uruguay", "usd", "vamos", "van", "veinte", "vemos", "ver", "verdad", "viendo", "viene", "vista", "visto", "votar", "voy", "vino", "traído", "vez")
+
+#Construcción de los dfm
+dip_dfm <- quanteda::dfm(quanteda::tokens(dip$speech,
+                                          remove_punct = TRUE,
+                                          remove_numbers = TRUE),
+                         tolower=TRUE,
+                         verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),stoppers_dip,tolower(dip$legislator)),min_nchar=3)%>%
+  quanteda::dfm_trim(min_termfreq = 4)%>% 
+  quanteda::dfm_group(groups = dip$party_affiliation)
+
+sen_dfm <- quanteda::dfm(quanteda::tokens(sen$speech,
+                                          remove_punct = TRUE,
+                                          remove_numbers = TRUE),
+                         tolower=TRUE,
+                         verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),stoppers_sen,tolower(sen$legislator)),min_nchar=3)%>%
+  quanteda::dfm_trim(min_termfreq = 4)%>% 
+  quanteda::dfm_group(groups = sen$party_affiliation)
+
+#Propiedades de los dfm
+dim(dip_dfm)
+topfeatures(dip_dfm,20)
+dim(sen_dfm)
+topfeatures(sen_dfm,20)
+
+#Trimming
+dip_dfm <- dfm_trim(dip_dfm, min_count = 2)
+sen_dfm <- dfm_trim(sen_dfm, min_count = 2)
+```
+
+```{r WORDCLOUD GRAPH_DIP, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+#Wordcloud de diputados
+partycolors <- c("#D95F02", "#1B9E77", "#E7298A", "#7570B3")
+#D95F02
+set.seed(186)
+wordcloud_dip <- quanteda.textplots::textplot_wordcloud(dip_dfm, max_words = 180,
+                                       random.order = FALSE, colors = partycolors,
+                                       comparison = T)
+title("Gráfico 1. Nube de palabras (Diputados)", cex.main = 0.9, line = 2, adj = 0.45)
+```
+
+La primera nube de la palabras que aparece en el documento (Gráfico 1) refiere a las intervenciones de los legisladores de todos los partidos en la Cámra de Diputados. A su vez, como se encuentran separados en el gráfico, podemos comparar los principales términos que utilizan los legisladores de cada partido.
+
+En el caso del FA varias de las palabras más utilizadas se vinculan a temas ambientales ("ambiente", "dinama", "tierras") y al rol de las universidades ("academia"). Se podría argumentar que otro tema reiterado es la prioridad en relación al uso de la tierra ("tierras", "prioridad", "límite"), e incluso aparecen palabras como "maíz", cultivo que se menciona seguido en tanto fue frecuentemente reemplazado por emprendimientos forestales. También aparecen palabras vinculadas con organismos políticos, con el mercado, y con el acceso a la información. En una orientación similar, la nube de palabras de CA muestra varios elementos relacionados con afectaciones al medio ambiente ya mencionadas ("pasteras", "upm", "celulosa", "tren"). No obstante, los términos también se vinculan al marco jurídico de la actividad ("subsidios", "excenciones"), al momento político ("coalición", "dirección", "poder"), y, según surge de la lectura de las intervenciones, a los pequeños y medianos productores del interior, cuyo panorama se ve alterado por la industria forestal (observándose en términos como "rural", "ganadería", "terrenos", "interior").
+
+En oposición al hemisferio superior de la nube de palabras, en el hemisferio inferior (integrado por el PN y el PC) predominan palabras vinculadas con el éxito económico de la política de forestación establecida y con la oportunidad que significa esta industria para muchos productores y exportadores ("éxito", "economía", "exportaciones", "historia", "trabajo", "industria"). Es bastante claro que el PC se muestra enfocado en los productores y en los resultados económicos, pero el PN parece centrarse más en la situación política y en las consecuencias que este precedente genera a nivel de la coalición. Por este motivo en la parte inferior derecha se visualizan en mayor tamaño palabras como "parlamento", "república", "mayoría", "minoría", "cámara", "repeto", "ministro", "escuchar", entre otras.
+
+De esta forma, una primer noción que surge del análisis se vincula con ver a los partidos que promueven la ley como centrados en las consecuencias (negativas) ambientales y económicas de la actividad forestal, mientras que los demás partidos enfatizan las consecuencias (positivas) de una industria que ha generado grandes réditos económicos, que exporta grandes volúmenes, y que genera mucho empleo. Sin embargo, estos últimos también se centran en las consecuencias negativas del proyecto a nivel político, siendo el PN protagonista en este asunto.
+
+```{r WORDCLOUD GRAPH_SEN, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+#Wordcloud de senadores
+set.seed(186)
+wordcloud_sen <- quanteda.textplots::textplot_wordcloud(sen_dfm, min.count = 2,max_words = 200,
+                                       random.order = FALSE, colors = partycolors,
+                                       comparison = T)
+title("Gráfico 2. Nube de palabras (Senadores)", cex.main = 0.9, line = 2, adj = 0.45)
+```
+
+Algo similar puede observarse en la nube de palabras relativa a la Cámara de Senadores (Gráfico 2). El FA repite su orientación hacia temáticas relativas con el medio ambiente (sumando palabras como "ecosistema", "carbono", "impactos", "efectos") y con el rol de la academia ("facultad"). Por su parte, CA, se orienta aún más al sector productivo en el caso del Senado, no por ello dejando de mencionar al tema ambiental y a la industria celulósica. En el hemisferio inferior de la nube de palabras del Senado se observa como la tendencia vista para el PN y el PC en Diputados se hace aún más clara. Vuelven a predominar palabras relacionadas con el evento y momento político y las consecuencias estratégicas para los partidos, pero también existe, sobre todo por parte del PC, una notoria reiteración de una orientación hacia los productores, el trabajo, y el creimiento económico
+
+En resumen, se podría decir que el FA se orientó a promover el proyecto pensando en las consecuencias ambientales del sector forestal y porque considera que existen otras prioridades en el uso del suelo (a pesar de haber promovido con fuerza el crecimiento de este sector, lo que se presta a futuros análisis). CA también se centran en las consecuencias ambientales de la forestación, tal vez desde una postura soberanista o etnonacionalista órganica (siguiendo a Forchtner, 2019). Pero además se orienta a promover el proyecto enfocado en las consecuencias negativas que la forestación ha generado para los pequeños y medianos productores del interior del país. Al igual que el FA, los legisladores de CA hacen énfasis en que mantienen otras prioridades en cuanto al uso del suelo, surgiendo como un resumen la frase del senador de CA Manini Ríos: "he visto campos que hasta hace poco fueron maizales y hoy son montes de eucaliptos" (Cámara de Senadores, 2021, p. 193). En la posición opuesta, el PN y el PC rechazan el proyecto (desde visiones centradas en los productores, el éxito económico del sector forestal, y el carácter de política de Estado de los incentivos a la forestación). También se muestran desafiados por la voluntad de coalicionar fuerzas de los partidos que promueven el proyecto (CA-FA). Lo expresado anteriormente puede verse de otra forma en los Gráficos 3 y 4, presentados a continuación.
+
+```{r FREQUENCY PREPARATIONS, echo=FALSE, include=FALSE}
+###################### FRECUENCIA DE PALABRAS
+#Dividir base por partido
+split_dip <- split(dip, dip$party_affiliation)
+assign("CA_dip", split_dip[[1]])
+assign("FA_dip", split_dip[[2]])
+assign("PC_dip", split_dip[[3]])
+assign("PN_dip", split_dip[[4]])
+split_sen <- split(sen, sen$party_affiliation)
+assign("CA_sen", split_sen[[1]])
+assign("FA_sen", split_sen[[2]])
+assign("PC_sen", split_sen[[3]])
+assign("PN_sen", split_sen[[4]])
+
+#Dfms para el FA
+#Diputados
+dfm_fa_dip <- quanteda::dfm(quanteda::tokens(FA_dip$speech,
+                                         remove_punct = TRUE,
+                                         remove_numbers = TRUE),
+                        tolower=TRUE,
+                        verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),stoppers_dip,tolower(FA_dip$legislator)),min_nchar=3)%>%
+  quanteda::dfm_trim(min_termfreq = 4)%>% 
+  quanteda::dfm_group(groups = FA_dip$party_affiliation)
+#Senadores
+dfm_fa_sen <- quanteda::dfm(quanteda::tokens(FA_sen$speech,
+                                         remove_punct = TRUE,
+                                         remove_numbers = TRUE),
+                        tolower=TRUE,
+                        verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),stoppers_sen,tolower(FA_sen$legislator)),min_nchar=3)%>%
+  quanteda::dfm_trim(min_termfreq = 4)%>% 
+  quanteda::dfm_group(groups = FA_sen$party_affiliation)
+
+#Dfms para el PN
+#Diputados
+dfm_pn_dip <- quanteda::dfm(quanteda::tokens(PN_dip$speech,
+                                         remove_punct = TRUE,
+                                         remove_numbers = TRUE),
+                        tolower=TRUE,
+                        verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),stoppers_dip,tolower(PN_dip$legislator)),min_nchar=3)%>%
+  quanteda::dfm_trim(min_termfreq = 4)%>% 
+  quanteda::dfm_group(groups = PN_dip$party_affiliation)
+#Senadores
+dfm_pn_sen <- quanteda::dfm(quanteda::tokens(PN_sen$speech,
+                                         remove_punct = TRUE,
+                                         remove_numbers = TRUE),
+                        tolower=TRUE,
+                        verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),stoppers_sen,tolower(PN_sen$legislator)),min_nchar=3)%>%
+  quanteda::dfm_trim(min_termfreq = 4)%>% 
+  quanteda::dfm_group(groups = PN_sen$party_affiliation)
+
+#Dfms para el PC
+#Diputados
+dfm_pc_dip <- quanteda::dfm(quanteda::tokens(PC_dip$speech,
+                                         remove_punct = TRUE,
+                                         remove_numbers = TRUE),
+                        tolower=TRUE,
+                        verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),stoppers_dip,tolower(PC_dip$legislator)),min_nchar=3)%>%
+  quanteda::dfm_trim(min_termfreq = 4)%>% 
+  quanteda::dfm_group(groups = PC_dip$party_affiliation)
+#Senadores
+dfm_pc_sen <- quanteda::dfm(quanteda::tokens(PC_sen$speech,
+                                         remove_punct = TRUE,
+                                         remove_numbers = TRUE),
+                        tolower=TRUE,
+                        verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),stoppers_sen,tolower(PC_sen$legislator)),min_nchar=3)%>%
+  quanteda::dfm_trim(min_termfreq = 4)%>% 
+  quanteda::dfm_group(groups = PC_sen$party_affiliation)
+
+#Dfms para CA
+#Diputados
+dfm_ca_dip <- quanteda::dfm(quanteda::tokens(CA_dip$speech,
+                                         remove_punct = TRUE,
+                                         remove_numbers = TRUE),
+                        tolower=TRUE,
+                        verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),stoppers_dip,tolower(CA_dip$legislator)),min_nchar=3)%>%
+  quanteda::dfm_trim(min_termfreq = 4)%>% 
+  quanteda::dfm_group(groups = CA_dip$party_affiliation)
+#Senadores
+dfm_ca_sen <- quanteda::dfm(quanteda::tokens(CA_sen$speech,
+                                         remove_punct = TRUE,
+                                         remove_numbers = TRUE),
+                        tolower=TRUE,
+                        verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),stoppers_sen,tolower(CA_sen$legislator)),min_nchar=3)%>%
+  quanteda::dfm_trim(min_termfreq = 4)%>% 
+  quanteda::dfm_group(groups = CA_sen$party_affiliation)
+
+##Comenzar a crear grafico para cada partido
+#Data para el FA
+topwords_fa_dip = data.frame(topfeatures(dfm_fa_dip,10))
+topwords_fa_dip$palabra = rownames(topwords_fa_dip)
+colnames(topwords_fa_dip)[1] <- "frecuencia"
+
+topwords_fa_sen = data.frame(topfeatures(dfm_fa_sen,10))
+topwords_fa_sen$palabra = rownames(topwords_fa_sen)
+colnames(topwords_fa_sen)[1] <- "frecuencia"
+#Data para el PN
+topwords_pn_dip = data.frame(topfeatures(dfm_pn_dip,10))
+topwords_pn_dip$palabra = rownames(topwords_pn_dip)
+colnames(topwords_pn_dip)[1] <- "frecuencia"
+
+topwords_pn_sen = data.frame(topfeatures(dfm_pn_sen,10))
+topwords_pn_sen$palabra = rownames(topwords_pn_sen)
+colnames(topwords_pn_sen)[1] <- "frecuencia"
+#Data para el PC
+topwords_pc_dip = data.frame(topfeatures(dfm_pc_dip,10))
+topwords_pc_dip$palabra = rownames(topwords_pc_dip)
+colnames(topwords_pc_dip)[1] <- "frecuencia"
+
+topwords_pc_sen = data.frame(topfeatures(dfm_pc_sen,10))
+topwords_pc_sen$palabra = rownames(topwords_pc_sen)
+colnames(topwords_pc_sen)[1] <- "frecuencia"
+#Data para CA
+topwords_ca_dip = data.frame(topfeatures(dfm_ca_dip,10))
+topwords_ca_dip$palabra = rownames(topwords_ca_dip)
+colnames(topwords_ca_dip)[1] <- "frecuencia"
+
+topwords_ca_sen = data.frame(topfeatures(dfm_ca_sen,10))
+topwords_ca_sen$palabra = rownames(topwords_ca_sen)
+colnames(topwords_ca_sen)[1] <- "frecuencia"
+
+#Grafico para el FA
+plot_fa_dip <- ggplot(topwords_fa_dip, aes(x = reorder(palabra, frecuencia), y = frecuencia, fill = palabra)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("FA") +
+  ylab("Frecuencia de aparición") +
+  xlab("") +
+  theme(axis.title.x = element_text(size = 8))+
+  scale_fill_manual(values = rep("#1B9E77", length(topwords_fa_dip$palabra)))
+plot_fa_sen <- ggplot(topwords_fa_sen, aes(x = reorder(palabra, frecuencia), y = frecuencia, fill = palabra)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("FA") +
+  ylab("Frecuencia de aparición") +
+  xlab("") +
+  theme(axis.title.x = element_text(size = 8))+
+  scale_fill_manual(values = rep("#1B9E77", length(topwords_fa_sen$palabra)))
+
+#Grafico para el PN
+plot_pn_dip <- ggplot(topwords_pn_dip, aes(x = reorder(palabra, frecuencia), y = frecuencia, fill = palabra)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("PN") +
+  ylab("Frecuencia de aparición") +
+  xlab("") +
+  theme(axis.title.x = element_text(size = 8))+
+  scale_fill_manual(values = rep("#7570B3", length(topwords_pn_dip$palabra)))
+plot_pn_sen <- ggplot(topwords_pn_sen, aes(x = reorder(palabra, frecuencia), y = frecuencia, fill = palabra)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("PN") +
+  ylab("Frecuencia de aparición") +
+  xlab("") +
+  theme(axis.title.x = element_text(size = 8))+
+  scale_fill_manual(values = rep("#7570B3", length(topwords_pn_sen$palabra)))
+
+#Grafico para el PC
+plot_pc_dip <- ggplot(topwords_pc_dip, aes(x = reorder(palabra, frecuencia), y = frecuencia, fill = palabra)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("PC") +
+  ylab("Frecuencia de aparición") +
+  xlab("") +
+  theme(axis.title.x = element_text(size = 8))+
+  scale_fill_manual(values = rep("#E7298A", length(topwords_pc_dip$palabra)))
+plot_pc_sen <- ggplot(topwords_pc_sen, aes(x = reorder(palabra, frecuencia), y = frecuencia, fill = palabra)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("PC") +
+  ylab("Frecuencia de aparición") +
+  xlab("") +
+  theme(axis.title.x = element_text(size = 8))+
+  scale_fill_manual(values = rep("#E7298A", length(topwords_pc_sen$palabra)))
+
+#Grafico para CA
+plot_ca_dip <- ggplot(topwords_ca_dip, aes(x = reorder(palabra, frecuencia), y = frecuencia, fill = palabra)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("CA") +
+  ylab("Frecuencia de aparición") +
+  xlab("") +
+  theme(axis.title.x = element_text(size = 8))+
+  scale_fill_manual(values = rep("#D95F02", length(topwords_ca_dip$palabra)))
+plot_ca_sen <- ggplot(topwords_ca_sen, aes(x = reorder(palabra, frecuencia), y = frecuencia, fill = palabra)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("CA") +
+  ylab("Frecuencia de aparición") +
+  xlab("") +
+  theme(axis.title.x = element_text(size = 8))+
+  scale_fill_manual(values = rep("#D95F02", length(topwords_ca_sen$palabra)))
+```
+
+```{r FREQUENCY GRAPH_DIP, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+#Grafico frecuencia diputados
+plot1 <- ggarrange(plot_fa_dip, plot_ca_dip, plot_pc_dip, plot_pn_dip, ncol = 2, nrow = 2)
+plot1 <- ggdraw(plot1) +  
+  theme(plot.margin = margin(t = 20, b = 0, l = 5, r = 5, unit = "pt")) + 
+  draw_label("Gráfico 3. Palabras más frecuentes (Diputados)", size = 10, fontface = "italic", hjust = 0.5, vjust = -21.5)
+plot1
+```
+
+\vspace{0.2cm}
+
+```{r FREQUENCY GRAPH_SEN, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+#Grafico frecuencia senadores
+plot2 <- ggarrange(plot_fa_sen, plot_ca_sen, plot_pc_sen, plot_pn_sen, ncol = 2, nrow = 2)
+plot2 <- ggdraw(plot2) +
+  theme(plot.margin = margin(t = 20, b = 0, l = 5, r = 5, unit = "pt")) + 
+  draw_label("Gráfico 4. Palabras más frecuentes (Senadores)", size = 10, fontface = "italic", hjust = 0.5, vjust = -21.5)
+plot2
+```
+
+## 3. Correlación de palabras y redes de co-ocurrencia
+
+A continuación podemos ver algunas de las palabras que mantienen un fuerte vínculo de correlación estadística tanto a nivel del Senado como de la Cámara de Diputados. El paquete quanteda de R ofrece un conjunto de herramientas para analizar la correlación entre los términos de un texto, lo que implica calcular una matriz de co-ocurrencia de palabras que mida la frecuencia de la aparición simultánea de pares de palabras en un texto. En este caso, estamos tomando en cuenta las intervenciones (en cada cámara) en su conjunto, y no estamos dividiendo los resultados por partido político.
+
+En el caso de la Cámara de Representantes podemos ver que la palabra "prioridad", fuertemente asociada en numerosas intervenciones a las decisiones sobre el uso del suelo, aparece correlacionada con la palabra "campo". A su vez, la palabra "beneficios" se vincula con la madera y la soja (siendo dos cultivos extendidos y de fuerte impacto en el suelo), "productores" se asocia con la celulosa y con la empresa UPM, "subsidios" (palabra que despierta defensas desde los partidos fundacionales (PN y PC) y cuestionamientos desde CA y FA) se vincula claramente con palabras como "forestado" y "pasteras". Además, se puede observar la vinculación entre "ambiente" y "competencia" o "facultad" (que en este caso refiere a la Universidad). Todos estos vínculos superan el 90% de correlación. En el caso de la Cámara de Senadores, podemos observar vinculaciones similares e incluso quizás más significativas. Es el caso de las palabras "distribución" y "despoblamiento", vinculadas al máximo nivel con la palabra "propiedad". Cabe destacar nuevamente en relación a "despoblamiento" que los legisladores de CA suelen atribuir a la industria forestal el despoblamiento del interior y el cierre de otro tipo de emprendimientos prodctivos (Amorín, 2022), en tanto . Por otro lado, la palabra "ambiental" se vincula con "inversiones" y "regulación", y aparece un vínculo entre "agricultura" y "lechera", siendo esta última palabra referente a una industria que se concibe como crecientemente reemplazada por iniciativas forestales.
+
+No obstante, para complementar este análisis es necesario observar las diferencias en la vinculación de las palabras utilizadas entre los diferentes partidos. Por esta razón, el posterior gráfico muestra las redes de co-ocurrencia de las palabras, separadas por partido. Esto nos permitirá visualizar tanto cuáles son las palabras que se vinculan como algunos de los nodos temáticos más evidentes.
+
+```{r ASSOCIATION PREPARATIONS, echo=FALSE, include=FALSE}
+###################### ASOCIACION DE PALABRAS
+#Asociación de palabras para todos los partidos: prioridad
+pal_prioridad <- quanteda.textstats::textstat_simil(dip_dfm,selection = "prioridad", method = "correlation", margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(15)
+pal_prioridad <- pal_prioridad %>% head(6)
+#beneficios
+pal_beneficios <- quanteda.textstats::textstat_simil(dip_dfm,selection = "beneficios", method = "correlation", margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(15)
+pal_beneficios <- pal_beneficios %>% head(6)
+#ambiente
+pal_ambiente <- quanteda.textstats::textstat_simil(dip_dfm,selection = "ambiente", method = "correlation", margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(15)
+pal_ambiente <- pal_ambiente %>% head(6)
+#subsidios
+pal_subsidios <- quanteda.textstats::textstat_simil(dip_dfm,selection = "subsidios", method = "correlation", margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(15)
+pal_subsidios <- pal_subsidios %>% head(6)
+#productores
+pal_productores <- quanteda.textstats::textstat_simil(dip_dfm,selection = "productores", method = "correlation", margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(15)
+pal_productores <- pal_productores %>% head(6)
+#Senadores
+#desarrollo
+pal_desarrollo <- quanteda.textstats::textstat_simil(sen_dfm,selection = "desarrollo", method = "correlation", margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(15)
+pal_desarrollo <- pal_desarrollo %>% head(6)
+#agricultura
+pal_agricultura <- quanteda.textstats::textstat_simil(sen_dfm,selection = "agricultura", method = "correlation", margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(15)
+pal_agricultura <- pal_agricultura %>% head(6)
+#trabajo
+pal_trabajo <- quanteda.textstats::textstat_simil(sen_dfm,selection = "trabajo", method = "correlation", margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(15)
+pal_trabajo <- pal_trabajo %>% head(6)
+#propiedad
+pal_propiedad <- quanteda.textstats::textstat_simil(sen_dfm,selection = "propiedad", method = "correlation", margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(15)
+pal_propiedad <- pal_propiedad %>% head(6)
+#ambiental
+pal_ambiental <- quanteda.textstats::textstat_simil(sen_dfm,selection = "ambiental", method = "correlation", margin = "features")%>%
+  as.data.frame()%>%
+  dplyr::arrange(-correlation)%>%
+  dplyr::top_n(15)
+pal_ambiental <- pal_ambiental %>% head(6)
+
+#Creamos df combinado
+pal_combined_dip <- bind_rows(pal_prioridad, pal_beneficios, pal_ambiente, pal_subsidios, pal_productores)
+pal_combined_sen <- bind_rows(pal_desarrollo, pal_agricultura, pal_trabajo, pal_propiedad, pal_ambiental)
+rm(pal_prioridad, pal_beneficios, pal_ambiente, pal_subsidios, pal_productores, pal_desarrollo, pal_agricultura, pal_trabajo, pal_propiedad, pal_ambiental)
+
+#Triming y ajustes manuales previo al plot
+pal_numb_dip <- pal_combined_dip %>% filter(row_number() %in% c(1, 7, 10, 15, 17, 19, 20, 25, 27))
+colnames(pal_numb_dip)[2] <- "Palabra"
+pal_numb_dip <- pal_numb_dip %>%
+  mutate(value = ifelse(Palabra == "prioridad", 1,
+                    ifelse(Palabra == "beneficios", 2,
+                        ifelse(Palabra == "productores", 3,
+                             ifelse(Palabra == "subsidios", 4,
+                                 ifelse(Palabra == "ambiente", 5, NA))))))
+pal_numb_dip$correlation <- round(pal_numb_dip$correlation, 3)
+#Senadores
+pal_numb_sen <- pal_combined_sen %>% filter(row_number() %in% c(7, 10, 18, 20, 23, 27, 29))
+colnames(pal_numb_sen)[2] <- "Palabra"
+pal_numb_sen <- pal_numb_sen %>%
+  mutate(value = ifelse(Palabra == "trabajo", 1,
+                        ifelse(Palabra == "agricultura", 2,
+                               ifelse(Palabra == "ambiental", 3,
+                                      ifelse(Palabra == "propiedad", 4, NA)))))
+pal_numb_sen$correlation <- round(pal_numb_sen$correlation, 3)
+```
+
+```{r ASSOCIATION GRAPH, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+#Creamos gráfico de asociación de palabras
+asocolors <- c("#A79EDB", "#6C9AC0", "#D9A340", "#BDBB73", "#D9B6B6")
+asoc_dip <- ggplot(pal_numb_dip, aes(x = reorder(feature1, value), y = correlation, fill = Palabra))+
+  geom_bar(stat = "identity", position = "dodge")+
+  geom_text(aes(label = correlation), vjust = -0.5, size = 3)+
+  coord_cartesian(ylim = c(0.890, 1.01))+
+  xlab("Palabras correlacionadas (Senado)")+
+  ylab("Nivel de Correlación")+
+  theme(axis.text.x = element_text(size = 7))+
+  theme(axis.title.x = element_text(size = 8))+
+  theme(axis.title.y = element_text(size = 8))+
+  ggtitle("Gráfico 5. Palabras correlacionadas en las intervenciones")+
+  scale_fill_manual(values = asocolors)
+asoc_sen <- ggplot(pal_numb_sen, aes(x = reorder(feature1, value), y = correlation, fill = Palabra))+
+  geom_bar(stat = "identity", position = "dodge")+
+  geom_text(aes(label = correlation), vjust = -0.5, size = 3)+
+  coord_cartesian(ylim = c(0.890, 1.01))+
+  xlab("Palabras correlacionadas (Diputados)")+
+  ylab("Nivel de Correlación")+
+  theme(axis.text.x = element_text(size = 7))+
+  theme(axis.title.x = element_text(size = 8))+
+  theme(axis.title.y = element_text(size = 8))+
+  scale_fill_manual(values = asocolors)
+cowplot::plot_grid(asoc_dip, asoc_sen, nrow=2)
+```
+
+```{r KWIC PREPARATIONS, echo=FALSE, include=FALSE}
+###################### CONTEXTO DE PALABRAS: KWIC
+#Frente Amplio: urgente
+kwic_fa_dip <- quanteda::kwic(quanteda::tokens(FA_dip$speech,
+                                           remove_punct = TRUE,
+                                           remove_numbers = TRUE), 
+                          pattern = quanteda::phrase(c("urgente")),
+                          window = 15)
+#Frente Amplio: acuerdo
+kwic_fa2_dip <- quanteda::kwic(quanteda::tokens(FA_dip$speech,
+                                            remove_punct = TRUE,
+                                            remove_numbers = TRUE), 
+                           pattern = quanteda::phrase(c("acuerdo")),
+                           window = 15)
+#Partido Nacional: comisión
+kwic_pn_dip <- quanteda::kwic(quanteda::tokens(PN_dip$speech,
+                                           remove_punct = TRUE,
+                                           remove_numbers = TRUE), 
+                          pattern = quanteda::phrase(c("comisión")),
+                          window = 15)
+#Partido Colorado: éxito
+kwic_pc_dip <- quanteda::kwic(quanteda::tokens(PC_dip$speech,
+                                           remove_punct = TRUE,
+                                           remove_numbers = TRUE), 
+                          pattern = quanteda::phrase(c("éxito")),
+                          window = 15)
+#Cabildo Abierto: celulosa
+kwic_ca_dip <- quanteda::kwic(quanteda::tokens(CA_dip$speech,
+                                           remove_punct = TRUE,
+                                           remove_numbers = TRUE), 
+                          pattern = quanteda::phrase(c("celulosa")),
+                          window = 15)
+#Cabildo Abierto: upm
+kwic_ca2_dip <- quanteda::kwic(quanteda::tokens(CA_dip$speech,
+                                            remove_punct = TRUE,
+                                            remove_numbers = TRUE), 
+                           pattern = quanteda::phrase(c("upm")),
+                           window = 15)
+#Cabildo Abierto: coalición
+kwic_ca3_dip <- quanteda::kwic(quanteda::tokens(CA_dip$speech,
+                                            remove_punct = TRUE,
+                                            remove_numbers = TRUE), 
+                           pattern = quanteda::phrase(c("coalición")),
+                           window = 15)
+
+#Data frame general con contexto de palabras clave:
+kwic_combined_dip <- bind_rows(kwic_fa_dip, kwic_fa2_dip, kwic_pn_dip, kwic_pc_dip, kwic_ca_dip, kwic_ca2_dip, kwic_ca3_dip)
+rm(kwic_fa_dip, kwic_fa2_dip, kwic_pn_dip, kwic_pc_dip, kwic_ca_dip, kwic_ca2_dip, kwic_ca3_dip)
+
+#Senadores
+#Frente Amplio: ambiental
+kwic_fa_sen <- quanteda::kwic(quanteda::tokens(FA_sen$speech,
+                                           remove_punct = TRUE,
+                                           remove_numbers = TRUE), 
+                          pattern = quanteda::phrase(c("ambiental")),
+                          window = 15)
+#Frente Amplio: desarrollo
+kwic_fa2_sen <- quanteda::kwic(quanteda::tokens(FA_sen$speech,
+                                            remove_punct = TRUE,
+                                            remove_numbers = TRUE), 
+                           pattern = quanteda::phrase(c("desarrollo")),
+                           window = 15)
+#Partido Nacional: coalición
+kwic_pn_sen <- quanteda::kwic(quanteda::tokens(PN_sen$speech,
+                                           remove_punct = TRUE,
+                                           remove_numbers = TRUE), 
+                          pattern = quanteda::phrase(c("coalición")),
+                          window = 15)
+#Partido Colorado: productores
+kwic_pc_sen <- quanteda::kwic(quanteda::tokens(PC_sen$speech,
+                                           remove_punct = TRUE,
+                                           remove_numbers = TRUE), 
+                          pattern = quanteda::phrase(c("productores")),
+                          window = 15)
+#Cabildo Abierto: agricultura
+kwic_ca_sen <- quanteda::kwic(quanteda::tokens(CA_sen$speech,
+                                           remove_punct = TRUE,
+                                           remove_numbers = TRUE), 
+                          pattern = quanteda::phrase(c("agricultura")),
+                          window = 15)
+#Cabildo Abierto: celulosico
+kwic_ca2_sen <- quanteda::kwic(quanteda::tokens(CA_sen$speech,
+                                            remove_punct = TRUE,
+                                            remove_numbers = TRUE), 
+                           pattern = quanteda::phrase(c("celulósico")),
+                           window = 15)
+#Cabildo Abierto: eucaliptos
+kwic_ca3_sen <- quanteda::kwic(quanteda::tokens(CA_sen$speech,
+                                            remove_punct = TRUE,
+                                            remove_numbers = TRUE), 
+                           pattern = quanteda::phrase(c("eucaliptos")),
+                           window = 15)
+
+#Data frame general con contexto de palabras clave:
+kwic_combined_sen <- bind_rows(kwic_fa_sen, kwic_fa2_sen, kwic_pn_sen, kwic_pc_sen, kwic_ca_sen, kwic_ca2_sen, kwic_ca3_sen)
+rm(kwic_fa_sen, kwic_fa2_sen, kwic_pn_sen, kwic_pc_sen, kwic_ca_sen, kwic_ca2_sen, kwic_ca3_sen)
+```
+
+```{r NETWORK PREPARATIONS, echo=FALSE, include=FALSE}
+###################### REDES DE CO-OCURRENCIA
+#Diputados
+##Redes de co-ocurrencia (FA - Diputados)
+fcm_fa_dip <- dfm_fa_dip %>%
+  fcm(context = "document")
+feat <- names(topfeatures(fcm_fa_dip, 17))
+base_fcm_select <- fcm_select(fcm_fa_dip, pattern = feat, selection = "keep")
+size <- log(colSums(dfm_select(fcm_fa_dip, feat, selection = "keep")))
+set.seed(144)
+net_fa_dip <- quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, vertex_size = size / max(size) * 3,
+                                               edge_color="#1B9E77", vertex_labelsize = 3.5) + ggtitle("FA")
+##Redes de co-ocurrencia (PN - Diputados)
+fcm_pn_dip  <- dfm_pn_dip %>%
+  fcm(context = "document")
+feat <- names(topfeatures(fcm_pn_dip, 17))
+base_fcm_select <- fcm_select(fcm_pn_dip, pattern = feat, selection = "keep")
+size <- log(colSums(dfm_select(fcm_pn_dip, feat, selection = "keep")))
+set.seed(144)
+net_pn_dip <- quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, vertex_size = size / max(size) * 3,
+                                               edge_color="#7570B3", vertex_labelsize = 3.5) + ggtitle("PN")
+##Redes de co-ocurrencia (PC - Diputados)
+fcm_pc_dip  <- dfm_pc_dip %>%
+  fcm(context = "document")
+feat <- names(topfeatures(fcm_pc_dip, 17))
+base_fcm_select <- fcm_select(fcm_pc_dip, pattern = feat, selection = "keep")
+size <- log(colSums(dfm_select(fcm_pc_dip, feat, selection = "keep")))
+set.seed(144)
+net_pc_dip <- quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, vertex_size = size / max(size) * 3,
+                                               edge_color="#E7298A", vertex_labelsize = 3.5) + ggtitle("PC") 
+##Redes de co-ocurrencia (CA - Diputados)
+fcm_ca_dip <- dfm_ca_dip %>%
+  fcm(context = "document")
+feat <- names(topfeatures(fcm_ca_dip, 17))
+base_fcm_select <- fcm_select(fcm_ca_dip, pattern = feat, selection = "keep")
+size <- log(colSums(dfm_select(fcm_ca_dip, feat, selection = "keep")))
+set.seed(144)
+net_ca_dip <- quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, vertex_size = size / max(size) * 3,
+                                               edge_color="#D95F02", vertex_labelsize = 3.5) + ggtitle("CA")
+
+#Senadores
+##Redes de co-ocurrencia (FA - Senadores)
+fcm_fa_sen <- dfm_fa_sen %>%
+  fcm(context = "document")
+feat <- names(topfeatures(fcm_fa_sen, 17))
+base_fcm_select <- fcm_select(fcm_fa_sen, pattern = feat, selection = "keep")
+size <- log(colSums(dfm_select(fcm_fa_sen, feat, selection = "keep")))
+set.seed(144)
+net_fa_sen <- quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, vertex_size = size / max(size) * 3,
+                                               edge_color="#1B9E77", vertex_labelsize = 3.5) + ggtitle("FA")
+##Redes de co-ocurrencia (PN - Senadores)
+fcm_pn_sen <- dfm_pn_sen %>%
+  fcm(context = "document")
+feat <- names(topfeatures(fcm_pn_sen, 17))
+base_fcm_select <- fcm_select(fcm_pn_sen, pattern = feat, selection = "keep")
+size <- log(colSums(dfm_select(fcm_pn_sen, feat, selection = "keep")))
+set.seed(144)
+net_pn_sen <- quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, vertex_size = size / max(size) * 3,
+                                               edge_color="#7570B3", vertex_labelsize = 3.5) + ggtitle("PN")
+##Redes de co-ocurrencia (PC - Senadores)
+fcm_pc_sen <- dfm_pc_sen %>%
+  fcm(context = "document")
+feat <- names(topfeatures(fcm_pc_sen, 17))
+base_fcm_select <- fcm_select(fcm_pc_sen, pattern = feat, selection = "keep")
+size <- log(colSums(dfm_select(fcm_pc_sen, feat, selection = "keep")))
+set.seed(144)
+net_pc_sen <- quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, vertex_size = size / max(size) * 3,
+                                               edge_color="#E7298A", vertex_labelsize = 3.5) + ggtitle("PC")
+##Redes de co-ocurrencia (CA - Senadores)
+fcm_ca_sen <- dfm_ca_sen %>%
+  fcm(context = "document")
+feat <- names(topfeatures(fcm_ca_sen, 17))
+base_fcm_select <- fcm_select(fcm_ca_sen, pattern = feat, selection = "keep")
+size <- log(colSums(dfm_select(fcm_ca_sen, feat, selection = "keep")))
+set.seed(144)
+net_ca_sen <- quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, vertex_size = size / max(size) * 3,
+                                               edge_color="#D95F02", vertex_labelsize = 3.5) + ggtitle("CA")
+
+```
+
+En el Gráfico 6 podemos ver la red de co-ocurrencia de términos en las intervenciones legislativas en la Cámara de Dipuados, divididas por partido. Esto nos permite encontrar numerosas similitudes y diferencias en el uso del lenguaje entre las diferencias fuerzas políticas, reforzando algunas de las ideas previamente repasadas al momento de observar las nubes de palabras.
+
+En el caso del FA, volvemos a notar un fuerte componente ambiental en el discurso, ya que se observa una vinculación sistemática entre términos como "prioridad", "hectáreas" y la palabra "ambiente". Asimismo, surge nuevamente el término "academia" vinculado a los anteriores, así como algunas palabras relativas a la situación y los organismos políticos como "ministerio" o "acuerdo".
+
+En el caso de Cabildo Abierto la predominancia de palabras relativas a la gestión del medio ambiente es aún más clara. Términos como los mencionados para el FA aparecen y se añaden a otros como relacionados estrictamente con la forestación como "UPM" o "celulosa". Esto demuestra una vez más el ánimo de CA de enfrentarse a este sector de la industria y, en cierta forma, la cautela del FA en omitir el desarrollo del tema debido a sus antecedentes como ávido promotor de la industria. Otro importante asunto para CA aparece relacionado con el marco jurídico de la actividad forestal, apareciendo un vínculo entre la palabra "hectáreas" y términos como "subsidios" y "excenciones". En adición a esto, surgen también varios términos relativos a la situación y las consecuencias políticas, destácandose la aparición de palabras como "coalición", "partidos", "ministro" y "gobierno". Cabe destacar que en el caso de ambos partidos, en el centro de la red de co-ocurrencia se destacan las palabras "hectáreas" y "prioridad", que nuclean gran parte de los vínculos con otros términos.
+
+En el caso de los partidos fundacionales, varios términos relativos al medio ambiente y al marco jurídico de la forestación desaparecen de la red. Por el contrario, las redes de co-ocurrencia del PC y el PN muestran un fuerte énfasis en asuntos relativos a la situación política y, sobre todo en el caso del PC, a remarcar beneficios del sector forestal. En este sentido, el núcleo de la red del PC muestra las palabras "éxito" y "producción", e incluye vinculaciones con términos como "libertad", "derechos", "prohibición", "limitación", "opinión". Por su parte, la red del PN se muestra casi totalmente formada por términos de índole política, evidenciándose una fuerte relación entre palabras como "política", "ministro", "mayoría" o "minoría", acompañadas por refencias a asuntos económicos, siendo protagonistas las palabras "millones" y "producción".
+
+```{r NETWORK GRAPH_DIP, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+net_dip <- cowplot::plot_grid(net_fa_dip + ggtitle("                               FA"),
+                              net_ca_dip + ggtitle("                               CA"),
+                              net_pc_dip + ggtitle("                               PC"),
+                              net_pn_dip + ggtitle("                               PN"),
+                              nrow = 2, ncol = 2)
+net_dip <- ggdraw(net_dip) +
+  theme(plot.margin = margin(t = 20, b = 5, l = 5, r = 5, unit = "pt")) + 
+  draw_label("Gráfico 6. Redes de co-ocurrencia (Diputados)", size = 10, fontface = "italic", hjust = 0.5, vjust = -21)
+net_dip
+```
+
+\newpage
+En el Gráfico 7 observamos las redes de co-ocurrencia pero considerando las intervenciones en la Cámara de Senadores. Fácilmente nos damos cuenta que la tendencia se mantiene. La red del Frente Amplio incluye vínculos entre palabras como "prioridad", "ambiental", "suelo" o "carbono", y el núcleo de gran parte de los vínculos entre los términos es la palabra "hectáreas", repitiendo lo sucedido en la otra cámara.
+
+En el caso de Cabildo Abierto, ubicado en la parte superior derecha del gráfico, también se mantiene el núcleo relativo a "hectáreas". No obstante, se evidencian algunas diferencias: aunque no se deja de tocar el tema ambiental (siendo incluidas en la red palabras como "celulósico", "eucaliptos" o "suelos"), se hace claro un viraje hacia el lenguaje relativo a la producción. Esto comienza a delinear un patrón que se confirma en diversas etapas del análisis. Este refiere a que CA parece promover el proyecto de Ley Forestal en función de dos ejes: los productores (y las consecuencias negativas de la forestación para otro tipo de emprendimientos productivos más tradicionales) y el medio ambiente (considerando las consecuencias negativas de la forestación). No obstante, el primer eje se manifiesta con mayor claridad en la Cámara de Senadores, mientras que el segundo eje es evidenciable en mayor medida en la Cámara de Diputados, siendo diputados como Menéndez o Lust algunos de los legisladores más vinculados al mismo.
+
+Cuando observamos las redes de los partidos fundacionales, se mantiene el énfasis en asuntos relativos a la situación política, y se hace aún más claro el realce de los beneficios económicos que genera el sector forestal. En cuanto al PC, la red aparece nucleada en términos como "empresas" y "trabajo", y aparecen otras referencias a la cuestión económica: "genera", "empleos", "crecer". Además, aparecen referencias al marco jurídico de la forestación, sobre todo debido a que se concibe que la Ley Forestal vino a cambiar las reglas (palabra que aparece en la red) del sector forestal. Por otro lado, la red del PN esta nucleada en el término "suelos", y buena parte de las palabras que aparecen siguen la misma línea descrita anteriormente. Cabe destacar la aparición de términos como "contrato", "plata" (relativos al rédito económico y al aspecto legal de la forestación), y la palabra "coalición", que es uno de los ejes de la discusión política relativa al proyecto de ley.
+
+```{r NETWORK GRAPH_SEN, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+net_sen <- cowplot::plot_grid(net_fa_sen + ggtitle("                               FA"),
+                              net_ca_sen + ggtitle("                               CA"),
+                              net_pc_sen + ggtitle("                               PC"),
+                              net_pn_sen + ggtitle("                               PN"),
+                              nrow = 2, ncol = 2)
+net_sen <- ggdraw(net_sen) +
+  theme(plot.margin = margin(t = 20, b = 5, l = 5, r = 5, unit = "pt")) + 
+  draw_label("Gráfico 7. Redes de co-ocurrencia (Senadores)", size = 10, fontface = "italic", hjust = 0.5, vjust = -21)
+net_sen
+```
+
+```{r DICTIONARY PREPARATIONS, echo=FALSE, include=FALSE}
+###################### USO DE DICCIONARIOS PROPIOS
+#Armo un diccionario según mi interés
+midic <- dictionary(list(produccion = c("agricult*", "agro*", "campo", "contrato", "crecer", "empresa*", "empleo*", "exenciones", "ganader*", "leche*", "pesca", "produc*", "propie*", "regla*", "rural", "subsidio*", "terreno*", "tierra*", "trabajo"),
+                         politica = c("bancada", "coalición", "comisión", "contrato", "decreto", "debate", "gobierno", "intereses", "mayoría", "minist*", "minoría", "partido", "poder", "polit*", "polít*", "constitución", "república", "libertad"),
+                         ambiente = c("agua", "ambient*", "atmósfera", "biodiversidad", "celulos*", "celulós*", "ecológ*", "ecología", "ecosistema", "eucalip*", "hidro*", "hídr*", "medioambient*", "nativ*", "natural*", "pastizal*", "pradera", "sostenible*", "sustentable*", "upm")))
+
+#Aplico el diccionario en mi dfm y saco el porcentaje
+#Para el FA
+midic_fa_dip <- dfm_lookup(dfm_fa_dip,dictionary=midic,nomatch="no_aparece")
+midic_fa_dip <- convert(midic_fa_dip, to = "data.frame") 
+midic_fa_dip$partido <- "Frente Amplio"
+
+midic_fa_sen <- dfm_lookup(dfm_fa_sen,dictionary=midic,nomatch="no_aparece")
+midic_fa_sen <- convert(midic_fa_sen, to = "data.frame") 
+midic_fa_sen$partido="Frente Amplio"
+#Para el PN
+midic_pn_dip <- dfm_lookup(dfm_pn_dip,dictionary=midic,nomatch="no_aparece")
+midic_pn_dip <- convert(midic_pn_dip, to = "data.frame") 
+midic_pn_dip$partido="Partido Nacional"
+
+midic_pn_sen <- dfm_lookup(dfm_pn_sen,dictionary=midic,nomatch="no_aparece")
+midic_pn_sen <- convert(midic_pn_sen, to = "data.frame") 
+midic_pn_sen$partido <- "Partido Nacional"
+#Para el PC
+midic_pc_dip <- dfm_lookup(dfm_pc_dip,dictionary=midic,nomatch="no_aparece")
+midic_pc_dip <- convert(midic_pc_dip, to = "data.frame") 
+midic_pc_dip$partido <- "Partido Colorado"
+
+midic_pc_sen <- dfm_lookup(dfm_pc_sen,dictionary=midic,nomatch="no_aparece")
+midic_pc_sen <- convert(midic_pc_sen, to = "data.frame") 
+midic_pc_sen$partido <- "Partido Colorado"
+#Para CA
+midic_ca_dip <- dfm_lookup(dfm_ca_dip,dictionary=midic,nomatch="no_aparece")
+midic_ca_dip <- convert(midic_ca_dip, to = "data.frame") 
+midic_ca_dip$partido <- "Cabildo Abierto"
+
+midic_ca_sen <- dfm_lookup(dfm_ca_sen,dictionary=midic,nomatch="no_aparece")
+midic_ca_sen <- convert(midic_ca_sen, to = "data.frame") 
+midic_ca_sen$partido <- "Cabildo Abierto"
+
+#Tabla de resultados
+midic_result_dip <- rbind(midic_fa_dip,midic_pn_dip,midic_pc_dip,midic_ca_dip)
+midic_result_dip$total <- midic_result_dip$produccion+midic_result_dip$politica+midic_result_dip$ambiente+midic_result_dip$no_aparece
+
+midic_result_sen <- rbind(midic_fa_sen,midic_pn_sen,midic_pc_sen,midic_ca_sen)
+midic_result_sen$total <- midic_result_sen$produccion+midic_result_sen$politica+midic_result_sen$ambiente+midic_result_sen$no_aparece
+
+rm(midic_fa_dip,midic_pn_dip,midic_pc_dip,midic_ca_dip,midic_fa_sen,midic_pn_sen,midic_pc_sen,midic_ca_sen)
+
+#Resultados con índice comparable
+dic_tabla_dip <- midic_result_dip  %>%
+  group_by(partido)%>%
+  summarise(produccion = sum(produccion), produccion_prop = ((sum(produccion)*100)/sum(total)), 
+            politica = sum(politica), politica_prop = ((sum(politica)*100)/sum(total)),
+            ambiente = sum(ambiente), ambiente_prop = ((sum(ambiente)*100)/sum(total)))
+
+dic_tabla_sen <- midic_result_sen  %>%
+  group_by(partido)%>%
+  summarise(produccion = sum(produccion), produccion_prop = ((sum(produccion)*100)/sum(total)), 
+            politica = sum(politica), politica_prop = ((sum(politica)*100)/sum(total)),
+            ambiente = sum(ambiente), ambiente_prop = ((sum(ambiente)*100)/sum(total)))
+
+#Preparar para graficar
+dic_tabla_dip <- dic_tabla_dip[, c("partido", "produccion_prop", "politica_prop", "ambiente_prop")]
+colnames(dic_tabla_dip)[1] <- "Partido"
+colnames(dic_tabla_dip)[2] <- "Producción"
+colnames(dic_tabla_dip)[3] <- "Política"
+colnames(dic_tabla_dip)[4] <- "Ambiente"
+df_long_dip <- melt(dic_tabla_dip, id.vars = "Partido", value.name = "value")
+df_long_dip$value2 <- round(df_long_dip$value, 1)
+colnames(df_long_dip)[2] <- "Asunto"
+
+dic_tabla_sen <- dic_tabla_sen[, c("partido", "produccion_prop", "politica_prop", "ambiente_prop")]
+colnames(dic_tabla_sen)[1] <- "Partido"
+colnames(dic_tabla_sen)[2] <- "Producción"
+colnames(dic_tabla_sen)[3] <- "Política"
+colnames(dic_tabla_sen)[4] <- "Ambiente"
+df_long_sen <- melt(dic_tabla_sen, id.vars = "Partido", value.name = "value")
+df_long_sen$value2 <- round(df_long_sen$value, 1)
+colnames(df_long_sen)[2] <- "Asunto"
+
+```
+
+## 4. Uso de diccionarios e identificación de emociones
+
+En la presente sección se trabajó con diccionarios construidos especialmente para el caso y se observó la frecuencia del uso de palabras contenidas en ese diccionario para los cuatro partidos. Esto implicó la creación de tres grupos de palabras, relacionadas con tres temáticas de singular importancia: la producción, la política, y el medio ambiente. Las palabras que pertenecen a cada grupo se expresan a continuación. _Producción_: "agricultor/agricultura", "agro", "campo", "crecer", "contrato", "empresa/s", "empleo/s", "exenciones", "ganadero/ganadería", "lechero/lechería", "pesca", "productor/productores/producción", "propiedad/propietario", "regla/s", "subsidio/s", "terreno" y "trabajo". _Política_: "bancada", "coalición", "comisión", "constitución", "contrato", "decreto", "debate", "gobierno", "intereses", "libertad", "mayoría", "ministerio/s", "ministro/s", "minoría", "partido", "poder", "política/s", "político/s", "politizar/politizado" y "república". _Ambiente_: "agua", "ambiente/ambiental/ambientales", "atmósfera", "biodiversidad", "celulosa", "celulósico/a", "ecológico/a", "ecología", "ecosistema", "eucalipto/s", "hidrológico/s", "hídrico/s", "medioambiente/medioambiental", "nativo/a", "natural/naturales/naturaleza", "pastizal/pastizales", "pradera", "sostenible", "sustentable" y "UPM".
+
+Al observar el Gráfico 8 en su parte relativa a la Cámara de Diputados obtenemos más evidencia de algunas de las nociones previamente mencionadas. En primer lugar, se observa la brecha entre CA-FA y PC-PN en cuanto al desarrollo del tema medioambiental, ya que el vocabulario ambiental es dos veces más frecuente en el FA que en el PC, y más de tres veces en CA respecto al PN. En segundo lugar, podemos ver que el PN es el partido más preocupado por desarrollar asuntos políticos en las intervenciones, aunque CA-FA obtienen guarismos cercanos. En tercer lugar, se observa un dato claro, la fuerte presencia de vocabulario relativo a la producción en las intervenciones de todos los partidos, pero sobre todo en las intervenciones de CA, en las cuáles una de cada cuatro palabras identificadas se relacionan con la producción o los productores (cabe señalar que se toman en cuenta aquellas palabras que pudieron ser identificadas y que no pertenecen a una lista de palabras rechazadas, visible en el código, que fue previamente construída). 
+
+```{r DICTIONARY GRAPH, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+#Graficar resultados de diccionario
+dic_dip <- ggplot(data = df_long_dip, aes(x = Partido, y = value, fill = Asunto))+
+  geom_col(position = "dodge")+
+  geom_text(aes(label = value2), position = position_dodge(width = 0.9), vjust = -0.25, size=2.5)+
+  ylab("% de palabras vinculadas")+
+  xlab(expression(italic("Cámara de Diputados"))) +
+  ylim(0,26) +
+  theme(axis.text.x = element_text(size = 8)) +
+  theme(axis.title.x = element_text(size = 8)) +
+  theme(axis.title.y = element_text(size = 8)) +
+  ggtitle("Gráfico 8. Vinculación con diccionarios generados para el caso")+
+  scale_fill_manual(values = asocolors)
+dic_sen <- ggplot(data = df_long_sen, aes(x = Partido, y = value, fill = Asunto))+
+  geom_col(position = "dodge")+
+  geom_text(aes(label = value2), position = position_dodge(width = 0.9), vjust = -0.25, size=2.5)+
+  ylab("% de palabras vinculadas")+
+  xlab(expression(italic("Cámara de Senadores"))) +
+  ylim(0,38) +
+  theme(axis.text.x = element_text(size = 8)) +
+  theme(axis.title.x = element_text(size = 8)) +
+  theme(axis.title.y = element_text(size = 8))+
+  scale_fill_manual(values = asocolors)
+grid.arrange(dic_dip, dic_sen, nrow = 2)
+```
+
+En el caso de la Cámara de Senadores, las tendencias siguen el mismo curso, a excepción de la disminución en la terminología relativa al medio ambiente en cuanto a CA. No obstante este punto, CA vuelve a mostrar su fuerte enfoque en la producción, el PN confirma su honda preocupación por discutir asuntos de índole política, y el FA muestra una predominancia frente a los demás partidos en lo relativo al uso de terminología relativa al medio ambiente. De hecho, este partido se dedica menos a discutir el asunto de la producción, y muestra en Cámara de Senadores una distribución bastante equilibrada entre los asuntos.
+
+```{r EMOTIONS PREPARATIONS, echo=FALSE, include=FALSE}
+###################### EMOCIONES MÉTODO SYUZHET
+sentiment_dip <- get_nrc_sentiment(dip$speech, language = "spanish")
+sentiment_dip$total <- sentiment_dip$negative+sentiment_dip$positive
+sentiment_dip$legislator <- dip$legislator
+sentiment_dip$party <- dip$party_affiliation
+
+sentiment_sen <- get_nrc_sentiment(sen$speech, language = "spanish")
+sentiment_sen$total <- sentiment_sen$negative+sentiment_sen$positive
+sentiment_sen$legislator <- sen$legislator
+sentiment_sen$party <- sen$party_affiliation
+
+#Limpiamos casos con pocas observaciones y mergeamos x legislador
+sentiment_dip <- subset(sentiment_dip, total >= 15)
+surnames_dip <- as.vector(sentiment_dip$legislator)
+
+sentiment_sen <- subset(sentiment_sen, total >= 15)
+surnames_sen <- as.vector(sentiment_sen$legislator)
+
+#Defino el índice de positividad
+sentiment_dip$positividad <- sentiment_dip$positive/sentiment_dip$total
+sentiment_dip$negatividad <- sentiment_dip$negative/sentiment_dip$total
+sentiment_dip$tristeza <- sentiment_dip$sadness/sentiment_dip$total
+
+sentiment_sen$positividad <- sentiment_sen$positive/sentiment_sen$total
+sentiment_sen$negatividad <- sentiment_sen$negative/sentiment_sen$total
+sentiment_sen$tristeza <- sentiment_sen$sadness/sentiment_sen$total
+
+#Calculo la media por partido
+sentiment2_dip <- sentiment_dip %>%
+  group_by(party) %>%
+  summarise_all(funs(mean))
+
+sentiment2_sen <- sentiment_sen %>%
+  group_by(party) %>%
+  summarise_all(funs(mean))
+
+#Ajuste
+colnames(sentiment2_dip)[1] <- "Partido"
+colnames(sentiment2_sen)[1] <- "Partido"
+
+##Grafico de positividad por partido
+syu_pos_dip <- ggplot(sentiment2_dip, aes(x=Partido, y=positividad, fill=Partido))+
+  geom_bar(position="dodge", stat="identity")+
+  geom_text(aes(label = round(positividad, 2)), vjust = -0.5, size = 3)+
+  coord_cartesian(ylim = c(0.50, 0.80))+
+  xlab("")+
+  ylab("Índice de positividad")+
+  theme(axis.title.y = element_text(size = 8))+
+  guides(fill = FALSE)+
+  scale_fill_manual(values = partycolors)
+
+syu_pos_sen <- ggplot(sentiment2_sen, aes(x=Partido, y=positividad, fill=Partido))+
+  geom_bar(position="dodge", stat="identity")+
+  geom_text(aes(label = round(positividad, 2)), vjust = -0.5, size = 3)+
+  coord_cartesian(ylim = c(0.50, 0.75))+
+  xlab("")+
+  ylab("Índice de positividad")+
+  theme(axis.title.y = element_text(size = 8))+
+  guides(fill = FALSE)+
+  scale_fill_manual(values = partycolors)
+
+##Cantidad promedio de expresiones de negatividad por partido
+syu_neg_dip <- ggplot(sentiment2_dip, aes(x=Partido, y=negative, fill=Partido))+
+  geom_bar(position="dodge", stat="identity")+
+  geom_text(aes(label = round(negative, 2)), vjust = -0.5, size = 3)+
+  coord_cartesian(ylim = c(8, 20))+
+  xlab("")+
+  ylab("Prom. de exp. negativas")+
+  theme(axis.title.y = element_text(size = 8))+
+  guides(fill = FALSE)+
+  scale_fill_manual(values = partycolors)
+
+syu_neg_sen <- ggplot(sentiment2_sen, aes(x=Partido, y=negative, fill=Partido))+
+  geom_bar(position="dodge", stat="identity")+
+  geom_text(aes(label = round(negative, 2)), vjust = -0.5, size = 3)+
+  coord_cartesian(ylim = c(10, 30))+
+  xlab("")+
+  ylab("Prom. de exp. negativas")+
+  theme(axis.title.y = element_text(size = 8))+
+  guides(fill = FALSE)+
+  scale_fill_manual(values = partycolors)
+
+##Cantidad promedio de expresiones de enojo por partido
+syu_eno_dip <- ggplot(sentiment2_dip, aes(x=Partido, y=anger, fill=Partido))+
+  geom_bar(position="dodge", stat="identity")+
+  geom_text(aes(label = round(anger, 2)), vjust = -0.5, size = 3)+
+  coord_cartesian(ylim = c(1, 6))+
+  xlab("")+
+  ylab("Prom. de exp. de enojo")+
+  theme(axis.title.y = element_text(size = 8))+
+  guides(fill = FALSE)+
+  scale_fill_manual(values = partycolors)
+
+syu_eno_sen <- ggplot(sentiment2_sen, aes(x=Partido, y=anger, fill=Partido))+
+  geom_bar(position="dodge", stat="identity")+
+  geom_text(aes(label = round(anger, 2)), vjust = -0.5, size = 3)+
+  coord_cartesian(ylim = c(3, 9))+
+  xlab("")+
+  ylab("Prom. de exp. de enojo")+
+  theme(axis.title.y = element_text(size = 8))+
+  guides(fill = FALSE)+
+  scale_fill_manual(values = partycolors)
+
+##Cantidad promedio de expresiones de tristeza por partido
+syu_sad_dip <- ggplot(sentiment2_dip, aes(x=Partido, y=sadness, fill=Partido))+
+  geom_bar(position="dodge", stat="identity")+
+  geom_text(aes(label = round(sadness, 2)), vjust = -0.5, size = 3)+
+  coord_cartesian(ylim = c(4, 10))+
+  xlab("")+
+  ylab("Prom. de exp. de tristeza")+
+  theme(axis.title.y = element_text(size = 8))+
+  guides(fill = FALSE)+
+  scale_fill_manual(values = partycolors)
+
+syu_sad_sen <- ggplot(sentiment2_sen, aes(x=Partido, y=sadness, fill=Partido))+
+  geom_bar(position="dodge", stat="identity")+
+  geom_text(aes(label = round(sadness, 2)), vjust = -0.5, size = 3)+
+  coord_cartesian(ylim = c(6, 18))+
+  xlab("")+
+  ylab("Prom. de exp. de tristeza")+
+  theme(axis.title.y = element_text(size = 8))+
+  guides(fill = FALSE)+
+  scale_fill_manual(values = partycolors)
+
+emotions_graph_dip <- grid.arrange(syu_pos_dip, syu_neg_dip, syu_eno_dip, syu_sad_dip, nrow = 2)
+emotions_graph_sen <- grid.arrange(syu_pos_sen, syu_neg_sen, syu_eno_sen, syu_sad_sen, nrow = 2)
+
+```
+
+La etapa siguiente del análisis, observable en los Gráficos 9 y 10, se basa en la identificación de emociones en los textos relevantes. La identificación de emociones puede ser útil para diversos fines, como el análisis de sentimientos, la clasificación de textos, el reconocimiento de emociones, el análisis de cambios emocionales a lo largo del tiempo y la mejora del procesamiento del lenguaje natural. En este caso, el análisis de sentimientos puede ayudar a determinar el sentimiento general de los legisladores y a identificar emociones como la ira, la alegría o la frustración en sus discursos.
+
+En este caso, esto se hace en R a través de la función _get_nrc_sentiment_. La función _get_nrc_sentiment_ es una herramienta que puede utilizarse para identificar las emociones presentes en un texto dado, y forma parte del paquete _Syuzhet_ en R, que se basa en el NRC Emotion Lexicon, una lista de palabras y sus asociaciones con ocho emociones básicas (ira, miedo, anticipación, confianza, sorpresa, tristeza, alegría y asco) y dos sentimientos (negativo y positivo).
+
+En Cámara de Diputados podemos ver que el PN lidera en el promedio (entre legisladores de una misma fuerza política) de expresiones negativas en las intervenciones parlamentarias, en el promedio de expresiones de tristeza, y en el promedio de expresiones de enojo. Sin embargo, al observar un índice simple de positividad, el PN surge como el partido más positivo. Se asume que esto se relaciona con la confianza de los legisladores nacionalistas y colorados en un futuro uso del veto presidencial (cabe destacar que el presidente que veta la ley pertenece al PN).
+
+Con respecto a la Cámara de Senadores, los resultados se ajustan aún más a lo esperable. El PN repite como líder en el promedio de expresiones negativas, en el promedio de expresiones de tristeza, y en el promedio de expresiones de enojo. En adición a esto, esta vez sí surge que el PN es el partido menos positivo. Se asume que la negatividad surge de la posición de debilidad en la que queda el PN en función del resquebrajamiento en la actitud coalicional de la CM.
+
+```{r EMOTIONS GRAPH_DIP, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+#Grafico diputados
+emotions_graph_dip <- ggdraw(emotions_graph_dip) +  
+  theme(plot.margin = margin(t = 45, b = 5, l = 5, r = 5, unit = "pt")) + 
+  draw_label("Gráfico 9. Identificación de emociones (Cámara de Diputados)", size = 10, fontface = "italic", hjust = 0.5, vjust = -21)
+emotions_graph_dip
+```
+
+```{r EMOTIONS GRAPH_SEN, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+#Grafico senadores
+emotions_graph_sen <- ggdraw(emotions_graph_sen) +  
+  theme(plot.margin = margin(t = 45, b = 5, l = 5, r = 5, unit = "pt")) + 
+  draw_label("Gráfico 10. Identificación de emociones (Cámara de Senadores)", size = 10, fontface = "italic", hjust = 0.5, vjust = -21)
+emotions_graph_sen
+```
+
+```{r EMOLEGISLADOR PREPARATIONS, echo=FALSE, include=FALSE}
+###################### ANALISIS DE SENTIMIENTO POR LEGISLADOR
+#Nuevo dfm (compilado)
+dip2 <- speech::speech_build(file = "C:/Users/nahur/OneDrive/Main/Maestría/Cursos/EP - R CUALI/main_final/diputados.pdf", quality = T, compile = T)
+sen2 <- speech::speech_build(file = "C:/Users/nahur/OneDrive/Main/Maestría/Cursos/EP - R CUALI/main_final/senadores.pdf", quality = T, compile = T)
+
+#Eliminamos intervenciones no relacionadas con la forestación
+count2 <- str_count(dip2$speech, "fore")
+count2 <- as.logical(count2)
+dip2 <- subset(dip2, count2)
+count2 <- str_count(sen2$speech, "fore")
+count2 <- as.logical(count2)
+sen2 <- subset(sen2, count2)
+
+#Aplicamos la funcion get_nrc_sentiment
+sentiment_list_dip <- list()
+for (i in 1:18) {sentimentbind <- get_nrc_sentiment(dip2$speech[i], language = "spanish")
+sentiment_list_dip[[i]] <- sentimentbind}
+
+sentiment_list_sen <- list()
+for (i in 1:16) {sentimentbind <- get_nrc_sentiment(sen2$speech[i], language = "spanish")
+sentiment_list_sen[[i]] <- sentimentbind}
+
+#Convertir la lista en data frame
+sentiment_df_dip <- do.call(rbind, sentiment_list_dip)
+sentiment_df_dip$names <- dip2$legislator
+sentiment_df_dip <- sentiment_df_dip %>%
+  transform(party_affiliation = case_when(
+    names == "MOLINELLI ROTUNDO" ~ "PC", names == "GOÑI REYES" ~ "PN", names == "FRATTI" ~ "FA", 
+    names == "MENENDEZ" ~ "CA", names == "LUST HITTA" ~ "CA", names == "MORENO" ~ "PC",
+    names == "BACIGALUPE" ~ "PN", names == "ORTIZ" ~ "PN", names == "PASQUET" ~ "PC",
+    names == "PERRONE CABRERA" ~ "CA", names == "FROS ALVAREZ" ~ "PN", names == "RODRIGUEZ" ~ "PN",
+    names == "SCHIPANI" ~ "PC", names == "LORENZO PARODI" ~ "PN", names == "COLMAN" ~ "CA",
+    names == "GERHARD" ~ "FA", names == "POSADA PAGLIOTTI" ~ "PI", names == "VEGA" ~ "PERI"))
+colnames(sentiment_df_dip)[12] <- "partido"
+vector_surnames_dip <- sub("^(\\w+).*", "\\1", sentiment_df_dip$names)
+sentiment_df_dip$names <- vector_surnames_dip
+
+sentiment_df_sen <- do.call(rbind, sentiment_list_sen)
+sentiment_df_sen$names <- sen2$legislator
+sentiment_df_sen <- sentiment_df_sen %>%
+  transform(party_affiliation = case_when(
+    names == "ANDRADE" ~ "FA", names == "BERGARA" ~ "FA", names == "DELLA VENTURA" ~ "FA", 
+    names == "MAHIA" ~ "FA", names == "RUBIO" ~ "FA", names == "LAZO" ~ "FA",
+    names == "SANCHEZ" ~ "FA", names == "BATLLE" ~ "PC", names == "CIANCIARULLO" ~ "PC",
+    names == "COUTINHO" ~ "PC", names == "BOTANA" ~ "PN", names == "DA SILVA" ~ "PN",
+    names == "GANDINI" ~ "PN", names == "STRANEO" ~ "PN", names == "MANINI RIOS" ~ "CA",
+    names == "DOMENECH" ~ "CA", names == "CAMY" ~ "PN", names == "NANE" ~ "FA",
+    names == "PENADES" ~ "PN", names == "DA SILVA" ~ "PN"))
+colnames(sentiment_df_sen)[12] <- "partido"
+
+#Removemos PI y PERI
+sentiment_df_dip <- subset(sentiment_df_dip, partido != "PI")
+sentiment_df_dip <- subset(sentiment_df_dip, partido != "PERI")
+
+#Creamos índice de positividad por legislador
+sentiment_df_dip$total <- sentiment_df_dip$negative+sentiment_df_dip$positive
+sentiment_df_dip$posindex <- sentiment_df_dip$positive/sentiment_df_dip$total
+sentiment_df_dip$posindex <- round(sentiment_df_dip$posindex, 2)
+sentiment_df_dip <- subset(sentiment_df_dip, total >= 30)
+
+sentiment_df_sen$total <- sentiment_df_sen$negative+sentiment_df_sen$positive
+sentiment_df_sen$posindex <- sentiment_df_sen$positive/sentiment_df_sen$total
+sentiment_df_sen$posindex <- round(sentiment_df_sen$posindex, 2)
+sentiment_df_sen <- subset(sentiment_df_sen, total >= 30)
+
+```
+
+Posteriormente, se utilizaron herramientas similares para analizar las intervenciones parlamentarias, esta vez separándolas por legislador y no sólo por partido (lo que puede observarse en el Gráfico 11 para la Cámara de Diputados y en el Gráfico 12 para la Cámara de Senadores). Esto nos permite visualizar las emociones identificadas de manera un poco más individualizada, lo que nos brinda nuevas herramientas para comprender la discusión en ambas cámaras parlamentarias. 
+
+En el caso de la Cámara de Diputados el Índice de positividad creado genera una distribución bastante homogénea a nivel partidario. Existen legisladores de todos los partidos a lo largo del indicador, y no parece que se puedan identificar clusters de relevancia en este caso, sobre todo en tanto son legisladores de la coalición los que muestran simultáneamente una mayor y una menor positividad.
+
+En el caso de la Cámara de Senadores la distribución de los partidos según el Índice de positividad creado es bastante similar en tanto se muestra igualmente homogénea. En términos generales, estos gráficos solo nos permiten mencionar que gran parte de los legisladores de CA tienen emociones menos positivas que la de sus pares de otros partidos. A su vez, los legisladores que muestran mayor positividad son sorprendentemente de la coalición gobernante, pero también otros legisladores de la misma coalición son los que se ubican en las posiciones de menor positividad.
+
+Sin embargo, resulta prudente relativizar algunas de las nociones que nos deja este resultado, debido a su limitación de depender de varios paramétros particulares (como por ejemplo las palabras contenidas en el diccionario en español de _Syuzhet_). 
+
+Un ejemplo de esto es el senador Coutinho del PC, que aparece como el cuarto senador más positivo. Sin embargo, el legislador expresaba en la sesión: "No estamos de acuerdo con el proyecto presentado porque genera consecuencias negativas en todos los aspectos: es negativo para el sector forestal, es negativo para la sociedad, es negativo para el sector agropecuario, y es muy negativo para el país y su gente" (Cámara de Senadores, 2021, p. 201).
+
+```{r EMOLEGISLADOR GRAPH_DIP, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+#Plotear diputados
+index_dip <- ggplot(data = sentiment_df_dip, aes(x = reorder(names, posindex), y = posindex, fill = partido))+
+  geom_bar(stat = "identity")+
+  geom_text(aes(label = posindex), vjust = -0.5, size = 3)+
+  xlab("Diputados") + ylab("Índice de positividad")+
+  ggtitle("Gráfico 11. Índice de positividad por legislador (Cámara de Diputados)")+
+  coord_cartesian(ylim = c(0.5, 1))+
+  theme(axis.text.x = element_text(angle = 35, hjust = 1))+
+  labs(fill = "Partido")+
+  scale_fill_manual(values = partycolors) 
+index_dip
+```
+
+```{r EMOLEGISLADOR GRAPH_SEN, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+#Plotear senadores
+index_sen <- ggplot(data = sentiment_df_sen, aes(x = reorder(names, posindex), y = posindex, fill = partido))+
+  geom_bar(stat = "identity")+
+  geom_text(aes(label = posindex), vjust = -0.5, size = 3)+
+  xlab("Legisladores") + ylab("Índice de positividad")+
+  ggtitle("Gráfico 12. Índice de positividad por legislador (Cámara de Senadores)")+
+  coord_cartesian(ylim = c(0.5, 1))+
+  theme(axis.text.x = element_text(angle = 35, hjust = 1))+
+  labs(fill = "Partido")+
+  scale_fill_manual(values = partycolors)
+index_sen
+```
+
+```{r TOPICOS, echo=FALSE, include=FALSE}
+###################### MODELADO DE TOPICOS
+##Creamos data frame con los principales topicos del documento
+dip_dtm <- convert(dip_dfm, to = "topicmodels")
+dip_lda <- LDA(dip_dtm, k = 5, enforce_uniqueness = TRUE)
+terms_dip <- get_terms(dip_lda,6)
+terms_dip <- as.data.frame(terms_dip)
+
+sen_dtm <- convert(sen_dfm, to = "topicmodels")
+sen_lda <- LDA(sen_dtm, k = 5, enforce_uniqueness = TRUE)
+terms_sen <- get_terms(sen_lda,6)
+terms_sen <- as.data.frame(terms_sen)
+
+#Pasamos a stm
+dip_stm <- convert(dip_dfm, to = "stm")
+sen_stm <- convert(sen_dfm, to = "stm")
+
+#Creamos el modelo
+model_lda_dip <- stm(documents = dip_stm$documents,
+                 vocab = dip_stm$vocab, 
+                 K = 5,
+                 verbose = TRUE)
+
+model_lda_sen <- stm(documents = sen_stm$documents,
+                 vocab = sen_stm$vocab, 
+                 K = 5,
+                 verbose = TRUE)
+
+#Recibimos info de los tópicos (centrándonos en FREX)
+labelTopics(model_lda_dip,topics = c(1:3), n=3)
+labelTopics(model_lda_sen,topics = c(1:3), n=3)
+
+#Analizar la probabilidad condicional con la que un tema prevalece en el documento
+theta_dip <- make.dt(model_lda_dip)
+theta_dip[1,1:6]
+theta_sen <- make.dt(model_lda_sen)
+theta_sen[1,1:6]
+
+```
+
+## 5. Modelado de tópicos
+
+En la presente sección, dedicada a la modelización de temáticas, se utiliza el modelo estadístico llamado Asignación de Dirichlet Latente (LDA) para descubrir los principales temas presentes en la colección de intervenciones. A continuación, los resultados se representan gráficamente para visualizar y comparar los temas y su importancia relativa en el conjunto de documentos. En este caso, agrupamos todas las intervenciones y no las separamos por partidos. El tipo de gráfico predeterminado para un modelo LDA es un gráfico de barras, que muestra la distribución de los temas en los documentos como una serie de barras. En el gráfico se muestran tres de las palabras más importantes para cada tema modelizado. Para interpretar el gráfico, se puede observar la longitud de las barras horizontales para comprender la prevalencia de cada tema en los documentos.
+
+```{r TOPICOS GRAPHS 1, echo=FALSE, warning=FALSE, out.width = "5in", out.height = "5in"}
+#Ploteamos el resultado para diputados
+par(mar = c(2.5, 0, 3, 0))
+plot(model_lda_dip, ylim = c(0,5.5), main = "Gráfico 13. Principales tópicos modelados (Diputados)")
+```
+
+```{r TOPICOS GRAPHS 2, echo=FALSE, warning=FALSE, out.width = "5in", out.height = "5in"}
+#Ploteamos el resultado para senadores
+par(mar = c(2.5, 0, 3, 0))
+plot(model_lda_sen, ylim = c(0,5.5), main = "Gráfico 14. Principales tópicos modelados (Senadores)")
+```
+
+Los resultados muestran que tres temas son los más relevantes en cada cámara. En la Cámara de Diputados los temas relevantes son: Tema 2 ("hectáreas", "prioridad", "celulosa"), Tema 4 ("éxito", "nacional", "prioridad") y Tema 3 ("ganadería", "agricultura", "pesca"). Por su parte, en la Cámara de Senadores los temas relevantes son: Tema 1 ("hectáreas", "agricultura", "ganadería"), Tema 3 ("gobierno", "planta" , "suelos") y Tema 4 ("hectáreas", "desarrollo", "decretos"). 
+
+El gráfico 15 muestra (con mayor claridad que en el previo) la prevalencia promedio de los tópicos modelados en la generalidad de las intervenciones. De esta manera resulta evidente lo expresado en el párrafo anterior en relación con la identificación de los tópicos modelados que mas prevalecen.
+
+\bigskip
+
+```{r TOPICOS GRAPHS 3, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+#Pasamos a formato long
+dip_long_topicos <- melt(theta_dip, id.vars = "docnum")
+dip_long_topicos <- dip_long_topicos %>%
+  group_by(variable) %>%
+  summarise_all(funs(mean))
+sen_long_topicos <- melt(theta_sen, id.vars = "docnum")
+sen_long_topicos <- sen_long_topicos %>%
+  group_by(variable) %>%
+  summarise_all(funs(mean))
+
+#Rounding
+dip_long_topicos$value2 <- round(dip_long_topicos$value, 2)
+sen_long_topicos$value2 <- round(sen_long_topicos$value, 2)
+
+#Creamos los plots
+topicos_plot_dip <- ggplot(data = dip_long_topicos, aes(x = variable, y = value, fill = docnum)) +
+  geom_col() +
+  ggtitle("Gráfico 15. Prevalencia promedio de tópicos (mod.) en las intervenciones") +
+  ylab("Prevalencia promedio")+
+  xlab("")+
+  ylim(0,0.3)+
+  scale_color_manual(values = "lightblue")+
+  geom_text(aes(label = value2), position = position_dodge(width = 0.9), vjust = -0.25)+
+  guides(fill = FALSE)
+topicos_plot_sen <- ggplot(data = sen_long_topicos, aes(x = variable, y = value, fill = docnum)) +
+  geom_col() +
+  ggtitle("") +
+  ylab("Prevalencia promedio")+
+  xlab("")+
+  ylim(0,0.3)+
+  scale_color_manual(values = "lightblue")+
+  geom_text(aes(label = value2), position = position_dodge(width = 0.9), vjust = -0.25)+
+  guides(fill = FALSE)
+
+topicos_plot_gen <- cowplot::plot_grid(topicos_plot_dip, topicos_plot_sen, nrow=2)
+topicos_plot_gen <- ggdraw(topicos_plot_gen) +
+  draw_label("Cámara de Diputados", size = 10, fontface = "italic", hjust = 0.5, vjust = -0.5)
+topicos_plot_gen <- ggdraw(topicos_plot_gen) +
+  draw_label("Cámara de Senadores", size = 10, fontface = "italic", hjust = 0.5, vjust = 22)
+topicos_plot_gen
+
+```
+
+\medskip
+
+## 6. Análisis del texto del veto parlamentario
+
+En la presente sección, se buscó incorporar al análisis el texto del veto presidencial del proyecto de Ley Forestal, dado a conocer por el presidente Lacalle Pou en diciembre de 2021. En el texto en cuestión, el Poder Ejecutivo expone sus razones para oponerse al proyecto de ley. En primer lugar, argumenta que es el Poder Ejecutivo el que tiene la competencia para diseñar y ejecutar la política forestal. En segundo lugar, afirma que cualquier cambio en la regulación debe respetar los derechos fundamentales y los principios jurídicos establecidos en la Constitución, y señala la importancia de la iniciativa privada económica y la libertad de dedicación al trabajo, el cultivo, la industria, el comercio y otras actividades. Por otro lado, el Poder Ejecutivo también argumenta que el proyecto de ley puede afectar negativamente a la economía del país y a la actividad productiva de la industria forestal. 
+
+Teniendo en cuenta los argumentos esgrimidos y la importancia del texto (y de la elección de las justificaciones al momento de vetar) para el destino del proyecto de ley estudiado, se propone analizar, de la misma forma en que se estudiaron las intervenciones parlamentarias, el texto del veto presidencial. Realizar este análisis textual sobre el texto de un veto presidencial a una ley aprobada en ambas cámaras puede ser importante por varias razones. Una de ellas es que puede permitirnos identificar patrones y tendencias en el lenguaje utilizado por el presidente al vetar la ley. Esto puede proporcionar información valiosa sobre las prioridades del presidente y su proceso de toma de decisiones, así como sobre las preferencias en relación con determinadas áreas políticas prioritarias. Además, puede ayudarnos a identificar y comprender mejor los argumentos jurídicos específicos que se presentan, y podría ser útil para explorar el tono y el sentimiento del mensaje de veto, y ver si son de naturaleza más positiva o negativa. 
+
+```{r START/VETO, echo=FALSE, include=FALSE}
+###############   VETO   ####################
+#Sitio
+sitio_veto = rvest::read_html("https://www.montevideo.com.uy/Noticias/Lacalle-veto-la-ley-forestal-porque-la-norma-vulnera-derechos-e-impacta-en-la-economia-uc807480") 
+
+texto_veto = sitio_veto %>%
+  html_elements(".contenido")%>%
+  html_text()%>%
+  as.vector()
+#Limpieza
+words <- strsplit(texto_veto, " ")[[1]]
+cleaned_words <- lapply(words, trimws)
+texto_veto <- paste(cleaned_words, collapse = " ")
+#Extracción de la sección del veto
+texto_veto <- sub("^.*se transcribe a continuación:\\s*", "", texto_veto)
+words <- strsplit(texto_veto, " ")[[1]]
+texto_veto <- paste((head(words, -4)), collapse = " ")
+#Eliminar agregados
+word_pattern <- "Montevideo Portal"
+texto_veto <- gsub(word_pattern, "", texto_veto)
+texto_veto <- gsub("   ", "", texto_veto)
+word_pattern2 <- "Señora Presidente de la Asamblea General"
+texto_veto <- gsub(word_pattern2, "", texto_veto)
+```
+
+```{r WORCLOUD VETO_PREPARATIONS, echo=FALSE, include=FALSE}
+##################
+##NUBE DE PALABRAS
+#Crear funcion para trazado de wordcloud
+
+#Vector de palabras a obviar
+stoppers_veto <- c("°", "n", "acá", "actividad", "adelante", "además", "ahora", "algun*", "allí", "año*", "aquel", "aquí", "artículo", "así", "base", "basta", "bien", "buen*", "cada", "cantidad", "caso", "ciert*", "cien", "cinco", "claro", "colorado", "correct*", "cosa", "cosas", "creemos", "creo", "cuál", "cuarenta", "cualquie*", "cuando", "cuestiones", "dar", "deci*", "dich*", "decí*", "debe", "demás", "dentro", "desde", "después", "día", "días", "dice", "diciembre", "dicho", "dijo", "distint*", "donde", "dos", "ello", "entonces", "estamos", "están", "estas", "estos", "exist*", "forestación", "forestal*", "forma", "frente","gente", "gracias", "gran", "grandes", "haber", "había", "hablamos", "hace*", "hacia", "haciendo", "hasta", "hecho", "hemos", "hicieron", "hizo", "hoy", "iba*", "jorge", "lado", "largo", "leer", "ley", "línea", "mal", "manera", "mayor", "menos", "miles", "muchas", "mucho*", "n.º", "nadie", "necesi*", "ningún*", "nivel", "nosotr*", "noventa", "nuestr*", "otras", "otros", "país", "partir", "pereira", "podemos", "podría", "porque", "president*", "primer*", "proyecto", "puede*", "punto", "queremos", "quienes", "quiero", "quince", "quizás", "realmente", "refier*", "resuelv*", "sabem*", "salir", "sector", "senador*", "señor*", "ser", "siempre", "silva", "si", "sino", "sobre", "sola", "solo", "tal", "también", "tan", "tanto", "tema", "temas", "tenemos", "tener", "tiene", "tipo", "tod*", "tres", "últimos", "uno", "uruguay", "usd", "vamos", "van", "veinte", "vemos", "ver", "verdad", "viendo", "viene", "vista", "visto", "votar", "voy")
+
+#Construcción del dfm / limpieza
+veto_dfm <- quanteda::dfm(quanteda::tokens(texto_veto,
+                                           remove_punct = TRUE,
+                                           remove_numbers = TRUE),
+                          tolower=TRUE,
+                          verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),stoppers_veto,min_nchar=3))
+
+#Propiedades de dfm
+dim(veto_dfm)
+topfeatures(veto_dfm,20)
+```
+
+En el Gráfico 16 se presenta una nube de palabras con los conceptos más utilizados en el texto del veto parlamentario. En el centro están las palabras "constitución" y "república", lo que no resulta llamativo, sobre todo teniendo en cuenta que se está esgrimiendo que la ley votada contradice algunos artículos de la Constitución de la República. Otros términos como "interés", "general", "libertad", y "ambiental" aparecen en un segundo escalón. En ese marco, cabe destacar que otro de los principales argumentos tiene que ver con la libertad de elección (en cuanto a destino productivo) del propietario del terreno. A su vez, otro argumento se vincula con desestimar la idea del impacto ambiental. Según el texto del veto, las reglamentaciones vigentes "han buscado el establecimiento de una política nacional ambiental, basada en los principios de prevención y progresividad, entre otros, de manera de evitar impactos ambientales".
+
+En resumen, el texto analizado utiliza predominantemente un vocabulario jurídico y político. Algunos de los términos y conceptos jurídicos que se mencionan incluyen "constitución", "derechos fundamentales", "principios jurídicos", "ley", "interés general" y "marco jurídico". También se mencionan algunos términos y conceptos políticos como "poder ejecutivo", "poder legislativo", "políticas sectoriales" y "iniciativa privada económica". Además, se menciona el tema del medio ambiente y el desarrollo sostenible, lo que podría considerarse como un vocabulario ambiental. Sin embargo, el texto se centra principalmente en la regulación y el impacto económico del proyecto de ley, e incluso el vocabulario utilizado está más relacionado con el ámbito jurídico y político que con el sector de la producción en sí. Del texto surge que la voluntad general del Poder Ejecutivo en relación al sector forestal es promover políticas que promuevan la producción y la industrialización forestal, evitando cualquier impacto negativo en la economía del país y en la actividad productiva de esta industria.
+
+```{r WORDCLOUD VETO_GRAPH, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+#Wordcloud
+set.seed(186)
+vetocolors <- c("#637880", "#486A78", "#326377", "#0A3D4F", "#003366")
+quanteda.textplots::textplot_wordcloud(veto_dfm, min.count = 2,max_words = 100,
+                                       random.order = F,colors =  vetocolors,
+                                       comparison = F)
+title("Gráfico 16. Nube de palabras (veto presidencial)", cex.main = 0.9, line = 3.4, adj = 0.45)
+```
+
+```{r FREQUENCY VETO, echo=FALSE, warning=FALSE, out.width = "5.8in", out.height = "5.8in"}
+################## FRECUENCIA DE PALABRAS
+#Data para veto
+topwords_veto = data.frame(topfeatures(veto_dfm,10))
+topwords_veto$palabra = rownames(topwords_veto)
+colnames(topwords_veto)[1] <- "frecuencia"
+
+#Grafico para veto
+plot_veto <- ggplot(topwords_veto, aes(x = reorder(palabra, frecuencia), y = frecuencia, fill = palabra)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  theme_minimal() +
+  ggtitle("Gráfico 17. Frecuencia de palabras (veto presidencial)") +
+  ylab("Frecuencia de aparición") +
+  xlab("") +
+  theme(axis.title.x = element_text(size = 8))+
+  scale_fill_manual(values = rep("#326377", length(topwords_ca_sen$palabra)))
+plot_veto
+
+```
+
+```{r KWIC VETO, echo=FALSE, warning=FALSE}
+############################
+##CONTEXTO DE PALABRAS: KWIC
+##Palabra: república
+kwic_veto1 <- quanteda::kwic(quanteda::tokens(texto_veto,
+                                              remove_punct = TRUE,
+                                              remove_numbers = TRUE), 
+                             pattern = quanteda::phrase(c("república")),
+                             window = 15)
+##Palabra: constitución
+kwic_veto2 <- quanteda::kwic(quanteda::tokens(texto_veto,
+                                              remove_punct = TRUE,
+                                              remove_numbers = TRUE), 
+                             pattern = quanteda::phrase(c("constitución")),
+                             window = 15)
+##Palabra: libertad
+kwic_veto3 <- quanteda::kwic(quanteda::tokens(texto_veto,
+                                              remove_punct = TRUE,
+                                              remove_numbers = TRUE), 
+                             pattern = quanteda::phrase(c("libertad")),
+                             window = 15)
+##Palabra: ambiental
+kwic_veto4 <- quanteda::kwic(quanteda::tokens(texto_veto,
+                                              remove_punct = TRUE,
+                                              remove_numbers = TRUE), 
+                             pattern = quanteda::phrase(c("ambiental")),
+                             window = 15)
+##Palabra: interés
+kwic_veto5 <- quanteda::kwic(quanteda::tokens(texto_veto,
+                                              remove_punct = TRUE,
+                                              remove_numbers = TRUE), 
+                             pattern = quanteda::phrase(c("interés")),
+                             window = 15)
+
+#Data frame general con contexto de palabras clave:
+kwic_combined_veto <- bind_rows(kwic_veto1, kwic_veto2, kwic_veto3, kwic_veto4, kwic_veto5)
+```
+
+```{r NETWORK VETO, echo=FALSE, warning=FALSE, out.width = "5.8in", out.height = "5.8in"}
+#######################
+#REDES DE CO-OCURRENCIA
+##Redes de co-ocurrencia (veto): Preparar data
+veto_fcm <- veto_dfm %>% fcm(context = "document")
+feat <- names(topfeatures(veto_fcm, 28))
+base_fcm_select <- fcm_select(veto_fcm, pattern = feat, selection = "keep")
+size <- log(colSums(dfm_select(veto_fcm, feat, selection = "keep")))
+
+#Crear red
+set.seed(144)
+net_veto <- quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, vertex_size = size / max(size) * 3,
+                                                 edge_color="#637880", vertex_labelsize = 3.5) + ggtitle("                     Gráfico 18. Red de Co-ocurrencia (veto presidencial)")
+net_veto
+
+```
+
+En la red de co-ocurrencia referente al veto (Gráfico 18) podemos nuevamente observar la vinculación entre los términos frecuentes. En el centro de la misma, las palabras que nuclean las vinculaciones son "general", "ambiental" y "plantaciones". Por otro lado, hacia la izquierda del gráfico se agregan otras vinculaciones cercanas, relacionadas con palabras fuertemente ligadas al marco de operación de un sector económico ("inversiones", "contratos", "régimen", "norma", "ministerio").  
+
+Por otro lado, en el Gráfico 19 se presentan los resultados referentes a aplicar al veto el diccionario creado para el caso (precisamente el mismo dicconario utilizado en el análisis de las intervenciones parlamentarias) que distingue términos relacionados con el sector productivo, con la política, y con el medio ambiente. El léxico del texto en cuestión se caracteriza por la marcada presencia de términos políticos y jurídicos, que aparecen con frecuencia y que se relacionan principalmente con el ejercicio del poder y la protección de los derechos fundamentales. Así, encontramos referencias a la figura del Poder Ejecutivo, a la Asamblea General como órgano legislativo, y a la Constitución como marco normativo superior. El vocabulario jurídico también se manifiesta a través de conceptos como "ley", "principios jurídicos" y "seguridad jurídica".
+
+Sin embargo, el texto no se limita a estos ámbitos, sino que también incluye menciones a la actividad económica, que se plasman en términos como "trabajo", "cultivo", "industria", "comercio", "profesión" o "actividad lícita". Estos términos se relacionan con el derecho de las personas a dedicarse a actividades productivas y con el papel que estas desempeñan en la vida social y económica. Por último, el texto también aborda el tema ambiental, lo que es notorio por la aparición de conceptos como "medio ambiente" y "regulación". 
+
+Los resultados del análisis en base a diccionarios revelan una distribución desigual de los tres lenguajes que incluidos. Si bien el lenguaje político es el que tiene mayor presencia, con un 5,5%, el lenguaje productivo le sigue de cerca con un 3,5%. Por su parte, el lenguaje ambiental es el menos frecuente de los tres, abarcando un 2,1% de las palabras del texto. Esta relación entre los tres lenguajes podría reflejar la importancia que se le da a cada uno de ellos en el texto analizado y en el contexto en el que se ha realizado el estudio.
+
+En el contexto de este veto parlamentario a una ley sobre la industria forestal, la predominancia del lenguaje político (sobre los lenguajes productivos o ambientales) podría implicar que se está atendiendo más a cuestiones como el poder y la autoridad del Parlamento para vetar la ley, el marco normativo y legal en el que se enmarca la ley, o la interpretación y aplicación de la Constitución y otras leyes relevantes, al momento de argumentar la decisión presidencial. Por otro lado, la presencia de un lenguaje político dominante también podría reflejar el papel central que juega la política en el debate, dando cuenta de que existen escasos acuerdos entre los principales partidos uruguayos en relación al desarrollo de esta industria.
+
+```{r DICTIONARY VETO_PREPARATIONS, echo=FALSE, include=FALSE}
+############################
+#USO DE DICCIONARIOS PROPIOS
+#Armo un diccionario según mi interés
+midic_veto <- dictionary(list(produccion = c("agricult*", "agro*", "campo", "contrato", "crecer", "empresa*", "empleo*", "exenciones", "ganader*", "leche*", "pesca", "produc*", "propie*", "regla*", "rural", "subsidio*", "terreno*", "tierra*", "trabajo"),
+                         politica = c("bancada", "coalición", "comisión", "contrato", "decreto", "debate", "gobierno", "intereses", "mayoría", "minist*", "minoría", "partido", "poder", "polit*", "polít*", "constitución", "república", "libertad"),
+                         ambiente = c("agua", "ambient*", "atmósfera", "biodiversidad", "celulos*", "celulós*", "ecológ*", "ecología", "ecosistema", "eucalip*", "hidro*", "hídr*", "medioambient*", "nativ*", "natural*", "pastizal*", "pradera", "sostenible*", "sustentable*", "upm")))
+
+#Aplico el diccionario en mi dfm y saco el porcentaje
+midic_result_veto <- dfm_lookup(veto_dfm,dictionary=midic_veto,nomatch="no_aparece")
+midic_result_veto <- convert(midic_result_veto, to = "data.frame") 
+midic_result_veto$name <- "Poder Ejecutivo"
+
+#Tabla de resultados
+midic_result_veto$total <- midic_result_veto$produccion+midic_result_veto$politica+midic_result_veto$ambiente+midic_result_veto$no_aparece
+
+#Resultados con índice comparable
+dic_tabla_veto <- midic_result_veto  %>%
+  summarise(produccion = sum(produccion), produccion_prop = ((sum(produccion)*100)/sum(total)), 
+            politica = sum(politica), politica_prop = ((sum(politica)*100)/sum(total)),
+            ambiente = sum(ambiente), ambiente_prop = ((sum(ambiente)*100)/sum(total)))
+dic_tabla_veto <- dic_tabla_veto[, c("produccion_prop", "politica_prop", "ambiente_prop")]
+dic_tabla_veto$Remitente[1] <- "Poder Ejecutivo" 
+
+#Preparar para graficar
+colnames(dic_tabla_veto)[1] <- "Producción"
+colnames(dic_tabla_veto)[2] <- "Política"
+colnames(dic_tabla_veto)[3] <- "Ambiente"
+df_long_veto <- melt(dic_tabla_veto, id.vars = "Remitente", value.name = "value")
+df_long_veto$value2 <- round(df_long_veto$value, 1)
+colnames(df_long_veto)[2] <- "Asunto"
+```
+
+```{r DICTIONARY VETO_GRAPH, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+#Graficar resultados de diccionario
+ggplot(data = df_long_veto, aes(x = Remitente, y = value, fill = Asunto))+
+  geom_col(position = "dodge")+
+  geom_text(aes(label = value2), position = position_dodge(width = 0.9), vjust = -0.25, size=4)+
+  ggtitle("Gráfico 19. Vinculación con diccionarios (veto presidencial)")+
+  ylab("% de palabras vinculadas")+
+  xlab(expression(italic("Veto presidencial"))) +
+  ylim(0,6) +
+  theme(axis.text.x = element_text(size = 8)) +
+  theme(axis.title.x = element_text(size = 8)) +
+  theme(axis.title.y = element_text(size = 8)) +
+  scale_fill_manual(values = asocolors)
+```
+
+En el veto parlamentario del Poder Ejecutivo a la ley sobre la industria forestal, es posible percibir la presencia de diversas emociones que, en su conjunto, dan una idea de los sentimientos y opiniones del Poder Ejecutivo respecto de la ley en cuestión. Es importante tener en cuenta que, aunque cada una de estas emociones se manifiesta con diferentes frecuencias, todas ellas solo la consideración de todas ellas en conjunto nos permiten observar un panorama más completo y detallado.
+
+En primer lugar, aunque estas emociones no son las más frecuentes, se observan algunas expresiones de disgusto y enojo, lo que podría indicar que hay algo en la ley que ha causado repulsión o irritación en el Poder Ejecutivo. Por otro lado, es posible percibir una mayor cantidad de expresiones de tristeza y miedo, lo que podría reflejar preocupación o incertidumbre en relación con las consecuencias políticas del proyecto de ley. También hay algunas expresiones de sorpresa (alrededor de 10), pero sentimientos como la alegría y la anticipación son de los más frecuentes (20 y 23), lo que podría sugerir que se intenta mantener una posición positiva. Estas últimas emociones junto con la confianza, que surge como la emoción más comúnmente expresada en el texto del veto presidencial, podrían reflejar una cierta seguridad o creencia en la adecuación o corrección del acto de vetar la ley.
+
+En conclusión, el veto parlamentario del Poder Ejecutivo a esta ley sobre la industria forestal muestra una combinación de emociones que, en general, reflejan una actitud positiva respecto de la decisión de vetar la ley y una voluntad de conservar un buen relacionamiento a nivel de la coalición gobernante. Aunque hay algunas expresiones de disgusto y enojo, estas son menos frecuentes que las emociones más positivas, como la alegría, la anticipación y la confianza. Esto podría sugerir que el Poder Ejecutivo tiene una opinión favorable en general sobre la decisión de vetar la ley y confirma su voluntad de mantener un buen relacionamiento a nivel de la coalición gobernante, y no resultar demasiado negativo y determinante con una ley que fue apoyada por uno de sus socios políticos (CA). 
+
+\bigskip
+
+```{r EMOTIONS VETO, echo=FALSE, warning=FALSE, out.width = "6in", out.height = "6in"}
+################# EMOCIONES MÉTODO SYUZHET
+sentiment_veto <- get_nrc_sentiment(texto_veto, language = "spanish")
+sentiment_veto$total <- sentiment_veto$negative+sentiment_veto$positive
+sentiment_veto$Remitente[1] <- "Poder Ejecutivo"
+
+#Preparar data
+values <- c(sentiment_veto$anger[1],sentiment_veto$anticipation[1],sentiment_veto$disgust[1],
+            sentiment_veto$fear[1],sentiment_veto$joy[1],sentiment_veto$sadness[1],
+            sentiment_veto$surprise[1],sentiment_veto$trust[1])
+emotions <- c("Enojo", "Anticipación", "Disgusto", "Miedo", "Alegría", "Tristeza", "Sorpresa", "Confianza")
+
+data_sentiment_veto <- data.frame(emotion = emotions, value=values)
+
+#Graficar
+veto_emo <- ggplot(data_sentiment_veto, aes(x=reorder(emotion, value), y=value, fill =emotion)) +
+  geom_col() +
+  geom_text(aes(label = values), vjust = -0.5, size = 3)+
+  ggtitle("Gráfico 20. Identificación de emociones (veto presidencial)")+
+  xlab("Emociones") +
+  ylab("Cantidad de expresiones por emoción")+
+  theme(axis.title.y = element_text(size = 8))+
+  theme(axis.title.x = element_text(size = 8))+
+  guides(fill = FALSE)+
+  scale_fill_manual(values = rep("#326377", 8))
+veto_emo
+
+```
+
+## Conclusiones
+El análisis preentado en este documento no es de extrema profundidad. Sin embargo, a través de técnicas relativamente simples se ha podido avanzar en la explicación de un hecho de crucial relevancia: la votación conjunta de un partido de la coalición oficialista junto al principal partido de la oposición. Cabe destacar que el asunto forestal (y en general el tratamiento del medio ambiente) parece reestructurar el esquema coalicional liderado por el PN desde el 2020. A su vez, debe concebirse como muy importante para CA, para llegar al punto de promover el proyecto conociendo la postura de sus socios.
+
+Han surgido de las diversas técnicas de análisis aplicadas en las intervenciones parlamentarias algunas nociones firmes, que deberían ser evaluadas por análisis posteriores, más profundos, y más extensos:
+
+- Cabildo Abierto se orienta a promover el proyecto en base a dos ejes principales. Los senadores cabildantes se enfocan sobre todo a promover el proyecto enfocado en las consecuencias de la forestación para otras actividades productivas, en la prioridad en cuanto al uso del suelo, y en el impacto a pequeños y medianos productores. En palabras del senador Manini Ríos: "lo único que busca es preservar determinadas tierras en el entendido de que para el país es mejor que se utilicen en otras cosas y no en bosques de eucaliptos. ¡Ese es el espíritu, el cerno del proyecto de ley!" (Cámara de Senadores, 2021, p. 192). Por otro lado, los diputados cabildantes, interesados de la misma forma sobre las consecuencias a nivel productivo, también desarrollan sus temores por el impacto ambiental, por las consecuencias de la concentración y extranjerización de la tierra y por el marco jurídico e impositivo sumamente favorable  a la industria forestal. Esta actitud de CA frente a un problema medioambiental sin duda llama la atención, ya que un extenso corpus teórico se ha dedicado a vincular a los nuevos partidos de derecha radical con el anti-ambientalismo y el negacionismo del cambio climático (Jylhä & Hellmer, 2020; Stanley et al., 2019; Forchtner, 2019; Stanley & Wilson, 2018; Jylhä, 2016; Häkkinen & Akrami, 2014). Estudios previos ya habían señalado que un 20% de los pedidos de informe que presentaron los legisladores de CA (en el período 2020-2021) se relacionaban con la forestación, y se encontraban estrechamente relacionados con la nueva planta de celulosa UPM2. Algunos legisladores de CA como Lust o Menéndez Cabrera han elevado múltiples pedidos de informe sobre esta temática, y se han manifestado públicamente en contra del proyecto y del acuerdo con la empresa. En esa sintonía, se entiende que CA ha tenido una fuerte actitud en el desacuerdo, haciendo uso de los instrumentos parlamentarios disponibles para desmarcarse de sus socios en asuntos como la forestación (Roel, 2021)
+
+- El FA se orienta a promover el proyecto por las consecuencias ambientales del sector forestal y porque considera, tal como CA, que existen otras prioridades en el uso del suelo. Esta actitud también resulta llamativa, ya que el FA promovió por años el desarrollo de la industria forestal y debido a que su tercer gobierno estuvo fuertemente marcado por la negociación para la instalación de una industria de celulosa (UPM2). A su vez, las multinacionales que controlan el negocio forestal-celulósico, han negociado de forma cercana y directa con los gobierno del FA (Piñeiro y Cardeillac, 2018). Para entender en mayor medida esta problemática, cabe destacar el trabajo de Santos (2020).
+
+- El PN y el PC rechazan el proyecto (desde visiones centradas en los productores, el éxito económico del sector forestal, y el carácter
+de política de Estado de los incentivos a la forestación) así como la actitud de coalición CA-FA, pero se muestran confiados del veto presidencial.
+
+- Parecen haber ciertas temáticas (es el caso de las políticas públicas en medio ambiente) que generan distorsiones en la coalición de fuerzas de la Coalición Multicolor, y CA se muestra capaz de demostrar su desacuerdo concordando y votando con la oposición.
+
+Futuros análisis serán cruciales para observar el desarrollo de las políticas relacionadas con la forestación en Uruguay, pero, sobre todo, para observar las correlaciones de fuerzas a nivel político que despierta esta temática, y para observar si continuaremos viendo posicionamientos sorpresivos, que desafían la literatura conocida tanto como desafían las conclusiones que podríamos sacar a partir del análisis de las posturas históricas de los actores.
+
+\newpage
+## Bibliografía
+### Artículos académicos
+(Libros, artículos en revistas académicas, publicaciones, seminarios, sesiones parlamentarias)
+
+\setlength{\parindent}{1cm}
+Amorín, J. (2022). Historia, nacionalidad y confrontación: Una mirada analítica a Cabildo Abierto en la conformación de su discurso comunitarista. Tesis de Grado, FCS, Udelar.
+
+\setlength{\parindent}{1cm}
+Forchtner, B. (Ed.). (2019). The Far Right and the Environment: Politics, Discourse and Communication. Routledge. https://doi.org/10.4324/9781351104043
+
+\setlength{\parindent}{1cm}
+Häkkinen, K., & Akrami, N. (2014). Ideology and climate change denial. Personality and Individual Differences, 70, 62-65. https://doi.org/10.1016/j.paid.2014.06.030
+
+\setlength{\parindent}{1cm}
+Jylhä, K. (2016). Ideological roots of climate change denial. PhD Thesis, Uppsala University.
+
+\setlength{\parindent}{1cm}
+Jylhä, K. M., & Hellmer, K. (2020). Right‐Wing Populism and Climate Change Denial: The Roles of Exclusionary and Anti‐Egalitarian Preferences, Conservative Ideology, and Antiestablishment Attitudes. Analyses of Social Issues and Public Policy, 20(1), 315-335. https://doi.org/10.1111/asap.12203
+
+\setlength{\parindent}{1cm}
+Nocetto, F., L. ,. Piñeiro, R. &. Rosenblatt. (2020). Uruguay 2019: Fin del ciclo progresista y reestructura del sistema de partidos. Revista de ciencia política (Santiago), 40(2), 511-538.
+
+\setlength{\parindent}{1cm}
+Piñeiro, D., & Cardeillac, J. (2018). El Frente Amplio y la Política Agraria en el Uruguay. En La cuestión agraria y los gobiernos de izquierda en América Latina (pp. 259-286). CLACSO. https://doi.org/10.2307/j.ctvn96g0z.11
+
+\setlength{\parindent}{1cm}
+Roel, N. (2021). “Se acabó el recreo”: Estudiando la actividad legislativa de Cabildo Abierto, 2020-2021. Tesis de Grado, FCS, Udelar.
+
+\setlength{\parindent}{1cm}
+Santos, C. (2020). Naturaleza y hegemonía progresista en Uruguay: Los conflictos ambientales durante los gobiernos del Frente Amplio. Gorle: Pomaire. https://www.colibri.udelar.edu.uy/jspui/handle/20.500.12008/34604
+
+\setlength{\parindent}{1cm}
+Cámara de Senadores (2021). Diario de sesiones de la Cámara de Senadores, 15 de diciembre de 2021.
+
+\setlength{\parindent}{1cm}
+Stanley, M., Samantha &. Wilson. (2018). Teta-analysing the association between social dominance orientation, authoritarianism, and attitudes on the environment and climate change. Journal of Environmental Psychology.
+
+\setlength{\parindent}{1cm}
+Stanley, S. K., Milfont, T. L., Wilson, M. S., & Sibley, C. G. (2019). The influence of social dominance orientation and right-wing authoritarianism on environmentalism: A five-year cross-lagged analysis. PLOS ONE, 14(7), e0219067. https://doi.org/10.1371/journal.pone.0219067
+
+\setlength{\parindent}{1cm}
+Schmidt, Nicolas, Lujan, Diego & Moraes, Juan Andres. speech: Legislative Speeches. R package version 0.1.5. https://github.com/Nicolas-Schmidt/speech
+
+### Notas de prensa:
+(Períodicos, revistas, artículos periodísticos)
+
+\setlength{\parindent}{1cm}
+La Diaria. (2020). "Cabildo Abierto presentó proyecto de ley para limitar la forestación". La Diaria. https://ladiaria.com.uy/politica/articulo/2020/5/cabildo-abierto-presento-proyecto-de-ley-para-limitar-la-forestacion/
+
+\setlength{\parindent}{1cm}
+La Diaria. (2021). "Con votos de CA y FA se aprobó la ley forestal, que será el primer veto presidencial de Lacalle Pou". La Diaria.  https://ladiaria.com.uy/politica/articulo/2021/12/con-votos-de-ca-y-fa-se-aprobo-la-ley-forestal-que-sera-el-primer-veto-presidencial-de-lacalle-pou/ 
+
+\setlength{\parindent}{1cm}
+Montevideo Portal. (2020). Ley de Forestación: Entre la división de la coalición multicolor y la “hipocresía” del FA. Montevideo Portal. https://www.montevideo.com.uy/Noticias/Ley-de-Forestacion-entre-la-division-de-la-coalicion-multicolor-y-la-hipocresia-del-FA-uc773324
+
+
+
