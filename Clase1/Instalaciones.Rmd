@@ -67,7 +67,7 @@ RQDA() #Abro interfaz
 
 ```{r eval=FALSE}
 
-##1) Descargar e instalar Phyton: https://www.python.org/downloads/
+##1) Descargar e instalar Python: https://www.python.org/downloads/
 
 ##2) Descargar e instalar Anaconda: https://www.anaconda.com/download/
 
