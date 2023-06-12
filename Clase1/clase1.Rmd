@@ -41,7 +41,7 @@ knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
 
 \
 
-**Mag. Gustavo Méndez Barbato (Decanato)**
+**Mag. Gustavo Méndez Barbato**
 
 [gustavo.mendez@cienciassociales.edu.uy](gustavo.mendez@cienciassociales.edu.uy)
 
@@ -82,19 +82,18 @@ Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAl
 
 # **Objetivos del curso**
 
-**Introducción al lenguaje “R”:** 
+**Generalidades del lenguaje R:** 
 
-- R como software libre y gratuito y su interfaz gráfica RStudio; 
-- Uso de la ayuda y foros; 
-- Paquetes y funciones. 
-- Operadores relacionales y lógicos; 
-- Clases de objetos: Vectores ; Matrices;  Data.Frames; y Listas
+- R como software libre y gratuito  
+- Comunidades y foros 
+- Tidyverse
+- Manipulación básica de strings
 
 # **Objetivos del curso**
 
 **Exploración de fuentes de datos textuales:** 
 
-- Exploración y obtención de datos de diversa índole, contemplando las diferentes fuentes posibles: OCR , web sacraping, prensa digital, redes sociales, APIs. 
+- Exploración y obtención de datos de diversa índole, contemplando las diferentes fuentes posibles: OCR , web sacraping, prensa digital, redes sociales, Youtube, APIs. 
 
 
 # **Objetivos del curso**
@@ -131,16 +130,27 @@ Exploración de las diferentes posibilidades gráficas de visualización de los 
 
 - [https://github.com/elinagomez/analisistextoEPUdelar2023](https://github.com/elinagomez/analisistextoEPUdelar2023)
 
-[Tutorial R+ GitHub](http://destio.us.es/calvo/asignaturas/ge_esco/tutorialusargitgithubrstudio/UsarGitGithubconRStudio.html)
+
+
+
+# **Recursos bibliográficos básicos**
+
+
+- [Bit by bit (Matthew J. Salganik)](https://www.bitbybitbook.com/)
+- [Data Feminism o Feminismo de Datos (Catherine D'Ignazio y Lauren F. Klein)](https://data-feminism.mitpress.mit.edu/bienvenida)
+- [R para Ciencia de Datos (Hadley Wickham y Garrett Grolemund)](https://github.com/elinagomez/analisistextoEPUdelar2023/blob/master/Bibliograf%C3%ADa/r-para-ciencia-de-datos-r-for-datascience-spanish-r4ds.pdf)
+- [Text Mining with R!(Julia Silge y David Robinson)](https://www.tidytextmining.com/)
+- [Hojas de ruta en español](https://github.com/rstudio/cheatsheets/tree/main/translations/spanish)
+- [Intro web scraping con R (Riva Quiroga)](https://programminghistorian.org/es/lecciones/introduccion-al-web-scraping-usando-r)
+
+[Repositorio con recursos varios](https://www.rstudio.com/resources/books/)
 
 
 # **Objetivos de hoy**
 
 - Introducción conceptual y teórica
-- Instalaciones previas
-- Nivelación de uso básico de R
-- Generalidades de la exploración y manipulación de datos con _base_ y _tidyverse_.
-
+- Generalidades de la exploración y manipulación de datos con _tidyverse_.
+- Manipulación de strings
 
 
 # Introducción conceptual y teórica
@@ -167,8 +177,6 @@ _"Una nueva disciplina como las Ciencias Sociales Computacionales (Cioffi-Revill
 
 - Explotación del _big data_ como fuente de datos y nuevos campos de estudio. 
 
-- Humanidades digitales
-
 
 
 # Sobre Big data
@@ -194,14 +202,33 @@ _"Researchers are in the process of making a change akin to the transition from 
 - Desafíos éticos, cajas negras
 
 
+# Panorama regional 
+
+- En América Latina existen diversos grupos académicos que trabajan esta línea ya sea desde las llamadas _humanidades digitales_ o de las _ciencias sociales computacionales_
+
+
+
+# Panorama regional 
+
+
+Algunas iniciativas regionales interesantes:
+
+* [Programming Historian](https://programminghistorian.org/es/)
+* [Laboratorio de Humanidades Digitales - UFBA](https://www.labhd.ufba.br/)
+* [Observatorio de conflictividad - UNMdP](http://observatoriodeconflictividad.org/)
+* [Nucleo de Innovación Social - Colegio de Sociólogos de la Provincia de Buenos Aires](https://www.nucleodeinnovacion.com/)
+* [Instituto Milenio Fundamento de los Datos](https://imfd.cl/)
+* [Observatorio de Redes](https://politicosentwitter.com/#quienes)
+- [Maestría en Humanidades Digitales - Uniandes ](https://posgradosfacartes.uniandes.edu.co/programas/humanidades-digitales/)
+
+
 
 # R
 
 - ¿Qué es R?
-- ¿Cómo interactuamos con R?
-- Introducción a RStudio
-- Creación de objetos
-- Funciones
+- Consejos
+- Generalidades de tidyverse
+- Mnipulación de strings
 
 
 # ¿Qué es R?
@@ -230,195 +257,194 @@ La curva de aprendizaje de R al comienzo suele resultar muy empinada. ¿Cómo po
 
 [Hoja de ayuda de R](https://raw.githubusercontent.com/rstudio/cheatsheets/master/translations/spanish/introduccion-a-r.pdf)
 
-# Introducción a R: ¿cómo interactúamos con R?
+<!-- # Introducción a R: ¿cómo interactúamos con R? -->
 
-* Abrimos R. 
-* Aparece un mensaje de apertura. 
-* Debajo el 'prompt' que es el símbolo  **>**  ('mayor') e indica que R está listo para recibir órdenes. 
-
-
-![](imagenes/openR.png)
+<!-- * Abrimos R.  -->
+<!-- * Aparece un mensaje de apertura.  -->
+<!-- * Debajo el 'prompt' que es el símbolo  **>**  ('mayor') e indica que R está listo para recibir órdenes.  -->
 
 
-# Introducción a R: ¿cómo interactúamos con R?
-	
-* Escribiendo un código en la consola
-* O escribiendo en el script y luego enviando el código a la consola para obtener un resultado: CTLR + ENTER
-
-* El código utiliza una serie de operadores ('+', '*', '\%in\%', etc.), funciones, números, caracteres, etc.
-* El script se guarda en un archivo .R
-
-# Introducción a R: ¿cómo interactúamos con R?
-
-* Las órdenes elementales de R consisten en expresiones o asignaciones. 
-* Una **expresión**, se evalúa, se imprime el resultado y su valor se pierde. 
-```{r }
-2 + 3
-```
-
-# Introducción a R: ¿cómo interactúamos con R?
-
-* Una **asignación**, crea un objeto y no se imprime el resultado.
-```{r }
-x <- 2 + 3
-```
-
-* Una asignación se hace utilizando el símbolo: <- o también con el símbolo =
-* Mientras que otros programas estadísticos muestran directamente los resultados de un análisis, R guarda estos resultados como un 'objeto'. 
-
-# Introducción a R
-
-* R es un programa **'orientado a objetos'**: variables, datos, funciones, resultados, etc., se guardan en la memoria RAM en forma de objetos con un nombre específico sin usar archivos temporales. 
-
-* Estos objetos se pueden modificar o manipular con **operadores** --lógicos, aritméticos, comparativos y especiales-- y **funciones** --que a su vez son objetos--. 
-* Bajo este término se esconde la simplicidad y flexibilidad de R. 
+<!-- ![](imagenes/openR.png) -->
 
 
-# Introducción a RStudio
+<!-- # Introducción a R: ¿cómo interactúamos con R? -->
 
-R es mucho más amigable utilizando un editor de código, elegimos [RStudio](https://www.rstudio.com/) porque da muchas facilidades.
-	
-![](imagenes/Rstudio.png){ width=80% }
+<!-- * Escribiendo un código en la consola -->
+<!-- * O escribiendo en el script y luego enviando el código a la consola para obtener un resultado: CTLR + ENTER -->
 
+<!-- * El código utiliza una serie de operadores ('+', '*', '\%in\%', etc.), funciones, números, caracteres, etc. -->
+<!-- * El script se guarda en un archivo .R -->
 
-# Introducción a RStudio
-![](imagenes/cuadrantes.png)
+<!-- # Introducción a R: ¿cómo interactúamos con R? -->
 
-# Introducción RStudio
+<!-- * Las órdenes elementales de R consisten en expresiones o asignaciones.  -->
+<!-- * Una **expresión**, se evalúa, se imprime el resultado y su valor se pierde.  -->
+<!-- ```{r } -->
+<!-- 2 + 3 -->
+<!-- ``` -->
 
-RStudio se organiza en 4 ventanas:
+<!-- # Introducción a R: ¿cómo interactúamos con R? -->
 
-  * **Ventana superior izquierda**: se escribe el documento, sintaxis, etc.
-  * **Ventana inferior izquierda**: se ubica la consola donde se imprimen resultados
-  * **Ventana superior derecha**: se muestran los objetos creados y el historial de comandos ejecutados. También se mostrarán los archivos modificados de un proyecto de control de versiones
-  * **Ventana inferior derecha**: se muestran los archivos, gráficos, paquetes y ayuda
-  
-[Hoja de ayuda de RStudio](https://raw.githubusercontent.com/rstudio/cheatsheets/master/translations/spanish/rstudio-entorno.pdf)
+<!-- * Una **asignación**, crea un objeto y no se imprime el resultado. -->
+<!-- ```{r } -->
+<!-- x <- 2 + 3 -->
+<!-- ``` -->
 
-# Introducción RStudio
+<!-- * Una asignación se hace utilizando el símbolo: <- o también con el símbolo = -->
+<!-- * Mientras que otros programas estadísticos muestran directamente los resultados de un análisis, R guarda estos resultados como un 'objeto'.  -->
 
-* Para ejecutar una línea de código, colocar el cursor sobre esa línea y ejecutar **Ctrl + ENTER**.
-* Para ejecutar varias líneas de código, debemos seleccionarlas todas y ejecutar **Ctrl + ENTER**.
-* El símbolo **>** en la consola, indica que R está listo para recibir un comando, mientras que si aparece el símbolo  **+**, hay una sentencia no finalizada.
-* Mensajes de error **(Error)**: errores en la sintaxis (no ejecuta la/s líneas erroneas, pero si el resto)
-* Mensajes de advertencia **(Warnings)**: no necesariamente hay un error (ejecuta los comandos y solo te advierte de posibles inconvenientes).
-* Importa saber qué tipo de objetos son los que estamos trabajando:  no toda función se puede aplicar a cualquier tipo de objeto.
-	
+<!-- # Introducción a R -->
 
-# Creación de objetos 
+<!-- * R es un programa **'orientado a objetos'**: variables, datos, funciones, resultados, etc., se guardan en la memoria RAM en forma de objetos con un nombre específico sin usar archivos temporales.  -->
 
-* Al nombrar archivos u objetos, evitar usar tildes y ñ. No dejar espacio entre caracteres.
-*  Nombre de un objeto debe comenzar con una letra (A-Z, a-z)
-*  Puede incluir letras, dígitos (0-9), puntos (.) y guión bajo (\_).
-* R discrimina entre letras mayúsculas y minúsculas: x y X son objetos diferentes.
-* Son nombres válidos *raiz2* o *raiz\_2*, no así *2raiz* ni *raiz-2*
+<!-- * Estos objetos se pueden modificar o manipular con **operadores** --lógicos, aritméticos, comparativos y especiales-- y **funciones** --que a su vez son objetos--.  -->
+<!-- * Bajo este término se esconde la simplicidad y flexibilidad de R.  -->
 
 
-# Objetos: tipos de elementos y clases de objetos
+<!-- # Introducción a RStudio -->
 
-\scriptsize
-\textbf{Vector} (contiene \textcolor{blue}{elementos} de un \textcolor{blue}{mismo tipo}) \hfill { $[$  $]$}
-\begin{semiverbatim}
-a=c(1,0,1,1,1,0) \textcolor{gray}{\#  vector numérico}
-\end{semiverbatim}
-\begin{semiverbatim}
-b=c("1","0","1","1","1","0") \textcolor{gray}{\# vector caracter}
-\end{semiverbatim}
-\begin{semiverbatim}
-d=c(T,F,T,T,T,F) \textcolor{gray}{\#  vector lógico}
-\end{semiverbatim}
-\begin{semiverbatim}
-f=factor(b,levels=c(1,0),labels=c('Sí','No')) \textcolor{gray}{\# factor}
-\end{semiverbatim}
+<!-- R es mucho más amigable utilizando un editor de código, elegimos [RStudio](https://www.rstudio.com/) porque da muchas facilidades. -->
 
-\textbf{Matriz} (contiene \textcolor{blue}{vectores} de una
-\textcolor{blue}{misma clase}) \hfill { $[$ $,$ $]$}
-\begin{semiverbatim}
-e=matrix(c(1,0,1,1,1,0),nrow=3) \textcolor{gray}{\#  matriz numérica}
-\end{semiverbatim}
-\textbf{Data Frame} (contiene \textcolor{blue}{vectores} de
-\textcolor{blue}{cualquier clase}) \hfill { \$} \ \
-\begin{semiverbatim}
-g=data.frame(e) \textcolor{gray}{\# marco de datos, base de datos}
-\end{semiverbatim}
-\textbf{Lista} (contiene \textcolor{blue}{objetos} de
-\textcolor{blue}{cualquier clase}) \hfill { $[[$  $]]$}
-\begin{semiverbatim}
-e=list(g,f) \textcolor{gray}{\#  lista}
-\end{semiverbatim}
+<!-- ![](imagenes/Rstudio.png){ width=80% } -->
 
-# Objetos: tipos de elementos y clases de objetos
 
-Todo objeto pertenece a un tipo (`typeof()`), pero a su vez,
-tiene instancias de una o varias clases (`class()`),
-con determinados atributos (`attributes()`),
-y tiene una estructura específica (`str()`).
+<!-- # Introducción a RStudio -->
+<!-- ![](imagenes/cuadrantes.png) -->
 
-|Objeto | \textbf{clase} | \textbf{tipo} |
-|-------|----------------|---------------|
-| x <- 1 | numeric | double |
-| x <- 'hola' | character | character |
-| x <- TRUE | logical | logical |
-| x <- iris |  data.frame | list |
+<!-- # Introducción RStudio -->
 
-# Objetos: tipos de elementos y clases de objetos
+<!-- RStudio se organiza en 4 ventanas: -->
 
-| Tipo | Verificación | Cambio |
-|------|--------------|--------|
-| vector | `is.vector` |`as.vector` |
-| list | `is.list` | `as.list` |
-| data.frame | `is.data.frame` | `as.data.frame` |
-| matrix | `is.matrix` | `as.matrix` |
-| logical | `is.logical` | `as.logical` |
-| factor | `is.factor` | `as.factor` |
-| character | `is.character` | `as.character` |
-| numeric | `is.numeric` | `as.numeric` |
-| double | `is.double` | `as.double` |
+<!--   * **Ventana superior izquierda**: se escribe el documento, sintaxis, etc. -->
+<!--   * **Ventana inferior izquierda**: se ubica la consola donde se imprimen resultados -->
+<!--   * **Ventana superior derecha**: se muestran los objetos creados y el historial de comandos ejecutados. También se mostrarán los archivos modificados de un proyecto de control de versiones -->
+<!--   * **Ventana inferior derecha**: se muestran los archivos, gráficos, paquetes y ayuda -->
 
+
+<!-- # Introducción RStudio -->
+
+<!-- * Para ejecutar una línea de código, colocar el cursor sobre esa línea y ejecutar **Ctrl + ENTER**. -->
+<!-- * Para ejecutar varias líneas de código, debemos seleccionarlas todas y ejecutar **Ctrl + ENTER**. -->
+<!-- * El símbolo **>** en la consola, indica que R está listo para recibir un comando, mientras que si aparece el símbolo  **+**, hay una sentencia no finalizada. -->
+<!-- * Mensajes de error **(Error)**: errores en la sintaxis (no ejecuta la/s líneas erroneas, pero si el resto) -->
+<!-- * Mensajes de advertencia **(Warnings)**: no necesariamente hay un error (ejecuta los comandos y solo te advierte de posibles inconvenientes). -->
+<!-- * Importa saber qué tipo de objetos son los que estamos trabajando:  no toda función se puede aplicar a cualquier tipo de objeto. -->
+
+
+<!-- # Creación de objetos  -->
+
+<!-- * Al nombrar archivos u objetos, evitar usar tildes y ñ. No dejar espacio entre caracteres. -->
+<!-- *  Nombre de un objeto debe comenzar con una letra (A-Z, a-z) -->
+<!-- *  Puede incluir letras, dígitos (0-9), puntos (.) y guión bajo (\_). -->
+<!-- * R discrimina entre letras mayúsculas y minúsculas: x y X son objetos diferentes. -->
+<!-- * Son nombres válidos *raiz2* o *raiz\_2*, no así *2raiz* ni *raiz-2* -->
+
+
+<!-- # Objetos: tipos de elementos y clases de objetos -->
+
+<!-- \scriptsize -->
+<!-- \textbf{Vector} (contiene \textcolor{blue}{elementos} de un \textcolor{blue}{mismo tipo}) \hfill { $[$  $]$} -->
+<!-- \begin{semiverbatim} -->
+<!-- a=c(1,0,1,1,1,0) \textcolor{gray}{\#  vector numérico} -->
+<!-- \end{semiverbatim} -->
+<!-- \begin{semiverbatim} -->
+<!-- b=c("1","0","1","1","1","0") \textcolor{gray}{\# vector caracter} -->
+<!-- \end{semiverbatim} -->
+<!-- \begin{semiverbatim} -->
+<!-- d=c(T,F,T,T,T,F) \textcolor{gray}{\#  vector lógico} -->
+<!-- \end{semiverbatim} -->
+<!-- \begin{semiverbatim} -->
+<!-- f=factor(b,levels=c(1,0),labels=c('Sí','No')) \textcolor{gray}{\# factor} -->
+<!-- \end{semiverbatim} -->
+
+<!-- \textbf{Matriz} (contiene \textcolor{blue}{vectores} de una -->
+<!-- \textcolor{blue}{misma clase}) \hfill { $[$ $,$ $]$} -->
+<!-- \begin{semiverbatim} -->
+<!-- e=matrix(c(1,0,1,1,1,0),nrow=3) \textcolor{gray}{\#  matriz numérica} -->
+<!-- \end{semiverbatim} -->
+<!-- \textbf{Data Frame} (contiene \textcolor{blue}{vectores} de -->
+<!-- \textcolor{blue}{cualquier clase}) \hfill { \$} \ \ -->
+<!-- \begin{semiverbatim} -->
+<!-- g=data.frame(e) \textcolor{gray}{\# marco de datos, base de datos} -->
+<!-- \end{semiverbatim} -->
+<!-- \textbf{Lista} (contiene \textcolor{blue}{objetos} de -->
+<!-- \textcolor{blue}{cualquier clase}) \hfill { $[[$  $]]$} -->
+<!-- \begin{semiverbatim} -->
+<!-- e=list(g,f) \textcolor{gray}{\#  lista} -->
+<!-- \end{semiverbatim} -->
+
+<!-- # Objetos: tipos de elementos y clases de objetos -->
+
+<!-- Todo objeto pertenece a un tipo (`typeof()`), pero a su vez, -->
+<!-- tiene instancias de una o varias clases (`class()`), -->
+<!-- con determinados atributos (`attributes()`), -->
+<!-- y tiene una estructura específica (`str()`). -->
+
+<!-- |Objeto | \textbf{clase} | \textbf{tipo} | -->
+<!-- |-------|----------------|---------------| -->
+<!-- | x <- 1 | numeric | double | -->
+<!-- | x <- 'hola' | character | character | -->
+<!-- | x <- TRUE | logical | logical | -->
+<!-- | x <- iris |  data.frame | list | -->
+
+<!-- # Objetos: tipos de elementos y clases de objetos -->
+
+<!-- | Tipo | Verificación | Cambio | -->
+<!-- |------|--------------|--------| -->
+<!-- | vector | `is.vector` |`as.vector` | -->
+<!-- | list | `is.list` | `as.list` | -->
+<!-- | data.frame | `is.data.frame` | `as.data.frame` | -->
+<!-- | matrix | `is.matrix` | `as.matrix` | -->
+<!-- | logical | `is.logical` | `as.logical` | -->
+<!-- | factor | `is.factor` | `as.factor` | -->
+<!-- | character | `is.character` | `as.character` | -->
+<!-- | numeric | `is.numeric` | `as.numeric` | -->
+<!-- | double | `is.double` | `as.double` | -->
 
 
 
 
 
-# Funciones
 
-*¿Qué es una función?*
+<!-- # Funciones -->
 
-* Una  función  es un  conjunto  de  instrucciones  que  operan  sobre unos argumentos y producen un resultado.
-* Una función esconde líneas de código que permite reutilizarlo una y otra vez de manera sencilla.
-* Las funciones tienen nombres descriptivos -en inglés- y se acompañan de paréntesis curvos.
-* Dentro de los paréntesis se definen los valores de sus argumentos.
-* La mayoría tiene al menos un argumento obligatorio y el resto con valores por defecto.
-		
-		
-# Funciones
+<!-- *¿Qué es una función?* -->
 
-* La función _setwd()_ tiene como único argumento _'dir'_ y es obligatorio asignarle un valor que debe ser una ruta a una carpeta específica en la computadora:
-
-```{r echo=TRUE}
-#	define el directorio de trabajo
-#setwd(dir = 'home/username/Desktop/') 
-```
-
-Algunas funciones no necesitan que se defina ningún argumento: _getwd()_, _dir()_, _ls()_
+<!-- * Una  función  es un  conjunto  de  instrucciones  que  operan  sobre unos argumentos y producen un resultado. -->
+<!-- * Una función esconde líneas de código que permite reutilizarlo una y otra vez de manera sencilla. -->
+<!-- * Las funciones tienen nombres descriptivos -en inglés- y se acompañan de paréntesis curvos. -->
+<!-- * Dentro de los paréntesis se definen los valores de sus argumentos. -->
+<!-- * La mayoría tiene al menos un argumento obligatorio y el resto con valores por defecto. -->
 
 
-```{r eval=FALSE, include=FALSE}
-# indica el directorio de trabajo	actual
-getwd( )
-# lista los archivos que hay en el directorio de trabajo
-dir( )
-# lista los objetos de la sesión
-ls( ) 
-```
+<!-- # Funciones -->
+
+<!-- * La función _setwd()_ tiene como único argumento _'dir'_ y es obligatorio asignarle un valor que debe ser una ruta a una carpeta específica en la computadora: -->
+
+<!-- ```{r echo=TRUE} -->
+<!-- #	define el directorio de trabajo -->
+<!-- #setwd(dir = 'home/username/Desktop/')  -->
+<!-- ``` -->
+
+<!-- Algunas funciones no necesitan que se defina ningún argumento: _getwd()_, _dir()_, _ls()_ -->
+
+
+<!-- ```{r eval=FALSE, include=FALSE} -->
+<!-- # indica el directorio de trabajo	actual -->
+<!-- getwd( ) -->
+<!-- # lista los archivos que hay en el directorio de trabajo -->
+<!-- dir( ) -->
+<!-- # lista los objetos de la sesión -->
+<!-- ls( )  -->
+<!-- ``` -->
 
 
 
 # Carga de datos R
 
-* Carga archivo en formato .Rdata
-* save(obj1, obj2, obj3, file = "ruta/archivo.Rdata") _Respalda algunos objetos en formato .Rdata_
-* save.image("ruta/respaldo.Rdata") _Respalda todo el entorno de trabajo_
+* Carga archivo en formato .RData
+* save(obj1, obj2, obj3, file = "ruta/archivo.Rdata") _Respalda algunos objetos en formato .RData_
+* save.image("ruta/respaldo.RData") _Respalda todo el entorno de trabajo_
 
 A diferencia de otras funciones para cargar archivos, la función _load( )_ es la única en que no se debe asignar a un objeto, ya que para que un archivo sea guardado como Rdata debió haber sido un objeto de R y por ende, al cargar el archivo se carga en la memoria el objeto asociado. 
 
@@ -436,106 +462,124 @@ datos <- read.delim(file="ruta/archivo.txt", header = FALSE,
 ```
 
 
-La función _read.table( )_ tiene por defecto en el argumento header el valor FALSE, esto implica que si el archivo tiene nombre de variables, las tomará como un registro más. 
-
 Las rutas deben escribirse con la barra / y no la contrabarra \\. Si el archivo está en el directorio de trabajo, alcanza solo con llamar al archivo sin especificar la ruta. 
 
 
-# Algunas funciones básicas: exploración
 
-\begin{tabular}{|c|p{8cm}|}
-			\hline \textbf{Función} & \textbf{Descripción}\\
-			\hline head() & Muestra los primeros X casos de un objeto (por defecto 6)  \\ 
-			\hline tail() & Muestra los últimos X casos de un objeto (por defecto 6)  \\ 
-			\hline View() & Muestra la base de datos en el visor \\ 
-			\hline length() & Muestra la longitud de un vector  \\ 
-			\hline dim() & Muestra las dimensiones del objeto  \\ 
-			\hline str() & Muestra la estructura del objeto\\ 
-			\hline names() &  Muestra los nombres de las variables \\ 
-			\hline summary() & Muestra resumen descriptivo del objeto\\
-			\hline mean() & Muestra el promedio del vector numérico\\
-			\hline min() & Muestra el valor mínimo del vector numérico \\
-			\hline max() & Muestra el valor máximo del vector numérico  \\
-    	\hline 
+# Trabajo con proyectos
 
-		\end{tabular}
+- Se recomienda el trabajo por **Proyectos** ya sea a nivel local o conectando con repositorio Git.
 
-# Algunas funciones básicas: manipulación
+- Posibilita no tener que setear continuamente el directorio y tener un orden en el código.
 
-\begin{tabular}{|c|p{8cm}|}
-		\hline \textbf{Función} & \textbf{Descripción}\\
-		\hline which() & Indica cuales casos cumplan con la condición especificada\\ 
-		\hline subset() & Selecciona casos según la condición especificada \\ 
-		\hline merge() & Funde bases \\ 
-		\hline apply &  Aplica una función a diferentes variables\\ 
-		\hline tapply() & Aplica una función por grupo de casos\\ 
-  	\hline 
-	 \end{tabular} 
+- Se crea desde la barra de herramientas: File > New Project
+
+- Se aloja en un archivo _.Rproj_
+
+- [Tutorial R + GitHub](http://destio.us.es/calvo/asignaturas/ge_esco/tutorialusargitgithubrstudio/UsarGitGithubconRStudio.html)
 
 
-# Algunas funciones básicas: presentación (tablas, gráficos, y figuras)
-
-\begin{tabular}{|c|p{8cm}|}
-		\hline \textbf{Función} & \textbf{Descripción}\\
-		\hline table() & Genera una tabla \\ 
-		\hline plot() & Genera gráfico genérico según tipos de variables en cuestión\\ 
-		\hline barplot() & Grafica un diagrama de barras. El argumento principal es una tabla \\ 
-		\hline boxplot() & Grafica un diagrama de caja de una variable numérica o de una variable numérica según categorías. \\ 
-		\hline hist() &  Grafica un histograma de frecuencias de un vector numérico\\ 
-		\hline pie() &  Grafica un diagrama circular. El argumento principal es una tabla\\ 
-		\hline ggplot() & Función del paquete ggplot2\\ 
-		\hline ggmap() & Función del paquete ggplot2\\
-  	\hline 
-  \end{tabular} 
+# Trabajo con proyectos
 
 
-
-# Usamos R: ejercicios prácticos
-
-_Construcción y guardado de objetos:_
-
-* Creamos un objeto llamado 'dias' (sin tilde) que contenga los días a la semana, usamos la función _c()_
-* Creamos un objeto llamado 'curso' que contenga 0 y 1, donde los 1 se ubiquen en la posición que se encuentran lunes y miércoles, usamos la función _c()_
-* Combinamos ambos vectores en un nuevo objeto llamado 'datos', usamos la función _cbind()_
-* Reescribimos el objeto 'datos' y lo convertimos en data.frame con la función _as.data.frame_.
-* Inspeccionamos la dimensión de 'datos', el nombre de las variables y realizamos una tabla de la segunda variable. Usamos las siguientes funciones: _dim()_, _names()_, _table()_.
-* Exportamos el objeto a un archivo *csv*, usamos la función _write.csv()_.
+![](imagenes/proyectos.png) 
 
 
-# Usamos R: ejercicios prácticos
+<!-- # Algunas funciones básicas: exploración -->
 
-_Exploración:_
+<!-- \begin{tabular}{|c|p{8cm}|} -->
+<!-- 			\hline \textbf{Función} & \textbf{Descripción}\\ -->
+<!-- 			\hline head() & Muestra los primeros X casos de un objeto (por defecto 6)  \\  -->
+<!-- 			\hline tail() & Muestra los últimos X casos de un objeto (por defecto 6)  \\  -->
+<!-- 			\hline View() & Muestra la base de datos en el visor \\  -->
+<!-- 			\hline length() & Muestra la longitud de un vector  \\  -->
+<!-- 			\hline dim() & Muestra las dimensiones del objeto  \\  -->
+<!-- 			\hline str() & Muestra la estructura del objeto\\  -->
+<!-- 			\hline names() &  Muestra los nombres de las variables \\  -->
+<!-- 			\hline summary() & Muestra resumen descriptivo del objeto\\ -->
+<!-- 			\hline mean() & Muestra el promedio del vector numérico\\ -->
+<!-- 			\hline min() & Muestra el valor mínimo del vector numérico \\ -->
+<!-- 			\hline max() & Muestra el valor máximo del vector numérico  \\ -->
+<!--     	\hline  -->
 
-* Abrimos el _data.frame_ **cars** que viene pre-cargada en el paquete **base** y le asignamos el nombre **autos**; la abrimos en el visualizador.
-* Averiguamos el valor máximo y mínimo que tiene la variable **speed**.
-* Exploramos la cantidad de filas y columnas que tiene la base
-* Aplicar las funciones del tipo _is.x()_ y _as.x()_ que sirven para verificar si un objeto es de tal tipo y para convertir un tipo de objeto en otro, respectivamente.
+<!-- 		\end{tabular} -->
 
-# Usamos R: ejercicios prácticos
+<!-- # Algunas funciones básicas: manipulación -->
 
-_Manipulación:_
-
-* Hacemos una nueva base únicamente con los datos que tengan un valor en la variable speed mayor a 15.
-* Hacemos la suma de las columnas de la base **autos** con la función apply y las pegamos al final de la base.
-* Creamos otra variable **dist_rec** que distinga tres tramos de **dist**: <20,>=20 & <=40, >=41
-
-
-# Usamos R: ejercicios prácticos
-
-_Presentación:_
-
-* Hacemos una tabla de frecuencias de la variable **dist_rec**
-* Hacemos un gráfico de barras de las frecuencias de **dist_rec**
+<!-- \begin{tabular}{|c|p{8cm}|} -->
+<!-- 		\hline \textbf{Función} & \textbf{Descripción}\\ -->
+<!-- 		\hline which() & Indica cuales casos cumplan con la condición especificada\\  -->
+<!-- 		\hline subset() & Selecciona casos según la condición especificada \\  -->
+<!-- 		\hline merge() & Funde bases \\  -->
+<!-- 		\hline apply &  Aplica una función a diferentes variables\\  -->
+<!-- 		\hline tapply() & Aplica una función por grupo de casos\\  -->
+<!--   	\hline  -->
+<!-- 	 \end{tabular}  -->
 
 
-# Generalidades de **tidyverse**
+<!-- # Algunas funciones básicas: presentación (tablas, gráficos, y figuras) -->
 
-- En R, paquetes como **ggplot2** y **dplyr** han adquirido gran popularidad, y ahora forman parte de **tidyverse**
-- Estos paquete se basan en los principios de 'tidy data' para mayor consistencia y velocidad de procesamiento:
+<!-- \begin{tabular}{|c|p{8cm}|} -->
+<!-- 		\hline \textbf{Función} & \textbf{Descripción}\\ -->
+<!-- 		\hline table() & Genera una tabla \\  -->
+<!-- 		\hline plot() & Genera gráfico genérico según tipos de variables en cuestión\\  -->
+<!-- 		\hline barplot() & Grafica un diagrama de barras. El argumento principal es una tabla \\  -->
+<!-- 		\hline boxplot() & Grafica un diagrama de caja de una variable numérica o de una variable numérica según categorías. \\  -->
+<!-- 		\hline hist() &  Grafica un histograma de frecuencias de un vector numérico\\  -->
+<!-- 		\hline pie() &  Grafica un diagrama circular. El argumento principal es una tabla\\  -->
+<!-- 		\hline ggplot() & Función del paquete ggplot2\\  -->
+<!-- 		\hline ggmap() & Función del paquete ggplot2\\ -->
+<!--   	\hline  -->
+<!--   \end{tabular}  -->
 
-- Cada Variable forma una columna.    
-- Cada observación forma una fila.     
-- Cada tipo de unidad observacional forma una tabla.  
+
+
+<!-- # Usamos R: ejercicios prácticos -->
+
+<!-- _Construcción y guardado de objetos:_ -->
+
+<!-- * Creamos un objeto llamado 'dias' (sin tilde) que contenga los días a la semana, usamos la función _c()_ -->
+<!-- * Creamos un objeto llamado 'curso' que contenga 0 y 1, donde los 1 se ubiquen en la posición que se encuentran lunes y miércoles, usamos la función _c()_ -->
+<!-- * Combinamos ambos vectores en un nuevo objeto llamado 'datos', usamos la función _cbind()_ -->
+<!-- * Reescribimos el objeto 'datos' y lo convertimos en data.frame con la función _as.data.frame_. -->
+<!-- * Inspeccionamos la dimensión de 'datos', el nombre de las variables y realizamos una tabla de la segunda variable. Usamos las siguientes funciones: _dim()_, _names()_, _table()_. -->
+<!-- * Exportamos el objeto a un archivo *csv*, usamos la función _write.csv()_. -->
+
+
+<!-- # Usamos R: ejercicios prácticos -->
+
+<!-- _Exploración:_ -->
+
+<!-- * Abrimos el _data.frame_ **cars** que viene pre-cargada en el paquete **base** y le asignamos el nombre **autos**; la abrimos en el visualizador. -->
+<!-- * Averiguamos el valor máximo y mínimo que tiene la variable **speed**. -->
+<!-- * Exploramos la cantidad de filas y columnas que tiene la base -->
+<!-- * Aplicar las funciones del tipo _is.x()_ y _as.x()_ que sirven para verificar si un objeto es de tal tipo y para convertir un tipo de objeto en otro, respectivamente. -->
+
+<!-- # Usamos R: ejercicios prácticos -->
+
+<!-- _Manipulación:_ -->
+
+<!-- * Hacemos una nueva base únicamente con los datos que tengan un valor en la variable speed mayor a 15. -->
+<!-- * Hacemos la suma de las columnas de la base **autos** con la función apply y las pegamos al final de la base. -->
+<!-- * Creamos otra variable **dist_rec** que distinga tres tramos de **dist**: <20,>=20 & <=40, >=41 -->
+
+
+<!-- # Usamos R: ejercicios prácticos -->
+
+<!-- _Presentación:_ -->
+
+<!-- * Hacemos una tabla de frecuencias de la variable **dist_rec** -->
+<!-- * Hacemos un gráfico de barras de las frecuencias de **dist_rec** -->
+
+
+<!-- # Generalidades de **tidyverse** -->
+
+<!-- - En R, paquetes como **ggplot2** y **dplyr** han adquirido gran popularidad, y ahora forman parte de **tidyverse** -->
+<!-- - Estos paquete se basan en los principios de 'tidy data' para mayor consistencia y velocidad de procesamiento: -->
+
+<!-- - Cada Variable forma una columna.     -->
+<!-- - Cada observación forma una fila.      -->
+<!-- - Cada tipo de unidad observacional forma una tabla.   -->
 
 
 # Generalidades de **tidyverse**
@@ -544,7 +588,7 @@ _Presentación:_
 
 - [Hoja de ruta de dplyr en español](https://raw.githubusercontent.com/rstudio/cheatsheets/main/translations/spanish/data-transformation_es.pdf) 
 
-- [Hoja de ruta de ggplot en español](https://diegokoz.github.io/intro_ds/fuentes/ggplot2-cheatsheet-2.1-Spanish.pdf) 
+- [Hoja de ruta de ggplot2 en español](https://diegokoz.github.io/intro_ds/fuentes/ggplot2-cheatsheet-2.1-Spanish.pdf) 
 
 
 
@@ -672,6 +716,239 @@ world %>%
 |------------------|--------------------------|
 | left_join(x, y)  | merge(x, y, all.x=TRUE)  |
 | right_join(x, y) | merge(x, y, all.y=TRUE)  |
+
+
+
+
+# Manipulación de _strings_
+
+
+Antes de realizar un análisis o de construir un modelo de aprendizaje, la discusión de datos es un paso crítico para preparar los datos de texto sin procesar en un formato apropiado.
+
+El texto puede ser considerado como una colección de documentos y un documento puede ser analizado en cadenas. En la limpieza de texto, los patrones de búsqueda se definen en expresiones regulares (abreviadas como regex() o regexp()) para "encontrar y eliminar" o "buscar y reemplazar" cadenas.
+
+
+
+<!-- # grep -->
+
+<!-- __grep(patrón, cadena)__ devuelve por defecto una lista de índices. Si la expresión regular, patrón, coincide con un elemento particular en la cadena vectorial, devuelve el índice del elemento. -->
+
+<!-- Para devolver los valores reales de los elementos coincidentes, establezca la opción value=TRUE. -->
+
+<!-- - Creamos un vector "strings" y asignamos cuatro valores (string) a la variable. -->
+<!-- strings <- c("abcd", "cdab", "cabd", "c abd") -->
+
+<!-- # grep -->
+
+<!-- - Buscamos los valores que contengan 'ab', y nos indica sus posiciones -->
+<!-- grep("ab", strings) -->
+
+<!-- - Que es lo mismo que... -->
+<!-- grep("ab", strings, value = FALSE) -->
+
+<!-- -Mientras que para obtener los valores usaremos... -->
+<!--  grep("ab", strings, value = TRUE) -->
+
+
+
+<!-- # sub() y gsub() -->
+
+<!-- __gsub(patrón, remplazo, string)__ devuelve la cadena modificada después de reemplazar cada ocurrencia de patrón con reemplazo en cadena. -->
+
+<!-- __sub(patrón, remplazo, string)__ reemplaza la primera aparición del patrón. -->
+
+
+# Stringr
+
+
+- Para realizar estas tareas hay funciones básicas de _R base_. En el curso veremos las funciones que se incluyen en la librería [stringr](https://stringr.tidyverse.org/) de Tidyverse. 
+
+- [Procesamiento de cadenas](http://rafalab.dfci.harvard.edu/dslibro/procesamiento-de-cadenas.html)
+
+- [Hoja de ruta stringr](https://github.com/rstudio/cheatsheets/blob/main/translations/spanish/strings_es.pdf) 
+
+
+# Stringr
+
+Funciones para separar un texto:
+
+```{r eval=FALSE}
+library(stringr)
+
+str_split(x, "\r")
+
+str_split(x, boundary("word"))
+
+##type = c("character", "line_break", "sentence", "word")
+
+```
+
+
+# Stringr
+
+Funciones para combinar un texto:
+
+```{r eval=FALSE}
+library(stringr)
+
+str_c("x", "y", sep = ", ")
+> [1] "x, y"
+##sep para controlar
+```
+
+
+# Stringr
+
+Funciones para reemplazar un texto:
+
+```{r eval=FALSE}
+library(stringr)
+#la primer coincidencia
+str_replace(string, pattern, replacement)
+
+#todas las coincidencias
+str_replace_all(string, pattern, replacement)
+
+```
+
+# Stringr
+
+Funciones para pasar mayúscula/minúscula:
+
+```{r eval=FALSE}
+library(stringr)
+
+str_to_upper(c("i", "ı"))
+#> [1] "I" "I"
+
+str_to_lower(c("I", "I"))
+#> [1] "i" "ı"
+
+```
+
+# Stringr
+
+Funciones para pasar eliminar espacios en blanco:
+
+```{r eval=FALSE}
+library(stringr)
+
+str_trim(string, side = c("both", "left", "right"))
+
+str_trim(" String with trailing and leading white space\t")
+#> [1] "String with trailing and leading white space"
+str_trim("\n\nString with trailing and leading white space\n\n")
+#> [1] "String with trailing and leading white space"
+
+```
+
+# Stringr
+
+Funciones para pasar eliminar espacios en blanco:
+
+```{r eval=FALSE}
+library(stringr)
+
+str_squish(" String with trailing, middle,   and leading white space\t")
+#> [1] "String with trailing, middle, and leading white space"
+str_squish("\n\nString with excess, trailing and leading white space\n\n")
+#> [1] "String with excess, trailing and leading white space"
+
+```
+
+# Caracteres especiales
+
+Para construir consultas que incluyan metacaracteres, i.e.
+
+`\\$ \\* \\+ \\. \\? \\[ \\] \\^ \\{ \\} \\| \\( \\)`
+
+Se debe agregar una retrobarra  `\\`
+
+# Metacaracteres especiales
+
+`\\t` : Tabulador
+
+`\\n` : Nueva línea
+
+`\\v` : Tabulación vertical
+
+`\\f` : Salto de formulario
+
+`\\r` : Salto de línea
+
+
+# Cuantificadores
+
+Los Cuantificadores especifican cuantas veces el patrón consultado pueda ocurrir.
+
+`*` : coincide al menos 0 veces.
+
+`+` : coincide al menos 1 vez.
+
+`?` : coincide a lo sumo 1 vez.
+
+`{n}` : coincide exactamente $n$ veces.
+
+`{n,}` : coincide al menos $n$ veces.
+
+`{,m}` : coincide a lo sumo $m$ vez.
+
+`{n,m}` : coincides entre $n$ y $m$ veces.
+
+# Posición
+
+`^` : Al inicio de la cadena.
+
+`$` : Al final de la cadena.
+
+`\b` : En los extremos de la palabra.
+
+`\B` : No en los extremos de la palabra.
+
+`\<` : Al inicio de la palabra.
+
+`\>` : Al final de la palabra.
+
+
+# Caracteres por clases
+
+`[[:digit:]] or \\d or [0-9]` : digitos 0 1 2 3 4 5 6 7 8 9
+`\\D or [^0-9]` : no-digitos
+
+`[[:lower:]] or [a-z]` : letras minúsculas
+`[[:upper:]] or [A-Z]` : letras mayúsculas
+`[[:alpha:]] or [[:lower:][:upper:]] or [A-z]` : caracteres alfabeticos
+
+# Caracteres por clases
+
+`[[:alnum:]] or [[:alpha:][:digit:]] or [A-z0-9]`: caracteres alfanuméricos
+
+`\\w or [[:alnum:]_] or [A-z0-9_]` : caracteres de palabra
+`\\W or  [^A-z0-9_]` : No caracteres de palabra
+
+`[[:xdigit:]] or [0-9A-Fa-f]` :  dígitos hexadecimales (base 16) 0 1 2 3 4 5 6 7 8 9 A B C D E F a b c d e f
+
+# Caracteres y espacios
+
+`[[:blank:]]` : espacios y tabulaciones
+
+`[[:space:]] or \s` : todo tipo de caracteres de espaciado: tabulación, nueva línea, tabulación vertical, salto de formulario, Salto de linea, espacios
+
+`\\S` : Caracteres que no sean espacios
+
+`[[:punct:]]` :  caracteres de punctuación
+`! " # $ % & ( ) * + , - . / : ; < = > ? @ [  ] ^ _  { | } ~`
+
+# Caracteres y espacios
+
+`[[:graph:]] or [[:alnum:][:punct:]]` : caracteres gráficos (legibles)
+
+`[:print:]] or [[:alnum:][:punct:]\\s]` : caracteres sin espacios
+
+`[[:cntrl:]] or \\c` :  caracteres de control, como `\n` or `\r`, etc.
+
+
+
 
 
 
