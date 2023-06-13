@@ -1996,13 +1996,13 @@ de datos. En el ejemplo, utilizo un ejercicio con el discurso público
 del Senador Guido Manini Ríos en los últimos meses. Las principales
 librerías utilizadas son <code>rvest</code> para scrapeo;
 <code>audio.whisper</code> y <code>av</code> para transcripción de
-audio, <code>rgtp3</code> para conectar con la API de chatGPT3 y
+audio, <code>rgpt3</code> para conectar con la API de chatGPT3 y
 <code>tidyverse</code> para manipulación.</p>
 <p><br></p>
 <div id="figura-1.-diagrama-de-contenido" class="section level4">
 <h4>Figura 1. Diagrama de contenido</h4>
-<div id="htmlwidget-345497b7dc795607f2f4" style="width:672px;height:480px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-345497b7dc795607f2f4">{"x":{"diagram":"digraph {\n\ngraph [fontname = \"calibri\"];\nnode [fontname = \"calibri\"];\nedge [fontname = \"calibri\"];\n \ngraph [layout = dot, rankdir = TB, labelloc=\"t\"]\n\n# define los estilos globales de los nodos. Podemos anular estos en la caja si lo deseamos\nnode [shape = rectangle, style = filled, fillcolor = Linen]\n\nscrapeo [label =  \"Recuperacion \n scraping sitio CA\n (rvest)\", shape = \"invhouse\", fontsize=\"15\"]\nbaseinicial [label =  \"Base de datos inicial\", fontsize=\"15\"]\ndata1 [label = \"Audio 1\", shape = folder, fontsize=\"15\"]\ndata2 [label = \"Audio 2\", shape = folder, fontsize=\"15\"]\ndata3 [label = \"Audio n\", shape = folder, fontsize=\"15\"]\nprocess [label = \"Transcripcion\n (av) + (audio.whisper)\", fontsize=\"15\"]\nprocess2 [label= \"Tema y resumen\n (chatGPT3)\", fontsize=\"15\"]\nbase [label= \"Base de datos\", shape = cylinder, fillcolor = Grey, fontsize=\"20\"]\n\n# definiciones de las bordes con los ID de los nodos\nscrapeo -> baseinicial -> {data1 data2 data3}  -> process -> process2 -> base\n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-e5c305057660e1a738f0" style="width:672px;height:480px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e5c305057660e1a738f0">{"x":{"diagram":"digraph {\n\ngraph [fontname = \"calibri\"];\nnode [fontname = \"calibri\"];\nedge [fontname = \"calibri\"];\n \ngraph [layout = dot, rankdir = TB, labelloc=\"t\"]\n\n# define los estilos globales de los nodos. Podemos anular estos en la caja si lo deseamos\nnode [shape = rectangle, style = filled, fillcolor = Linen]\n\nscrapeo [label =  \"Recuperacion \n scraping sitio CA\n (rvest)\", shape = \"invhouse\", fontsize=\"15\"]\nbaseinicial [label =  \"Base de datos inicial\", fontsize=\"15\"]\ndata1 [label = \"Audio 1\", shape = folder, fontsize=\"15\"]\ndata2 [label = \"Audio 2\", shape = folder, fontsize=\"15\"]\ndata3 [label = \"Audio n\", shape = folder, fontsize=\"15\"]\nprocess [label = \"Transcripcion\n (av) + (audio.whisper)\", fontsize=\"15\"]\nprocess2 [label= \"Tema y resumen\n (chatGPT3)\", fontsize=\"15\"]\nbase [label= \"Base de datos\", shape = cylinder, fillcolor = Grey, fontsize=\"20\"]\n\n# definiciones de las bordes con los ID de los nodos\nscrapeo -> baseinicial -> {data1 data2 data3}  -> process -> process2 -> base\n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 <p><br></p>
 </div>
 </div>
@@ -2093,7 +2093,25 @@ audio, <code>rgtp3</code> para conectar con la API de chatGPT3 y
 <span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="st">&quot;fecha&quot;</span> <span class="ot">=</span> fecha, <span class="st">&quot;title&quot;</span> <span class="ot">=</span> title, <span class="st">&quot;subtitle&quot;</span> <span class="ot">=</span> subtitle,  <span class="st">&quot;url_audios&quot;</span> <span class="ot">=</span> url_audios) <span class="sc">%&gt;%</span> </span>
 <span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>() <span class="sc">%&gt;%</span> <span class="co"># elimino duplicados que podrían existir </span></span>
 <span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(subtitle, <span class="st">&quot;Manini R[í|i]os&quot;</span>)) <span class="sc">%&gt;%</span>  <span class="co"># filtro las audiciones de Manini Ríos</span></span>
-<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">fecha =</span> lubridate<span class="sc">::</span><span class="fu">dmy</span>(fecha)) <span class="co"># convierto fecha en Date</span></span></code></pre></div>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">fecha =</span> lubridate<span class="sc">::</span><span class="fu">dmy</span>(fecha)) <span class="co"># convierto fecha en Date</span></span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. DESCARGA ----</span></span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a><span class="co"># descarga de los audios (le pongo la fecha como nombre para identificarlos)</span></span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a><span class="fu">download.file</span>(data<span class="sc">$</span>url_audios, <span class="fu">paste0</span>(data<span class="sc">$</span>fecha, <span class="st">&quot;.mp3&quot;</span>), <span class="at">method=</span><span class="st">&quot;libcurl&quot;</span>, <span class="at">quiet=</span><span class="cn">TRUE</span>, <span class="at">mode=</span><span class="st">&quot;wb&quot;</span>)</span>
+<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a><span class="do">##Librería para convertir audios en wav</span></span>
+<span id="cb1-94"><a href="#cb1-94" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(av)</span>
+<span id="cb1-95"><a href="#cb1-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-96"><a href="#cb1-96" aria-hidden="true" tabindex="-1"></a>audios_mp3 <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">pattern =</span> <span class="st">&quot;mp3&quot;</span>)</span>
+<span id="cb1-97"><a href="#cb1-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-98"><a href="#cb1-98" aria-hidden="true" tabindex="-1"></a><span class="co"># convierto todos los mp3 en .wav (demora un poco)</span></span>
+<span id="cb1-99"><a href="#cb1-99" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> audios_mp3) {<span class="fu">av_audio_convert</span>(i, </span>
+<span id="cb1-100"><a href="#cb1-100" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">output =</span> <span class="fu">paste</span>(stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(i, <span class="st">&quot;.mp3&quot;</span>, <span class="st">&quot;.wav&quot;</span>)), <span class="co"># vector con nombres de salida, cambio extensión</span></span>
+<span id="cb1-101"><a href="#cb1-101" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">format =</span> <span class="st">&quot;wav&quot;</span>, <span class="at">sample_rate =</span> <span class="dv">16000</span>)</span>
+<span id="cb1-102"><a href="#cb1-102" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-103"><a href="#cb1-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-104"><a href="#cb1-104" aria-hidden="true" tabindex="-1"></a><span class="co"># ******************************************************************************</span></span></code></pre></div>
 <p>Como el ejercicio supone la recuperación de audios, opté por
 descargar las audiciones que el partido Cabildo Abierto tiene en Radio
 Oriental (770AM) y Radio Universal (990AM) y que están subidas a la
@@ -2115,15 +2133,15 @@ porque en verano hubo una interrupción en la frecuencia). Utilizando el
 paquete <code>rvest</code>, hago un scrapeo por capas. Primero recupero
 las 40 url correspondientes a cada entrada en la cual se encuentran las
 notas con los audios. Luego scrapeo cada una de esas 40 urls para
-descargar título, fecha, copete de la nota y url del audio. En el copete
-de la nota siempre se pone el nombre del o la columnista, ya que
-diferentes líderes de CA participan de la audición. A partir de eso
-filtro y me quedo únicamente con las audiciones de Manini Ríos.</p>
+descargar fecha, título, subtítulo (copete de la nota) y url del audio.
+En el copete de la nota siempre se pone el nombre del o la columnista,
+ya que diferentes líderes de CA participan de la audición. A partir de
+eso filtro y me quedo únicamente con las audiciones de Manini Ríos.</p>
 <p>Como resultado de este paso construí un dataframe con 19
-observaciones con la fecha, título, copete y url de los audios del líder
-de Cabildo Abierto. Finalmente, descargué los audios con la función
-<code>downloadfiles()</code> iterando sobre la variable del dataframe
-donde están las urls de los audios.</p>
+observaciones con la fecha, título, subtítulo (copete) y url de los
+audios del líder de Cabildo Abierto. Finalmente, descargué los audios
+con la función <code>downloadfiles()</code> iterando sobre la variable
+del dataframe donde están las urls de los audios.</p>
 <p><br></p>
 <div id="tabla-1.-base-de-datos-inicial" class="section level4">
 <h4>Tabla 1. Base de datos inicial</h4>
@@ -2484,56 +2502,38 @@ presentado ayer por CA y dijo:
 </div>
 <div id="transcripción-audio.whisper" class="section level2">
 <h2>3. Transcripción <em>(audio.whisper)</em></h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. DESCARGA ----</span></span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. TRANSCRIPCION  ----</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># descarga de los audios (le pongo la fecha como nombre para identificarlos)</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">download.file</span>(data<span class="sc">$</span>url_audios, <span class="fu">paste0</span>(data<span class="sc">$</span>fecha, <span class="st">&quot;.mp3&quot;</span>), <span class="at">method=</span><span class="st">&quot;libcurl&quot;</span>, <span class="at">quiet=</span><span class="cn">TRUE</span>, <span class="at">mode=</span><span class="st">&quot;wb&quot;</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="do">##Librería para convertir audios en wav</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(av)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>audios_mp3 <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">pattern =</span> <span class="st">&quot;mp3&quot;</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># convierto todos los mp3 en .wav (demora un poco)</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> audios_mp3) {<span class="fu">av_audio_convert</span>(i, </span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">output =</span> <span class="fu">paste</span>(stringr<span class="sc">::</span><span class="fu">str_replace_all</span>(i, <span class="st">&quot;.mp3&quot;</span>, <span class="st">&quot;.wav&quot;</span>)), <span class="co"># vector con nombres de salida, cambio extensión</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">format =</span> <span class="st">&quot;wav&quot;</span>, <span class="at">sample_rate =</span> <span class="dv">16000</span>)</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># ******************************************************************************</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. TRANSCRIPCION  ----</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co"># transcripción de los audios con la librería audio.whisper</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># transcripción de los audios con la librería audio.whisper</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(audio.whisper)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># creo un objeto con todos los audios del directorio</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>audios_wav <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">pattern =</span> <span class="st">&quot;wav&quot;</span>) </span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># defino el modelo oara las transcripciones (va de tiny a large, en este caso uso el menos potente)</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">whisper</span>(<span class="st">&quot;tiny&quot;</span>) </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># creo una lista vacía en la que voy a guardar las transcripciones</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>lista <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># bucle for para realizar todas las transcripciones</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> audios_wav) {</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  trans <span class="ot">&lt;-</span> <span class="fu">predict</span>(model, <span class="at">newdata =</span> i, <span class="at">language =</span> <span class="st">&quot;es&quot;</span>, <span class="at">n_threads =</span> <span class="dv">2</span>) <span class="co"># transcribo</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  trans_data <span class="ot">&lt;-</span> trans<span class="sc">$</span>data <span class="co"># me quedo con el objeto de la lista que contiene la transcripcion</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  lista[[i]] <span class="ot">&lt;-</span> <span class="fu">paste</span>(trans_data<span class="sc">$</span>text,<span class="at">collapse=</span><span class="st">&quot;&quot;</span>) <span class="co"># colapso los textos de cada transcripción para que me queden en un string</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(audio.whisper)</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co"># creo un objeto con todos los audios del directorio</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>audios_wav <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">pattern =</span> <span class="st">&quot;wav&quot;</span>) </span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co"># defino el modelo oara las transcripciones (va de tiny a large, en este caso uso el menos potente)</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">whisper</span>(<span class="st">&quot;tiny&quot;</span>) </span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co"># transcripciones en un df al que agrego el id (fecha)</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">unlist</span>(lista))</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df) <span class="ot">&lt;-</span> <span class="st">&quot;text&quot;</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>fecha <span class="ot">&lt;-</span> <span class="fu">str_replace_all</span>(<span class="fu">rownames</span>(df), <span class="st">&quot;.wav&quot;</span>, <span class="st">&quot;&quot;</span>)</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>fecha <span class="ot">=</span> lubridate<span class="sc">::</span><span class="fu">ymd</span>(df<span class="sc">$</span>fecha)</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(df) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
 <span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co"># creo una lista vacía en la que voy a guardar las transcripciones</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>lista <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="co"># bucle for para realizar todas las transcripciones</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> audios_wav) {</span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>  trans <span class="ot">&lt;-</span> <span class="fu">predict</span>(model, <span class="at">newdata =</span> i, <span class="at">language =</span> <span class="st">&quot;es&quot;</span>, <span class="at">n_threads =</span> <span class="dv">2</span>) <span class="co"># transcribo</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>  trans_data <span class="ot">&lt;-</span> trans<span class="sc">$</span>data <span class="co"># me quedo con el objeto de la lista que contiene la transcripcion</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>  lista[[i]] <span class="ot">&lt;-</span> <span class="fu">paste</span>(trans_data<span class="sc">$</span>text,<span class="at">collapse=</span><span class="st">&quot;&quot;</span>) <span class="co"># colapso los textos de cada transcripción para que me queden en un string</span></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="co"># transcripciones en un df al que agrego el id</span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">unlist</span>(lista))</span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df) <span class="ot">&lt;-</span> <span class="st">&quot;text&quot;</span></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>fecha <span class="ot">&lt;-</span> <span class="fu">str_replace_all</span>(<span class="fu">rownames</span>(df), <span class="st">&quot;.wav&quot;</span>, <span class="st">&quot;&quot;</span>)</span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>fecha <span class="ot">=</span> lubridate<span class="sc">::</span><span class="fu">ymd</span>(df<span class="sc">$</span>fecha)</span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(df) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a><span class="co"># merge con la base</span></span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">merge</span>(data, df, <span class="at">by =</span> <span class="st">&quot;fecha&quot;</span>)</span></code></pre></div>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co"># merge con la base</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">merge</span>(data, df, <span class="at">by =</span> <span class="st">&quot;fecha&quot;</span>)</span></code></pre></div>
 <p>El siguiente paso es transcribir los audios a texto lo que realizo
 con el paquete <code>audio.whisper</code> que utiliza la herramienta
 <em><a href="https://github.com/openai/whisper">“Whisper” Automatic
@@ -2554,11 +2554,6 @@ nueva variable txt en mi base de datos.</p>
 <p><br></p>
 <div id="tabla-2.-base-de-datos-con-transcripción" class="section level4">
 <h4>Tabla 2. Base de datos con transcripción</h4>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tabla2 <span class="ot">&lt;-</span> knitr<span class="sc">::</span><span class="fu">kable</span>(data_transcript, <span class="at">format =</span> <span class="st">&quot;html&quot;</span>, <span class="at">table.attr =</span> <span class="st">&quot;style=&#39;width:100%;&#39;&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                       kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">font_size =</span> <span class="dv">12</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                       kableExtra<span class="sc">::</span><span class="fu">scroll_box</span>(<span class="at">width =</span> <span class="st">&quot;900px&quot;</span>, <span class="at">height =</span> <span class="st">&quot;400px&quot;</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>tabla2</span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; overflow-x: scroll; width:900px; ">
 <table style="width:100%; font-size: 12px; margin-left: auto; margin-right: auto;" class="table">
 <thead>
@@ -5561,54 +5556,54 @@ espacio. Hasta aquí el espacio de cabildo abierto. [Música]
 </div>
 <div id="open-ai-tema-y-resumen-rgpt3" class="section level2">
 <h2>4. Open AI: Tema y resumen <em>(rgpt3)</em></h2>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. TEMA y RESUMEN  ----</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># PIDO A CHAT GPT3 QUE IDENTIFIQUE TEMA Y RESUMEN DEL CONTENIDO</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rgpt3)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">gpt3_authenticate</span>(<span class="st">&quot;key.txt&quot;</span>) <span class="do">##le indico dónde tengo guardado el archivo con la clave</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">gpt3_test_completion</span>() <span class="do">##testeo la conexión</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># tema: escribo la instrucción</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>prompt <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="st">&#39;prompts&#39;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">paste</span>(<span class="st">&quot;Por favor, usando como máximo 5 palabras, identifique el tema principal del siguiente texto:&quot;</span>,data<span class="sc">$</span>text)),<span class="st">&#39;prompt_id&#39;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(data)))</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># hago la consulta</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>consulta <span class="ot">&lt;-</span> <span class="fu">gpt3_completions</span>(<span class="at">prompt_var =</span> prompt<span class="sc">$</span>prompts, <span class="co"># defino las órdenes, una por cada mención</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                             <span class="at">id_var =</span> data<span class="sc">$</span>fecha, <span class="co"># el identificador</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>                             <span class="at">param_model =</span> <span class="st">&#39;text-davinci-003&#39;</span>, <span class="do">##defino el modelo</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>                             <span class="at">param_max_tokens =</span> <span class="dv">20</span>,</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>                             <span class="at">param_output_type =</span> <span class="st">&quot;complete&quot;</span>,</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>                             <span class="at">param_temperature =</span> <span class="dv">0</span>) <span class="do">##defino algunos parámetros: max_tokens (cuanto me va a traer como máximo, debe ser mayor que mi N y temperature que está entre 0 y 1, siendo las respuestas que se acercan a 1 más aleatorias) </span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># creo un objeto &quot;tema&quot; con los resultados </span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>tema <span class="ot">=</span> consulta[[<span class="dv">1</span>]]</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co"># agrego a la base</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(tema)[<span class="dv">3</span>] <span class="ot">&lt;-</span> <span class="st">&quot;tema&quot;</span> <span class="co"># modifico nombre de columna</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> tema <span class="sc">%&gt;%</span> </span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>n, <span class="sc">-</span>prompt) <span class="sc">%&gt;%</span>  <span class="co"># saco columnas que no me interesan</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">merge</span>(data, ., <span class="at">by.x =</span> <span class="st">&quot;fecha&quot;</span>, <span class="at">by.y =</span> <span class="st">&quot;id&quot;</span>)</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="co"># resumen: escribo la instrucción</span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>prompt2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="st">&#39;prompts&#39;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">paste</span>(<span class="st">&#39;Haz un resumen de este texto:&#39;</span>,data<span class="sc">$</span>text)),<span class="st">&#39;prompt_id&#39;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(data)))</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="co"># hago la consulta</span></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>consulta2 <span class="ot">&lt;-</span> <span class="fu">gpt3_completions</span>(<span class="at">prompt_var =</span> prompt<span class="sc">$</span>prompts, <span class="co"># defino las órdenes, una por cada mención</span></span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>                            <span class="at">id_var =</span> data<span class="sc">$</span>fecha, <span class="co"># el identificador</span></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>                            <span class="at">param_model =</span> <span class="st">&#39;text-davinci-003&#39;</span>, <span class="do">##defino el modelo</span></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>                            <span class="at">param_max_tokens =</span> <span class="dv">200</span>, <span class="co"># hay que tener en cuenta los tokens que soporta el modelo, en este caso son 4097, esto debe contemplar el texto en el prompt + el de la respuesta</span></span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>                            <span class="at">param_output_type =</span> <span class="st">&quot;complete&quot;</span>,</span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>                            <span class="at">param_temperature =</span> <span class="dv">0</span>) <span class="do">##defino algunos parámetros: max_tokens (cuanto me va a traer como máximo, debe ser mayor que mi N y temperature que está entre 0 y 1, siendo las respuestas que se acercan a 1 más aleatorias) </span></span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="co"># creo un objeto &quot;resumen&quot; con los resultados </span></span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>resumen <span class="ot">=</span> consulta2[[<span class="dv">1</span>]]</span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="co"># agrego a la base</span></span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(resumen3)[<span class="dv">3</span>] <span class="ot">&lt;-</span> <span class="st">&quot;resumen&quot;</span> <span class="co"># modifico nombre de columna</span></span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> resumen3 <span class="sc">%&gt;%</span> </span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>n, <span class="sc">-</span>prompt) <span class="sc">%&gt;%</span>  <span class="co"># saco columnas que no me interesan</span></span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">merge</span>(data, ., <span class="at">by.x =</span> <span class="st">&quot;fecha&quot;</span>, <span class="at">by.y =</span> <span class="st">&quot;id&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. TEMA y RESUMEN  ----</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># PIDO A CHAT GPT3 QUE IDENTIFIQUE TEMA Y RESUMEN DEL CONTENIDO</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rgpt3)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">gpt3_authenticate</span>(<span class="st">&quot;key.txt&quot;</span>) <span class="do">##le indico dónde tengo guardado el archivo con la clave</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">gpt3_test_completion</span>() <span class="do">##testeo la conexión</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># tema: escribo la instrucción</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>prompt <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="st">&#39;prompts&#39;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">paste</span>(<span class="st">&quot;Por favor, usando como máximo 5 palabras, identifique el tema principal del siguiente texto:&quot;</span>,data<span class="sc">$</span>text)),<span class="st">&#39;prompt_id&#39;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(data)))</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># hago la consulta</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>consulta <span class="ot">&lt;-</span> <span class="fu">gpt3_completions</span>(<span class="at">prompt_var =</span> prompt<span class="sc">$</span>prompts, <span class="co"># defino las órdenes, una por cada mención</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                             <span class="at">id_var =</span> data<span class="sc">$</span>fecha, <span class="co"># el identificador</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>                             <span class="at">param_model =</span> <span class="st">&#39;text-davinci-003&#39;</span>, <span class="do">##defino el modelo</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                             <span class="at">param_max_tokens =</span> <span class="dv">20</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                             <span class="at">param_output_type =</span> <span class="st">&quot;complete&quot;</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                             <span class="at">param_temperature =</span> <span class="dv">0</span>) <span class="do">##defino algunos parámetros: max_tokens (cuanto me va a traer como máximo, debe ser mayor que mi N y temperature que está entre 0 y 1, siendo las respuestas que se acercan a 1 más aleatorias) </span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co"># creo un objeto &quot;tema&quot; con los resultados </span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>tema <span class="ot">=</span> consulta[[<span class="dv">1</span>]]</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co"># agrego a la base</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(tema)[<span class="dv">3</span>] <span class="ot">&lt;-</span> <span class="st">&quot;tema&quot;</span> <span class="co"># modifico nombre de columna</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> tema <span class="sc">%&gt;%</span> </span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>n, <span class="sc">-</span>prompt) <span class="sc">%&gt;%</span>  <span class="co"># saco columnas que no me interesan</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">merge</span>(data, ., <span class="at">by.x =</span> <span class="st">&quot;fecha&quot;</span>, <span class="at">by.y =</span> <span class="st">&quot;id&quot;</span>)</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="co"># resumen: escribo la instrucción</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>prompt2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="st">&#39;prompts&#39;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">paste</span>(<span class="st">&#39;Haz un resumen de este texto:&#39;</span>,data<span class="sc">$</span>text)),<span class="st">&#39;prompt_id&#39;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(data)))</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="co"># hago la consulta</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>consulta2 <span class="ot">&lt;-</span> <span class="fu">gpt3_completions</span>(<span class="at">prompt_var =</span> prompt<span class="sc">$</span>prompts, <span class="co"># defino las órdenes, una por cada mención</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>                            <span class="at">id_var =</span> data<span class="sc">$</span>fecha, <span class="co"># el identificador</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>                            <span class="at">param_model =</span> <span class="st">&#39;text-davinci-003&#39;</span>, <span class="do">##defino el modelo</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>                            <span class="at">param_max_tokens =</span> <span class="dv">200</span>, <span class="co"># hay que tener en cuenta los tokens que soporta el modelo, en este caso son 4097, esto debe contemplar el texto en el prompt + el de la respuesta</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>                            <span class="at">param_output_type =</span> <span class="st">&quot;complete&quot;</span>,</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>                            <span class="at">param_temperature =</span> <span class="dv">0</span>) <span class="do">##defino algunos parámetros: max_tokens (cuanto me va a traer como máximo, debe ser mayor que mi N y temperature que está entre 0 y 1, siendo las respuestas que se acercan a 1 más aleatorias) </span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="co"># creo un objeto &quot;resumen&quot; con los resultados </span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>resumen <span class="ot">=</span> consulta2[[<span class="dv">1</span>]]</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="co"># agrego a la base</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(resumen3)[<span class="dv">3</span>] <span class="ot">&lt;-</span> <span class="st">&quot;resumen&quot;</span> <span class="co"># modifico nombre de columna</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> resumen3 <span class="sc">%&gt;%</span> </span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>n, <span class="sc">-</span>prompt) <span class="sc">%&gt;%</span>  <span class="co"># saco columnas que no me interesan</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">merge</span>(data, ., <span class="at">by.x =</span> <span class="st">&quot;fecha&quot;</span>, <span class="at">by.y =</span> <span class="st">&quot;id&quot;</span>)</span></code></pre></div>
 <p>Una vez obtenido el texto ya podría comenzar a trabajar con
 procesamiento y análisis de datos. Sin embargo, considero muy útil
 agregar una etapa más que se puede realizar utilizando la herramienta de
@@ -5628,11 +5623,6 @@ resumen y texto completo.</p>
 <p><br></p>
 <div id="tabla-3.-base-de-datos-final" class="section level4">
 <h4>Tabla 3. Base de datos final</h4>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>tabla3 <span class="ot">&lt;-</span> knitr<span class="sc">::</span><span class="fu">kable</span>(data_final, <span class="at">format =</span> <span class="st">&quot;html&quot;</span>, <span class="at">table.attr =</span> <span class="st">&quot;style=&#39;width:100%;&#39;&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                       kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">font_size =</span> <span class="dv">12</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                       kableExtra<span class="sc">::</span><span class="fu">scroll_box</span>(<span class="at">width =</span> <span class="st">&quot;900px&quot;</span>, <span class="at">height =</span> <span class="st">&quot;400px&quot;</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>tabla3</span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; overflow-x: scroll; width:900px; ">
 <table style="width:100%; font-size: 12px; margin-left: auto; margin-right: auto;" class="table">
 <thead>
@@ -8902,8 +8892,385 @@ y un recargo, y se limitan los intereses a cobrar en el futuro.
 <p>Gráfico plotly con fecha, tema y resumen</p>
 <p><br></p>
 </div>
+<div id="posibles-aplicaciones" class="section level2">
+<h2>6. Posibles aplicaciones</h2>
+<p>¿Para qué se puede usar esto de la transcripción? ¿qué nos
+aporta?</p>
+<p>Ahorra tiempo: transcripción de entrevistas es el mejor ejemplo</p>
+<p>Trabajar con fuentes no tan habituales y pasibles de comparación:
+discursos no escritos de políticos/as, entrevistas, programas de radio,
+fragmentos de noticieros, etc.</p>
+<p>Ejemplos: - comparar las temáticas tratadas por Mujica y Manini en
+sus audiciones radiales durante un año - comparar el resumen de noticias
+entre diferentes noticieros radiales durante x tiempo</p>
+<p><br></p>
+</div>
 <div id="extra-transcripción-modelo-medium" class="section level2">
-<h2>6. Extra: Transcripción modelo medium</h2>
+<h2>Extra: Transcripción modelo medium</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 6. EXTRA: EJEMPLO CON MODELO DE TRANSCRIPCION MAS POTENTE ----</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># transcribo un audio con la librería audio.whisper con un modelo más potente (que demora mucho)</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">whisper</span>(<span class="st">&quot;ggml-medium.bin&quot;</span>) <span class="co"># defino el modelo (va de tiny a large, este es el segundo más potente)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>trans <span class="ot">&lt;-</span> <span class="fu">predict</span>(model, <span class="at">newdata =</span> <span class="st">&quot;2023-04-11.wav&quot;</span>, <span class="at">language =</span> <span class="st">&quot;es&quot;</span>, <span class="at">n_threads =</span> <span class="dv">2</span>) <span class="co"># transcribo</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># creo vector con transcripción medium </span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>trans_data <span class="ot">&lt;-</span> trans<span class="sc">$</span>data</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>text_medium <span class="ot">&lt;-</span> <span class="fu">paste</span>(trans_data<span class="sc">$</span>text,<span class="at">collapse=</span><span class="st">&quot;&quot;</span>) </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># extraigo vector de transcripción tiny de la base </span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>fecha <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(data<span class="sc">$</span>fecha) <span class="co"># formato de  fecha para filtrar luego</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>text_tiny <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span>  </span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>             <span class="fu">filter</span>(fecha <span class="sc">==</span> <span class="st">&quot;2023-04-11&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>            <span class="fu">select</span>(text) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>            <span class="fu">pull</span>()</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># comparo texto</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>comparativo_text <span class="ot">&lt;-</span> <span class="fu">cbind</span>(text_tiny, text_medium)</span></code></pre></div>
+<p>La transcripción con el modelo <em>tiny</em> de
+<code>audio.whisper</code> es buena pero no perfecta como puede verse en
+la columna text de la base de datos. Por ejemplo, tiene bastantes
+problemas con los nombres propios (“Manini”, “Vanini”, “Vanivi”, etc.).
+Si se quiere obtener una transcripción fidedigna y precisa es mejor
+optar por modelos de <code>audio.whisper</code> más potentes como
+<em>medium</em> o <em>large</em>. Lo que hay que tener en cuenta es que
+demoran mucho tiempo más en ejecturase: <em>velocidad vs precisión</em>.
+Al hacer la consulta con chatGPT3, devuelve prácticamente el mismo
+resultado cuando se le pide tema y resumen! Así que la elección del
+modelo dependerá del objetivo de la transcripción y con qué corpus
+textual se vaya a trabajar. Si se trabaja con el texto completo, es
+mejor un modelo potente. Si se va a trabajar con resumenes creados por
+AI, es más razonable usar modelos más livianos y rápidos.</p>
+<p><br></p>
+<div id="tabla-4.-tiny-vs-medium" class="section level4">
+<h4>Tabla 4. Tiny vs Medium</h4>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:400px; overflow-x: scroll; width:900px; ">
+<table style="width:100%; font-size: 12px; margin-left: auto; margin-right: auto;" class="table">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+text_tiny
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+text_medium
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+[Música] Vamos con mi enzo al espacio del partido Cabildo Abierto con
+ustedes el senador Guido Vanimi Rios A mi go de Cabildo Habierto de todo
+el país Orientales Bueno, dia En estos últimos días si lugar a dudas
+Acaparó los titulares, los grandes titulares en la actividad política
+nacional Todo lo referido Al intercambio de propuestas y de ideas en
+torno Al proyecto de reforma de la seguridad social Que desde el medio
+cubre Ingressó el Parlamento Que a finales del mes de diciembre Fue
+aprobado en el Senado Y que ahora están en la etapa final de su
+confideración En la cámara de representantes Cuando se votó En el mes de
+diciembre en el Senado nuestro partido cabido abierto Dejo bien en claro
+Que lo hacía para cumplir con el crono grama trasado Para no retrasar
+más una agenda O uno plazo Para aprobar una ley de este tipo Que ya en
+el cuarto año de gobierno Es bastante tardillo por las características
+de una ley Que siempre contendrá artículos polémicos Se votó en el
+Senado y se dijo Que en la cámara de representantes se iba a continuar
+Buscando mejorar algunos aspectos del proyecto Claroamente en octubre
+Cuando se presentó el proyecto al Parlamento Digimos en aquello
+oportunidad Que en el Parlamento Y vamos a buscar mejorar el proyecto Y
+eso exactamente lo que hicimos Lo que dijimos en octubre Fue lo que
+hicimos en todo este período Hasta el día de hoy Que en esquieren
+sembrar la idea de que cabildo Faltó a una palabra empeniada Están
+realmente faltando a la verdad Taclaramente registrado que desde el
+primer día Nos proponciemos establecerle mejoras al proyecto Y lo
+hacemos Porque somos conscientes ¿Te quete proyecto una vez que sea ley?
+Va a disparar una campaña Su sumamente agresiva similar a la que se
+lanzó en ocasión de la lucha Y creemos que bueno Que quienes vamos a
+estar en defensa del proyecto Lo hagamos con todas las herramientas
+necesarias Para hacerlo en forma convencida en tu fiesta Y lograr que la
+ley que se aprove que defirme en nuestro ordenamiento jurídico Eso es
+responsabilidad Lo contrario, gustar una ley a sabiendas De que tiene
+flanco Es puesto que pueden ser fácilmente rebatible Eso, lo contrario,
+es irresponsabilidad Y si hay algo que a caracterizado a cabildo abierto
+en toda esta administración Hacido presentado de la responsabilidad Ya
+en la serie de vida Y su consecuencia con lo que Pienza con lo que
+siente y con lo que dice ¿Quién es que quieren sembrar otra idea Lo
+hacen en forma mal intencionada Buscando, terjive, salga, cechos Y
+bueno, claramente cabildo, hijo, lo que dijo Presentó sus propuestas Que
+arrancaron allá A mediados del año pasado cuando se conoció el
+anteproyecto Cabildo abierto, mostró varias diferencias presentó Por
+escrito algunos cambios imprescindibles a realizar Recordemos aquello
+que comprendía A las biudas y biudo que definitiva Se establecía una
+edad a partir de la cual recient iba a tener la pensión Vita elicia que
+era muy avanzada Bueno, cabido abierto, pidió que se bajara esa edad Se
+cambió significativamente También lo referido al ámbito de aplicación
+Que ahora quedó establecido que aquellos que tienen 50 años cumplidos
+Hoy no son alcanzados por la nueva ley Y bueno, otros cambios algunos
+yos cantivos Otro de menor embaragadura Pero que fueron todos apuntando
+a mejorar la ley Que daron algunas cosas pendientes sobre todo Porque en
+una primera instancia no había quedado bien claro a cuál era la
+intención Y luego a medida que se fue viviendo Las consecuencias que
+podía tener esos artículos en el proyecto Se fue planteando la necesidad
+de cambiar los ofacar Y así llegamos a estas últimas instancias de estos
+últimos días donde finalmente se acordó bajar a 20 años Lo que se
+consideran para calcular el haber de retiro Lo que se llama la tasa de
+reemplazo En vez de los 25 que establecía el proyecto de ley Cuantó
+menos años se consideran, cuantó menos mejores años de concidere Mejor
+va a ser el número final el promedio final Mas al tabasar la jubilación
+que se percibira Creemos que es una mejor asustancial A parte 20 años en
+cierta forma lo que está vigente hoy para el BPS Por lo tanto pensamos
+que no va a ser un argumento para aquellos que van a enfrentar Esta ley
+el hecho de los años que se consideran para ese cálculo de haber de
+retiro Que hemos que es una mejor asustancial También es importante
+desglosar sacar este proyecto Los referentes a las inversiones de las
+afaps en el exterior Esto se pretende después tratarlo en una ley a
+parte Lo discutiremos en una ley a parte Fero que propusimos en el otro
+El propio doctor salda en reconocio Que ese punto no afectaba en nada de
+la arquitectura del proyecto Por lo tanto no afecta a la ley Resultante
+Bueno pensamos que es bueno que se trata de parte y no dentro de este
+proyecto También la declaración de que elías es transitorio que se va a
+tender a su desaparición algo que en la reala aumentación habrá que
+especificar De qué forma se va a implementar Y bueno, hay referentes a
+las bonificaciones que cabido a ver tostar reclamando para algunos
+Sectores que necesitan esas bonificaciones Por razones de la
+especificidad de su actividad Eso que lo comprometo de tratarlo en el
+marco de la comisión de bonificación Que se crea en esta misma ley Y de
+tomar resolución lo antes posible Dentro del corriente año Así que en
+definitiva de las propuestas de cabido a ver Podemos decir que las más
+importantes en la que cabido a ver toentendía Quieren esenciales para
+tener la mayor fortaleza La ley resultante Finalmente fueron acordadas
+Esperemos que una vez que se termine de discutir en otras tiendas
+políticas La conducta a tomar frente al proyecto Este proyecto se
+termine de aprobar en las próximas horas Bueno, los próximos días sin
+ningún tipo de inconvenience Estamos convencidos de que esta ley que va
+a salir Pacer mucho mejor que el proyecto que entró en octubre de la año
+pasado Quiero ser una menciona especial aquellos que arraí de los
+planteos de cabildo Un a y otra vez además de mentir sobre la palabra
+empeñada sobre lo que se estaría incompliendo Que de que ha demostrado
+por lo fecho que finalmente cabildo Quiere que salga la ley y lo que
+quijo y trató y logró es mejorar la ley Pero aparte de eso, si intentó
+crear un clima de alearma de crisis en la coalición Que podría
+significar esto el fin de la coalición Bueno, nosotros entendemos que
+aquí hubo alguna intencionalidad de presionar A un partido que no se
+deja presionario y que plantea las cosas como la siente Y que en
+definitiva dijo claramente que cambios había que hacer Para de esa forma
+poder apoyar la ley Pero en ocasión de esa campaña Hace unos pocos días
+nosotros hicimos un Twitter ¿Qué decía que esta reforma de la seguridad
+social es un proyecto más dentro de este período de gobierno? Importante
+si pero uno más como para nosotros, sin duda, también fue importante La
+ley forestal que recorremos fue vetada después por el presidente de la
+República O como lo es y sobre todo como lo es la ley de restructura de
+las deuda de la persona física Es una ley más importante si pero no más
+importante que esa que mencionamos Y decíamos que cabildo abierto ha
+planteado modificaciones para tener el mejor proyecto posible Que de
+ninguna manera esto pone en riesgo a la coalición de gobierno Creo que
+en este momento lo hemos demostrado claramente cuando anunciamos Que
+estamos dispuesto a votar y cuando anunciamos que vamos a defender la
+ley resultante Comencidos de que es necesaria para mejorar en algo La
+perspectiva de la seguridad social hacia el futuro Y bueno, insistimos
+que central una política demos gráfica Que cambia la realidad que ha mis
+carreras de país en donde cada vez somos menos y cada vez somos más
+viejos Y eso se sigue perpetuando en el tiempo Vamos a ver que hacer
+otras reformas en el futuro y no creemos que social bueno para el país
+Terminaba un otro tweet diciendo que si alguien quiere romper la
+coalición que lo diga Pero claramente no era cabildo abierto Otra
+declaraciones que fueron más explosivos en cuanto a la coalición y no
+fueron precisamente Las de cabildo abierto En otros de cosas en estos
+días se va a tratar en la cámara de representantes el proyecto de ley
+Que ya tiene media sanción de la corresponsabilidad en la creanza de los
+hijos Conocido o lugarmente como tenencia compartida Hay intención de
+ponerle una semana más el tratamiento Bueno, tarde de temprano se va a
+tratar Creemos que el proyecto es muy importante que afecta a miles y
+miles de usuarios que se ven Su malente ser senado en el cul derecho a
+poder visitar a sus hijos Por una ley que individualemente implica
+injusticia Que termina generando en muchos casos una violencia en un
+citada Y exactamente teniendo el efecto contrario al que pretende la ley
+al menos en ruptitular Pero lo que no se ha llamado la atención
+realmente El actitud del frente e amplio En boca de su encargada de la
+repartición de género secretaria de género La señora Patricia González
+¿Quién dijo que si esta ley se aprueba van a recurrir a organismos
+internacionales para que intervengan? La ONU la ONU la ONU no se que
+oran in momentos nacionales Realmente no hubiese más que dicho en sí y
+más que lo que sea relacionado a este proyecto o a cualquier otro Que
+desde el frente e amplio se diga de antermano que para ellos tiene más
+valor Lo que nos digan desde afuera que lo que diga el pueblo uro guayo
+a través de sus representantes Yo hubiera esperado y lo digo de corazón
+que en vez de recurrir a organismos internacionales para que decida las
+cosas de los cubo ayer hubiera dicho esta señora Vamos a recurrir a
+levantar filmas para hacer un referéndum a ver si la ley que de afirme A
+no, es decir que sea el pueblo uro guayo es que decida pero no lo
+sorganemos de afuera Recordamos uno de los pilares esenciales del
+artiguismo Que es nuestra orientación en la vida política es que no nos
+goviérne en de afuera El respeto como de ciertas a la soberanía
+particular de los pueblos Es lamentable que desde el mayor partido
+político del país Se esté invocando la necesidad de que intervengan de
+afuera para decidir en cosas de adentro de nuestro país Eso es renunciar
+a nuestra soberanía en forma evident No estamos de acuerdo y creemos o
+pensamos que tendría que meditarse mucho este tipo de declaraciones Por
+el daño que individualmente hace en todo nuestro sistema político
+nuestra convivencia democrática donde tenemos que valorar mucho a los
+representantes del pueblo y aquello que el pueblo decide en las urnas Lo
+cual siempre debe ser respetado Amigos nos reencontramos la próxima
+semana en este mismo espacio Hasta aquí el espacio de Cabildo abierto
+[Música]
+</td>
+<td style="text-align:left;">
+Damos comienzo al espacio del partido Cabildo Abierto, con ustedes el
+senador Guido Manini Ríos. Amigos de Cabildo Abierto de todo el país
+orientales, buenos días. En estos últimos días sin lugar a dudas acaparó
+los titulares, los grandes titulares en la actividad política nacional,
+todo lo referido al intercambio de propuestas y de ideas en torno al
+proyecto de reforma de la seguridad social que desde el mes de octubre
+ingresó al parlamento, que a finales del mes de diciembre fue aprobado
+en el Senado y que ahora está en la etapa final de su consideración en
+la Cámara de Representantes. Cuando se votó en el mes de diciembre en el
+Senado, nuestro partido Cabildo Abierto dejó bien en claro que lo hacía
+para cumplir con el cronograma trazado, para no retrasar más una agenda
+o unos plazos para aprobar una ley de este tipo que ya en el cuarto año
+de gobierno es bastante tardío por las características de una ley que
+siempre contendrá artículos polémicos. Se votó en el Senado y se dijo
+que en la Cámara de Representantes se iba a continuar buscando mejorar
+algunos aspectos del proyecto. Claramente en octubre cuando se presentó
+el proyecto al parlamento, dijimos en aquella oportunidad que en el
+parlamento íbamos a buscar mejorar el proyecto y eso es exactamente lo
+que hicimos, lo que dijimos en octubre fue lo que hicimos en todo este
+período hasta el día de hoy. Quienes quieren sembrar la idea de que
+Cabildo faltó a una palabra empeñada están realmente faltando a la
+verdad. Está claramente registrado que desde el primer día nos
+propusimos establecerle mejoras al proyecto y lo hacemos porque somos
+conscientes de que este proyecto una vez que sea ley va a disparar una
+campaña sumamente agresiva, similar a la que se lanzó en ocasión de la
+LUC y creemos que es bueno que quienes vamos a estar en defensa del
+proyecto lo hagamos con todas las herramientas necesarias para hacerlo
+en forma convencida, entusiasta y lograr que la ley que se apruebe quede
+firme en nuestro ordenamiento jurídico. Eso es responsabilidad, lo
+contrario votar una ley a sabiendas de que tiene flancos expuestos que
+pueden ser fácilmente rebatibles, eso lo contrario es irresponsabilidad
+y si hay algo que ha caracterizado a Cabildo abierto en toda esta
+administración ha sido su sentido de la responsabilidad, su seriedad y
+su consecuencia con lo que piensa, con lo que siente y con lo que dice.
+Quienes quieren sembrar otra idea lo hacen en forma mal intencionada
+buscando tergiversar los hechos y bueno claramente Cabildo hizo lo que
+dijo, presentó sus propuestas que arrancaron allá a mediados del año
+pasado cuando se conoció el anteproyecto, Cabildo abierto mostró varias
+diferencias, presentó por escrito algunos cambios imprescindibles a
+realizar, recordemos aquello que comprendía a las viudas y viudos que en
+definitiva se establecía una edad a partir de la cual recién iban a
+tener la pensión vitalicia que era muy avanzada, bueno Cabildo abierto
+pidió que se bajara esa edad, se cambió significativamente, también lo
+referido al ámbito de aplicación que ahora quedó establecido que
+aquellos que tienen 50 años cumplidos hoy no son alcanzados por la nueva
+ley, bueno y otros cambios algunos de sustantivos otros de menor
+embargadura pero que fueron todos apuntando a mejorar la ley, quedaron
+algunas cosas pendientes sobre todo porque en una primera instancia no
+habían quedado bien claras cuál era la intención y luego a medida que se
+fue viendo las consecuencias que podía tener esos artículos en el
+proyecto se fue planteando la necesidad de cambiarlos o sacarlos y así
+llegamos a estas últimas instancias de estos últimos días donde
+finalmente se acordó bajar a 20 años los que se consideran para calcular
+el haber de retiro lo que se llama la tasa de reemplazo en vez de los 25
+que establecía el proyecto de ley, cuanto menos años se consideren,
+cuanto menos mejores años se considere mejor va a ser el número final,
+el promedio final, más alta va a ser la jubilación que se percibirá,
+creemos que esa es una mejora sustancial aparte 20 años en cierta forma
+es lo que está vigente hoy para el BPS por lo tanto pensamos que no va a
+ser un argumento para aquellos que van a enfrentar esta ley el hecho de
+los años que se consideran para ese cálculo de haber de retiro, creemos
+que es una mejora sustancial también es importante desglosar, sacar de
+este proyecto lo referente a las inversiones de las afaps en el exterior
+esto se pretende después tratarlo en una ley aparte lo discutiremos en
+una ley aparte fue lo que propusimos nosotros el propio doctor saldáin
+reconoció que ese punto no afectaba en nada la arquitectura del proyecto
+por lo tanto no afecta la ley resultante, bueno pensamos que es bueno
+que se trate aparte y no dentro de este proyecto también la declaración
+de que el IAS es transitorio y que se va a atender a su desaparición
+algo que en la reglamentación habrá que especificar de qué forma se va a
+implementar y bueno hay de referente a las bonificaciones que cabildo
+abierto está reclamando para algunos sectores que necesitan de esas
+bonificaciones por razones de la especificidad de su actividad eso quedó
+el compromiso de tratarlo en el marco de la comisión de bonificaciones
+que se crea en esta misma ley y de tomar resolución lo antes posible
+dentro del corriente año así que en definitiva de las propuestas de
+cabildo abierto podemos decir que las más importantes las que cabildo
+abierto entendía que eran esenciales para tener la mayor fortaleza en la
+ley resultante finalmente fueron acordadas esperemos que una vez que se
+termine de discutir en otras tiendas políticas la conducta a tomar
+frente al proyecto este proyecto se termine de aprobar en las próximas
+horas o en los próximos días sin ningún tipo de inconveniente estamos
+convencidos de que esta ley que va a salir va a ser mucho mejor que el
+proyecto que entró en octubre del año pasado quiero hacer una mención
+especial a aquellos que a raíz de los planteos de cabildo una y otra vez
+además de mentir sobre la palabra empeñada sobre lo que se estaría
+incumpliendo y quedar demostrado por los hechos que finalmente cabildo
+quiere que salga la ley y lo que quiso y trató y logró es mejorar la ley
+pero aparte de eso se intentó crear un clima de alarma de crisis en la
+coalición que podría significar esto el fin de la coalición bueno
+nosotros entendemos que aquí hubo alguna intencionalidad de presionar a
+un partido que no se deja presionar y que plantea las cosas como la
+siente y que en definitiva dijo claramente qué cambios había que hacer
+para de esa forma poder apoyar la ley pero en ocasión de esa campaña
+hace unos pocos días nosotros hicimos un tweet que decía que esta
+reforma de la seguridad social es un proyecto más dentro de este período
+de gobierno importante sí pero uno más como para nosotros sin duda
+también fue importante la ley forestal que recordemos fue vetada después
+por el presidente de la república o como lo es y sobre todo como lo es
+la ley de reestructura de las deudas de las personas físicas es una ley
+más importante sí pero no más importante que esas que mencionamos y
+decíamos que cabildo abierto ha planteado modificaciones para tener el
+mejor proyecto posible que de ninguna manera esto pone en riesgo a la
+coalición de gobierno creo que en eso lo hemos demostrado claramente
+cuando anunciamos que estamos dispuestos a votar y cuando anunciamos que
+vamos a defender la ley resultante convencidos de que es necesaria para
+mejorar en algo la perspectiva de la seguridad social hacia el futuro
+igual insistimos que es central una política demográfica que cambie la
+realidad cambie esta realidad de país en donde cada vez somos menos y
+cada vez somos más viejos si eso se sigue perpetuando en el tiempo va a
+haber que hacer otras reformas en el futuro y no creemos que eso sea
+bueno para el país terminaba con nuestros tweets diciendo que si alguien
+quiere romper la coalición que lo diga pero claramente no era cabildo
+abierto hubo otras declaraciones que fueron más más explosivas en cuanto
+a la coalición y no fueron precisamente las de cabildo abierto en otro
+orden de cosas en estos días se va a tratar en la cámara de
+representantes el proyecto de ley que ya tiene media sanción de la
+corresponsabilidad en la crianza de los hijos conocido vulgarmente como
+tenencia compartida hay intención de posponerlo una semana más el
+tratamiento bueno tarde o temprano se va a tratar creemos que es un
+proyecto muy importante que afecta a miles y miles de uruguayos que se
+ven sumamente cercenados en su derecho a poder visitar a sus hijos por
+una ley que indudablemente implica injusticias que terminan generando en
+muchos casos una violencia inusitada y exactamente teniendo el efecto
+contrario al que pretende la ley al menos en su titular pero lo que nos
+ha llamado la atención realmente es la actitud del frente amplio en boca
+de su encargada de la repartición de género secretaría de género la
+señora patricia gonzález quien dijo que si esta ley se aprueba van a
+recurrir a organismos internacionales para que intervenga la ono la oe a
+no sé quiénes organismos internacionales realmente nos duele más que el
+hecho en sí más que lo que sea relacionado a este proyecto o a cualquier
+otro que desde el frente amplio se diga de antemano que para ellos tiene
+más valor lo que nos digan desde afuera que lo que diga el pueblo
+uruguayo a través de sus representantes yo hubiera esperado y lo digo de
+corazón que en vez de recurrir a organismos internacionales para que
+decidan las cosas de los uruguayos hubiera dicho esta señora vamos a
+recurrir a levantar firmas para hacer un referéndum a ver si la ley
+queda firme o no es decir que sea el pueblo uruguayo el que decida pero
+no los organismos de afuera recordamos uno de los pilares esenciales del
+artigismo que es nuestra nuestra orientación en la vida política es que
+no nos gobiernen de afuera el respeto como decía artigas a la soberanía
+particular de los pueblos es lamentable que desde el mayor partido
+político del país se esté invocando la necesidad de que intervengan de
+afuera para decidir en cosas de adentro de nuestro país eso es renunciar
+a nuestra soberanía en forma evidente no estamos de acuerdo y creemos o
+pensamos que tendría que meditarse mucho este tipo de declaraciones por
+el daño que indudablemente hace en todo nuestro sistema político nuestra
+nuestra convivencia democrática donde tenemos que valorar mucho a los
+representantes del pueblo y aquello que el pueblo decide en las urnas lo
+cual siempre siempre debe ser respetado amigos nos reencontramos la
+próxima semana en este mismo espacio hasta aquí el espacio de cabildo
+abierto [MÚSICA]
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><br></p>
 <p>TRANSCRIPCIÓN MÄS POTENTE: MODELO MEDIUM / LARGE ES PERFECTA:
 COMPARATIVO SIN EMBARGO… RESUMEN Y TEMA NO VARÏAN, ASÏ QUE HAY QUE
 DEFINIR COSTO/BENEFICIO, VELOCIDAD vs PRECISION</p>
@@ -8923,6 +9290,7 @@ DEFINIR COSTO/BENEFICIO, VELOCIDAD vs PRECISION</p>
 [^5]: Desarollado por Kenneth Benoit, Kohei Watanabe, Haiyan Wang, Paul Nulty, Adam Obeng, Stefan Müller, Akitaka Matsuo, William Lowe, European Research Council.
 
 [^6]: Más información sobre random forest puede verse en *[este sitio de la Universidad de Berkeley](https://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm)*. Una descripción didáctica de esta técnica puede verse en *[este post de bookdown](https://bookdown.org/content/2031/ensambladores-random-forest-parte-i.html)*.-->
+</div>
 </div>
 
 
