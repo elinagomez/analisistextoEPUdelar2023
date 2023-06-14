@@ -1,5 +1,5 @@
 ---
-title: R aplicado al análisis cualitativo / FCS-UdelaR
+title: Recuperación y análisis de texto con R
 subtitle: Clase 2 - Educación Permanente FCS
    
 output: 
@@ -28,21 +28,30 @@ knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
 
 <center>
 
-![](imagenes/eg.png){ width=25% } 
+<!-- ![](imagenes/eg.png){ width=25% }  -->
 </center>
 
 
-**Mag. Elina Gómez (UMAD/FCS)**
+**Mag. Elina Gómez (UMAD)**
 
 [elina.gomez@cienciassociales.edu.uy](elina.gomez@cienciassociales.edu.uy)
 
 [www.elinagomez.com](www.elinagomez.com)
 
 
+\
+
+**Mag. Gustavo Méndez Barbato**
+
+[gustavo.mendez@cienciassociales.edu.uy](gustavo.mendez@cienciassociales.edu.uy)
+
+
+
 #
 
 
 ![](imagenes/by-nc-sa.png){ width=18% }  
+
 
 Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
 
@@ -71,34 +80,40 @@ Las fuentes de datos que vamos a ver son:
 
 Existen diferentes librerías de R que nos permiten recuperar documentos en diferentes formatos:
 
-- El paquete [readtext](https://cran.r-project.org/web/packages/readtext/vignettes/readtext_vignette.html) tiene una función con le mismo nombre _readtext()_ que permite cargar archivos en cualquier formato de texto (txt, pdf, doc, docx, odt o incluso alojado en uno de estos formatos en la web).
+
+- [readtext](https://cran.r-project.org/web/packages/readtext/vignettes/readtext_vignette.html)
+
+- [pdftools](https://docs.ropensci.org/pdftools/)
 
 
-# readtext::readtext()
-
-```{r eval=FALSE, message=FALSE, warning=FALSE}
-library(readtext)
-##Abro los textos en formato .txt y visualizo cómo los carga
-txt <- readtext::readtext("Clase2/Material/Mujeres_Adultos_1.txt")
-# Determinamos el pdf con el que trabajar
-pdf <- readtext("Clase2/Material/text.pdf")
-url <- readtext("https://www.ingenieria.unam.mx/dcsyhfi/material_didactico/Literatura_Hispanoamericana_Contemporanea/Autores_B/BENEDETTI/Poemas.pdf")
-```
+<!-- - El paquete [readtext](https://cran.r-project.org/web/packages/readtext/vignettes/readtext_vignette.html) tiene una función con le mismo nombre _readtext()_ que permite cargar archivos en cualquier formato de texto (txt, pdf, doc, docx, odt o incluso alojado en uno de estos formatos en la web). -->
 
 
-# pdftools::pdf_text()
+<!-- # readtext::readtext() -->
 
-Para recuperar textos en pdf existe la librería [pdftools](https://docs.ropensci.org/pdftools/) que se basa en el paquete _Rpoppler_ (Kurt Hornik).
+<!-- ```{r eval=FALSE, message=FALSE, warning=FALSE} -->
+<!-- library(readtext) -->
+<!-- ##Abro los textos en formato .txt y visualizo cómo los carga -->
+<!-- txt <- readtext::readtext("Clase2/Material/Mujeres_Adultos_1.txt") -->
+<!-- # Determinamos el pdf con el que trabajar -->
+<!-- pdf <- readtext("Clase2/Material/text.pdf") -->
+<!-- url <- readtext("https://www.ingenieria.unam.mx/dcsyhfi/material_didactico/Literatura_Hispanoamericana_Contemporanea/Autores_B/BENEDETTI/Poemas.pdf") -->
+<!-- ``` -->
 
-# pdftools::pdf_text()
 
-Tiene una función pdf_text()
+<!-- # pdftools::pdf_text() -->
 
-```{r eval=FALSE, message=FALSE, warning=FALSE}
-library(pdftools)
-# Extraemos el texto
-pdf_texto <- pdf_text("Clase2/Material/marcha_1973.pdf")
-```
+<!-- Para recuperar textos en pdf existe la librería [pdftools](https://docs.ropensci.org/pdftools/) que se basa en el paquete _Rpoppler_ (Kurt Hornik). -->
+
+<!-- # pdftools::pdf_text() -->
+
+<!-- Tiene una función pdf_text() -->
+
+<!-- ```{r eval=FALSE, message=FALSE, warning=FALSE} -->
+<!-- library(pdftools) -->
+<!-- # Extraemos el texto -->
+<!-- pdf_texto <- pdf_text("Clase2/Material/marcha_1973.pdf") -->
+<!-- ``` -->
 
 
 # tesseract OCR
@@ -123,7 +138,7 @@ tesseract_download("spa")
 # asignar
 (espanol <- tesseract("spa"))
 #Probamos:
-transcribopdf <- ocr("analesUruguay.pdf",engine = espanol)
+transcribopdf <- ocr("analesUruguay.pdf", engine = espanol)
 ```
 
 # tesseract OCR
@@ -131,11 +146,11 @@ transcribopdf <- ocr("analesUruguay.pdf",engine = espanol)
 La función _ocr_data()_ devuelve una tabla dónde cada fila es una palabra con la confianza asociada a la misma y la ubicación exacta. 
 
 
-# Ejercicio 
+<!-- # Ejercicio  -->
 
-- Replicar el OCR para la imagen _marcha_1973_
+<!-- - Replicar el OCR para la imagen _marcha_1973_ -->
 
-- Hacer las tablas de ambas
+<!-- - Hacer las tablas de ambas -->
 
 
 # magick
@@ -150,6 +165,7 @@ El paquete _magick_ complementa a _tesseract_ en cuento a mejora de la calidad d
 *¿Qué es web scraping?*
 
 __Web scraping__ es una __técnica__ para obtener datos no estructurado (etiquetas HTML) de una página web, a un formato estructurado de columnas y renglones, en los cuales se puede acceder y usar más fácilmente.
+
 
 
 # 2. Web scraping
@@ -179,6 +195,10 @@ En el curso vamos a ver tres formas de Web scraping:
 *rvest* es un paquete para scraping (raspado) y análisis web de Hadley Wickham.
 
 [Documentación](https://cran.r-project.org/web/packages/rvest/rvest.pdf)
+
+- Tutorial recomendado de Riva Quiroga (Chile)
+
+[https://programminghistorian.org/es/lecciones/introduccion-al-web-scraping-usando-r](https://programminghistorian.org/es/lecciones/introduccion-al-web-scraping-usando-r)
 
 
 
@@ -328,7 +348,7 @@ Si quality es TRUE:
 
 **Monitor de prensa**
 
-- Existe un monitor de prensa (en Twitter) que permite descargar [http://198.211.117.226/](http://198.211.117.226/)
+- Existe un monitor de prensa (en Twitter) que permite descargar [http://137.184.138.178](http://137.184.138.178)
 
 - Desarrollada por Leandro Domínguez, Guillermo Eijo y Sebastian Felix en el marco del proyecto de grado "Análisis de publicaciones sobre seguridad ciudadana en redes sociales" (FING-Udelar) - Agosto 2022
 
@@ -510,9 +530,131 @@ tema =  ft_v2_api(gkg_themes = "WB_2901_GENDER_BASED_VIOLENCE",modes = c("Artlis
 
 - El paquete [gtrendsR](https://github.com/PMassicotte/gtrendsR)
 
-- Permite realizar búsquedas de los términos más buscados en Google, proporciona una métrica propia para saber el volúmen de búsqueda asociado. 
+- Permite realizar búsquedas de los términos más buscados en Google, proporciona una métrica propia para saber el volumen de búsqueda asociado. 
 
-- Permite análisis longitudinales, por países, etc. 
+- Permite análisis longitudinales, por países,departamentos, etc. 
+
+- Es útil para analizar intereses/preocupaciones de las personas lo cual nos puede dar información del ámbito _privado_, trascendiendo o complementando con los mensajes emitidos de carácter público (rrss)
+
+
+# _gtrendsR_: ejemplo con análisis del tema **agua**
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(ggplot2)
+library(gtrendsR)
+library(trendyy)
+
+##evolución por fechas
+
+agua1 <- trendy("agua", "2022-05-10", "2023-06-14",geo = "UY") %>% get_interest()
+
+ggplot(agua1, aes(x = as.Date(date), y = hits)) +
+  geom_line(colour = "steelblue", size = 1.5) +
+  xlab(label = "Fecha") + 
+  ylab(label = 'Interés %')+
+  theme_bw()+ labs(title="Evolución de búsquedas de 'Agua' en último año")
+
+```
+
+# _gtrendsR_: ejemplo con análisis del tema **agua**
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+query=gtrends(keyword = c("agua","sub 20"),time = "now 7-d",geo = "UY")
+
+agua_sub20 <- query$interest_over_time
+
+agua_sub20 %>% 
+  ggplot() + geom_line(aes(x = date,
+                           y = hits,
+                           color = keyword),size = 0.8) +
+  xlab(label = "Fecha") + 
+  ylab(label = 'Interés %')+
+  theme_bw()+ labs(title="Evolución de búsquedas de 'Agua' vs 'sub 20' en la última semana") 
+
+```
+
+
+# _gtrendsR_: ejemplo con análisis del tema **agua**
+
+
+```{r include=FALSE}
+##cargo geometrías
+
+depto=geouy::load_geouy("Departamentos")
+
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+query=gtrends(keyword = c("agua"),time = "today 1-m",geo = "UY")
+
+
+mapa=query$interest_by_region
+mapa = mapa %>%
+  mutate(location=stringr::str_replace_all(location,"Department",""))%>%
+  mutate(location = stringr::str_trim(toupper(stringi::stri_trans_general(str = location,
+                                                                          id = "Latin-ASCII"))))
+
+
+mapa_geo = depto %>%
+  left_join(mapa,by = c("nombre"="location")) 
+
+ggplot(mapa_geo,aes(fill = hits)) + geom_sf() +
+  geom_sf_text(aes(label = round(hits,1)), colour = "black",size=3,fontface = "bold")+
+  scale_fill_gradient(low = "#9ECAE1", high = "#08306B")+
+  labs(x = "",
+       y = "",
+       caption = "")+
+  theme_bw()+
+  theme(
+    axis.line = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    legend.text = element_blank(),
+    legend.title = element_blank(),
+     legend.position = "none")+
+    # panel.grid.major = element_line(colour = "transparent"))+ 
+  labs(title="Búsquedas de 'Agua' en último mes por departamento")
+
+```
+
+
+# _gtrendsR_: ejemplo con análisis del tema **agua**
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+query=gtrends(keyword = c("agua"),time = "today 1-m",geo = "UY")
+
+#Análisis de búsquedas más relacionadas con keyword
+
+queries_relacionadas = query$related_queries
+
+topics = query$related_topics
+
+query$related_queries %>%
+  filter(related_queries=="top"& value%in%c("tiktok sin marca de agua","fuego y agua", "agua y fuego")==F)%>%
+  mutate(value=factor(value,levels=rev(as.character(value))),
+         subject=as.numeric(subject)) %>%
+  top_n(20,value) %>%
+  ggplot(aes(x=value,y=subject)) + 
+  geom_bar(stat='identity',show.legend = F,fill = "steelblue") + 
+  coord_flip() + labs(title="Búsquedas más relacionadas con 'Agua' en último mes")+
+  theme_bw()+
+  theme(axis.title= element_blank())
+
+
+```
+
 
 
 # Otros recursos disponibles
@@ -543,62 +685,62 @@ API significa _Application Programming Interfaces_ o _interfaz de programación 
 Las aplicaciones de redes sociales, por ejemplo, asignan algunos permisos de acceso a desarrolladores para interactuar con las mismas. El nivel de acceso varía de una a otra red.
 
 
-# 3. APIs de redes sociales: Twitter
+<!-- # 3. APIs de redes sociales: Twitter -->
 
-En este caso, veremos el caso de *Twitter* como una de las redes sociales que podemos conectar desde R para realizar análisis variados. 
+<!-- En este caso, veremos el caso de *Twitter* como una de las redes sociales que podemos conectar desde R para realizar análisis variados.  -->
 
-Existen dos paquetes para esto: _twitteR_ y _rtweet_
+<!-- Existen dos paquetes para esto: _twitteR_ y _rtweet_ -->
 
-# ¿Por qué Twitter?
+<!-- # ¿Por qué Twitter? -->
 
-En mayo de 2020
+<!-- En mayo de 2020 -->
 
-- *6.000 tweets por segundo*
-- *350.000 tweets por minuto*
-- *500 millones de tweets por día*
-- *200 billones de tweets por día*
+<!-- - *6.000 tweets por segundo* -->
+<!-- - *350.000 tweets por minuto* -->
+<!-- - *500 millones de tweets por día* -->
+<!-- - *200 billones de tweets por día* -->
 
-# ¿Por qué Twitter?
+<!-- # ¿Por qué Twitter? -->
 
-![](imagenes/twt.png) 
+<!-- ![](imagenes/twt.png)  -->
 
-# API de Twitter
+<!-- # API de Twitter -->
 
-- Twitter disponibiliza los datos en diferentes niveles a los que llama **puntos de conexión**. En este caso nos interesa acceder a los _Tweets y respuestas_ emitidos para su posterior clasificación, procesamiento y análisis.  
+<!-- - Twitter disponibiliza los datos en diferentes niveles a los que llama **puntos de conexión**. En este caso nos interesa acceder a los _Tweets y respuestas_ emitidos para su posterior clasificación, procesamiento y análisis.   -->
 
-- Más información al respecto en: [Twitter API](https://help.twitter.com/es/rules-and-policies/twitter-api)
-
-
-# Restricciones
-
-* La antiguedad permitida para la obtención de tweets es de *8 días*
-
-* Se pueden bajar 18 mil tweets que coincidan con la búsqueda de forma aleatoria.
-
-* Si la búsqueda subera los 18 mil tweets se puede iterar la función para ampliar la búsqueda (hasta 54 mil tweets por hora!)
+<!-- - Más información al respecto en: [Twitter API](https://help.twitter.com/es/rules-and-policies/twitter-api) -->
 
 
-[Artículo recomendado!](https://rdrr.io/github/arcruz0/libroadp/f/qta.Rmd) 
+<!-- # Restricciones -->
 
-# ¿Cómo me conecto a la API de Twitter desde RStudio? 
+<!-- * La antiguedad permitida para la obtención de tweets es de *8 días* -->
 
-1. Entro a la pagina para desarrolladores de Twitter [https://developer.twitter.com/en/apps](https://developer.twitter.com/en/apps) 
-2. Me logeo en Twitter con mi cuenta de usuario personal.
+<!-- * Se pueden bajar 18 mil tweets que coincidan con la búsqueda de forma aleatoria. -->
 
-# ¿Cómo me conecto a la API de Twitter desde RStudio? 
-3. Voy a la opción **Create an app**
+<!-- * Si la búsqueda subera los 18 mil tweets se puede iterar la función para ampliar la búsqueda (hasta 54 mil tweets por hora!) -->
 
-![](imagenes/twapi1.png) 
 
-# ¿Cómo me conecto a la API de Twitter desde RStudio? 
+<!-- [Artículo recomendado!](https://rdrr.io/github/arcruz0/libroadp/f/qta.Rmd)  -->
 
-4. Se debe especificar el usuario que se utilizará, los fines (organización o uso personal), área de interés vinculada al uso, país y descripción general de la aplicación.
+<!-- # ¿Cómo me conecto a la API de Twitter desde RStudio?  -->
 
-5. Vamos a la pestaña **Keys and tokens** dónde estarán todas las claves que necesito para hacer la conexión con R. 
+<!-- 1. Entro a la pagina para desarrolladores de Twitter [https://developer.twitter.com/en/apps](https://developer.twitter.com/en/apps)  -->
+<!-- 2. Me logeo en Twitter con mi cuenta de usuario personal. -->
 
-# ¿Cómo me conecto a la API de Twitter desde RStudio? 
+<!-- # ¿Cómo me conecto a la API de Twitter desde RStudio?  -->
+<!-- 3. Voy a la opción **Create an app** -->
 
-![](imagenes/twapi2.png) 
+<!-- ![](imagenes/twapi1.png)  -->
+
+<!-- # ¿Cómo me conecto a la API de Twitter desde RStudio?  -->
+
+<!-- 4. Se debe especificar el usuario que se utilizará, los fines (organización o uso personal), área de interés vinculada al uso, país y descripción general de la aplicación. -->
+
+<!-- 5. Vamos a la pestaña **Keys and tokens** dónde estarán todas las claves que necesito para hacer la conexión con R.  -->
+
+<!-- # ¿Cómo me conecto a la API de Twitter desde RStudio?  -->
+
+<!-- ![](imagenes/twapi2.png)  -->
 
 
 
