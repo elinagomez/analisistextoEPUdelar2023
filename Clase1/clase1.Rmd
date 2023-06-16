@@ -120,6 +120,10 @@ Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAl
 Exploración de las diferentes posibilidades gráficas de visualización de los resultados del análisis textual (nubes de palabras, frecuencias, dendrogramas, etc.) y algunos ejemplos de visualización interactiva. 
 
 
+# **Esquema del curso**
+
+![](imagenes/esquema.png)
+
 # **Metodología**
 
 - El enfoque del curso es práctico (hands-on)
@@ -128,9 +132,68 @@ Exploración de las diferentes posibilidades gráficas de visualización de los 
 
 - Posibilidad de clonar repositorio GitHub y trabajar con proyecto y control de versiones.
 
-- [https://github.com/elinagomez/analisistextoEPUdelar2023](https://github.com/elinagomez/analisistextoEPUdelar2023)
+- [https://github.com/elinagomez/rcuali2022](https://github.com/elinagomez/rcuali2022)
+
+[Tutorial R+ GitHub](http://destio.us.es/calvo/asignaturas/ge_esco/tutorialusargitgithubrstudio/UsarGitGithubconRStudio.html)
+
+# **Consejo**
+
+- Elegir un tema de interés
+- Hacerse una pregunta inicial (luego podrá variar o ampliarse)
+- Identificar una fuente textual para responderla (y en qué soporte está)
 
 
+# **Ideas / Ejemplos**
+
+tema|política forestal uruguay
+-----|-----
+preguntas|¿cómo se desarrolló el debate parlamentario acerca de las modificaciones a la ley forestal? ¿qué palabras fueron más frecuentes? ¿qué temas fueron los preponderantes? ¿Qué emociones y sentimientos se desprenden de cada texto? ¿Hay diferencias entre los diferentes partidos políticos?
+fuentes|diarios de sesiones parlamento
+
+# **Ideas / Ejemplos**
+
+tema|investigación ciencias sociales
+-----|-----
+preguntas|¿Cuáles son los temas predominantes en la investigación en la FCS? ¿qué grado de pluralidad hay en las temáticas de investigación? ¿en qué nivel son citados los investigadores de la FCS?
+fuentes|revistas de departamentos de FCS
+
+# **Ideas / Ejemplos**
+
+tema| carnaval murgas
+-----|-----
+preguntas|¿qué temas preponderan en los textos de murga 2023? Son textos positivos, negativos o neutros? ¿Hay diferencias según el puesto de concurso? ¿Hay diferencias según participación de mujeres?
+fuente|textos de murgas
+
+
+# **Ideas / Ejemplos**
+
+tema|conflictividad laboral
+-----|-----
+preguntas|¿qué características tuvo la conflictividad laboral en Uruguay en la segunda quincena de agosto de 2021?
+fuentes|la diaria
+
+
+# **Ideas / Ejemplos**
+
+tema|estudios constitucionales
+-----|-----
+preguntas|¿qué similitudes y diferencias tienen las constituciones de Uruguay y Costa Rica en materia de libertad economica y civil?
+fuentes|constituciones
+
+# **Ideas / Ejemplos**
+
+tema|género y política
+-----|-----
+preguntas|¿cómo se componen los discursos parlamentarios alrededor de los productos de gestión menstrual y la  menstruación en Uruguay y Colombia?
+fuentes|diarios de sesiones, leyes
+
+
+# **Ideas / Ejemplos**
+
+tema|política usa
+-----|-----
+preguntas|¿qué sentimientos preponderan en los tweets de Biden y Trump?
+fuentes|twitter
 
 
 # **Recursos bibliográficos básicos**

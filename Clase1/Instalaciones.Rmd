@@ -22,10 +22,10 @@ number_sections: true
 ##Desde CRAN
 
 install.packages(c("knitr","tidyverse","quanteda",
-"quanteda.textplots","quanteda.textstats",
-"readtext","pdftools","devtools","stringi","gridExtra","knitr",
+"quanteda.textplots","quanteda.textstats", "remotes", "topicmodels"
+"readtext","pdftools","devtools","stringi","gridExtra","knitr", "plotly",
 "kableExtra","rvest","speech","rtweet", "gmodels","forcats", "RSQLite", 
-"DBI","stringi", "igraph", "av", "remotes", "udpipe", "spacyr"))
+"gtrendsR", "DBI", "igraph", "av", "udpipe", "spacyr", "syuzhet", "‘tesseract"))
 
 ##Desde GitHub
 
