@@ -72,7 +72,11 @@ Las fuentes de datos que vamos a ver son:
 
 3. Prensa digital
 
-4. Twitter
+4. Audio
+
+5. YouTube
+
+6. APIs de redes sociales
 
 
 # 1. Recuperación de documentos en imagen o pdf (OCR)
@@ -676,7 +680,44 @@ query$related_queries %>%
 - Autor: Agustín Nieto (Universidad Nacional de Mar del Plata)
 
 
-# 3. APIs de redes sociales 
+# 4. Audio 
+
+- El paquete [audio.whisper](https://github.com/bnosac/audio.whisper) permite utilizar en R la herramienta de reconocimiento de voz _["Whisper" Automatic Speech Recognition model](https://github.com/openai/whisper)_ desarrollada por openaAI.
+
+- Recuperar texto de audios es una fuente casi inagotable (entrevistas, discursos, conversaciones, podcast, etc.).
+
+
+# audio.whisper
+
+- Tiene diferentes modelos que van desde el menos potente _(tiny)_ al más potente _(large)_
+
+- Cuanto mayor es la potencia y precisión del modelo más demora la transcripción
+
+- No todos están disponibles para español
+
+- Los pasos son sencillos y están bien explicados en el [repositorio del paquete](https://github.com/bnosac/audio.whisper)
+
+- Se combina con la librería `av` para transformar los audios a formato de archivo _.wav de 16 bit_, que es el requerido por `audio.whisper`
+
+
+# scraping + audio.whisper
+
+- recuperación de audios de la web
+
+# scraping + audio.whisper + rgtp3
+
+- El paquete `rgtp3`
+
+- ¿Para qué lo podemos utilizar? 
+Ejemplo Elina (clasificacion), 
+Ejemplo Manini (resumen y tema)
+
+
+# 5. Youtube
+
+- Hacer con las palabras del presidente
+
+# 6. APIs de redes sociales 
 
 *¿Qué son las API?*
 
