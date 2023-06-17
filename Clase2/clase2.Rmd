@@ -742,24 +742,25 @@ save(texto_df,file="texto_df.RData") #o en el formato que quieras
 - Construyo un cuadro con  `knitr` y `kableExtra` con el texto
 
 ```{r, whisper3, eval=F, echo=T}
-# unifico texto en un string colapso la columna text
+#olapso la columna text también podría usar un identificador y agrupar
 texto_vec <- paste(texto_df$text,collapse="")
-
 tabla1 <- knitr::kable(texto_vec,
           col.names = "Tabaré Vázquez - Sistema de Cuidados", # agrego nombre 
           format = "html", table.attr = "style='width:100%;'") %>% #formato
   kableExtra::kable_styling(font_size = 24) %>% # defino tamaño de letra
   kableExtra::kable_classic() # defino el estilo de la tabla
-
 ```
 
-# audio.whisper
+```{r echo=FALSE, out.width = "75%", fig.align = "center"}
+knitr::include_graphics("imagenes/ej_whisper.jpeg")
+```
 
-![](imagenes/ej_whisper.jpeg)
 
 # audio.whisper + scraping
 
-- La utilidad de la transcripción es mayor cuanto más audios tengamos: transcribir una entrevista puede ser divertido, 10 es agotador, más de 10 hay contratar a alguien y en general no tenemos recursos
+- La utilidad de la transcripción es mayor cuanto más audios tengamos
+
+- Transcribir una entrevista puede ser divertido, 10 es agotador, más de 10 hay contratar a alguien y en general no tenemos recursos
 
 - La potencia se acrecienta combinando herramientas
 
@@ -774,18 +775,67 @@ tabla1 <- knitr::kable(texto_vec,
 
 - [Acá](https://github.com/elinagomez/analisistextoEPUdelar2023/blob/master/Clase2/Material/Recuperación_texto_audios.html) pueden descargar un ejemplo con:
 
-1. Descarga  audios `rvest`
+1. Descarga de audios `rvest`
 
 2. Transcripción con `audio.whisper`
 
 3. Resumen e identificación de tema principal con `rgpt3`
 
-- _[Acá](https://www.elinagomez.com/blog/2023-02-21-gpt3-ccss/)_ hay otro ejemplo de uso de `rgtp3` y pueden ver los pasos para conectar con la API
+- _[Acá](https://www.elinagomez.com/blog/2023-02-21-gpt3-ccss/)_ hay otro ejemplo de uso de `rgtp3` (no de audio) donde pueden ver los pasos para conectar con la API
 
 
 # 5. YouTube
 
-- Hacer con las palabras del presidente
+- El paquete [`youtubecaption`](https://github.com/jooyoungseo/youtubecaption) permite descargar los subtítulos de los videos de YouTube
+
+- Trabaja sobre la librería de Python `youtube-transcript-api` 
+
+- Es necesario conectar R y Pyhton, lo que puede realizarse con librería `reticulate` que permite la instalación de _miniconda_ o la interfaz _Anaconda_ para gestionar los paquetes (ver archivo _[instalaciones](https://github.com/elinagomez/analisistextoEPUdelar2023/blob/master/Clase1/Instalaciones.pdf)_ del curso)
+
+```{r echo=FALSE, out.width = "30%", fig.align = "right"}
+knitr::include_graphics("imagenes/youtube.png")
+```
+
+# 5. youtubcaption
+
+- Es posible recuperar texto de todos los videos que cuentan con subtítulos (incoprorados o generados automáticamente)
+
+- Si los subtítulos son automáticos la fidelidad generalmente depende de la claridad del audio 
+
+- `youtubecaption` recupera la transcripción de forma tabulada y ordenada para cada secuencia del video, por lo que luego es necesario agrupar por el identificador y recuperar la metadata original (fecha, resumen, canal, visualizciones, etc.)
+
+# 5. youtubcaption
+
+- Hay tantas alternativas como videos de existan: discursos, conferencias, entrevistas, canciones, películas, programas de tv...
+
+```{r, youtube1, eval=F, echo=T}
+# hadley wickham
+url <- "https://www.youtube.com/watch?v=cpbtcsGE0OA"
+caption <- get_caption(url)
+
+# suarez
+url2 <- "https://www.youtube.com/watch?v=KsE8a9NOtnU"
+caption2 <- get_caption(url2, language = "es")
+
+# agarrate catalina
+url3 <- "https://www.youtube.com/watch?v=LApsPiejZLI"
+caption3 <- get_caption(url3, language = "es")
+```
+
+# 5. youtubcaption
+
+- También `youtubecaption` se potencia con la combinación de herramientas
+
+- [Acá](https://www.elinagomez.com/blog/2023-05-4-palabras-presidente/#fn1) hay un ejemplo de uso con videos del presidente Lacalle Pou:
+
+1. Scraping con [Apify](https://apify.com/)
+
+2. Descarga con  `youtubecaption`
+
+3. Análisis con `quanteda` y `udpipe`
+
+4. Visualización con `ggplot2`
+
 
 # 6. APIs de redes sociales 
 
