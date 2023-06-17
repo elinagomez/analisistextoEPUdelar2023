@@ -205,6 +205,7 @@ fuentes|twitter
 - [Text Mining with R!(Julia Silge y David Robinson)](https://www.tidytextmining.com/)
 - [Hojas de ruta en español](https://github.com/rstudio/cheatsheets/tree/main/translations/spanish)
 - [Intro web scraping con R (Riva Quiroga)](https://programminghistorian.org/es/lecciones/introduccion-al-web-scraping-usando-r)
+- [Tutoriales Ciencias Sociales Computacionales - SICSS](https://sicss.io/overview)
 
 [Repositorio con recursos varios](https://www.rstudio.com/resources/books/)
 
@@ -280,9 +281,10 @@ Algunas iniciativas regionales interesantes:
 * [Laboratorio de Humanidades Digitales - UFBA](https://www.labhd.ufba.br/)
 * [Observatorio de conflictividad - UNMdP](http://observatoriodeconflictividad.org/)
 * [Nucleo de Innovación Social - Colegio de Sociólogos de la Provincia de Buenos Aires](https://www.nucleodeinnovacion.com/)
-* [Instituto Milenio Fundamento de los Datos](https://imfd.cl/)
+* [factor~data - Escuela IDAES (UNSAM)](https://unsam.edu.ar/escuelas/idaes/671/idaes/ciencias-sociales-computacionales-humanidades-digitales)
 * [Observatorio de Redes](https://politicosentwitter.com/#quienes)
-- [Maestría en Humanidades Digitales - Uniandes ](https://posgradosfacartes.uniandes.edu.co/programas/humanidades-digitales/)
+* [Instituto Milenio Fundamento de los Datos](https://imfd.cl/)
+* [Maestría en Humanidades Digitales - Uniandes ](https://posgradosfacartes.uniandes.edu.co/programas/humanidades-digitales/)
 
 
 
