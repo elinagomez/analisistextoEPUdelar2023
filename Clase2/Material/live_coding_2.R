@@ -3,7 +3,7 @@
 
 # Fuentes de datos
 
-##1. Recuperación de documentos en imagen o pdf (OCR) 
+##1. Recuperación de documentos en imagen o pdf (OCR) ----
 
 
 ## Cargamos la librería necesaria:
@@ -54,7 +54,7 @@ tablapng=ocr_data("Clase2/Material/analesUruguay_3.png",engine = espanol)
 
 
 
-## Web scraping
+## Web scraping ----
 
 library(rvest)
 library(dplyr)
@@ -93,7 +93,7 @@ a=url %>% read_html() %>%
 
 
 
-##Scrapeo parlamentario
+##Scrapeo parlamentario ----
 
 ##Instalar PUY 
 ##remotes::install_github("Nicolas-Schmidt/puy")
@@ -121,7 +121,7 @@ sesion = puy::add_party(sesion)
 
 
 
-#gdeltr2
+#gdeltr2 ----
 
 #Instalación
 # devtools::install_github("hafen/trelliscopejs")
@@ -230,7 +230,7 @@ tema =  ft_v2_api(gkg_themes = "WB_2901_GENDER_BASED_VIOLENCE",modes = c("Artlis
 
 #- Aplicar dos de las funciones vistas sobre un tema diferente  
 
-##gtrendsR 
+##gtrendsR  ----
 
 
 library(gtrendsR)
@@ -301,4 +301,51 @@ mapa=tm_shape(paisescoord) +
 #- Realizar alguna visualización sobre un tema específico.   
 
 
+# audio whisper ----
+# Recuperación de texto a partir de audio
 
+library(av) # conversor a .wav
+library(audio.whisper) # transcpción
+library(tidyverse) # manipulacion
+
+# 1. OBTENGO UN ARCHIVO DE AUDIO
+# descargo para el ejemplo un audio de la web (podría ser un archivo que ya tengo en mi pc)
+download.file("https://medios.presidencia.gub.uy/tav_portal/2018/noticias/AD_103/vazquez-cuidados.mp3", # url del audio
+              "cuidados.mp3", # nombre del archivo que quedará en mi pc
+              mode="wb") # modo web
+
+# 2. CONVERSIÓN (av)
+# convierto a .wav 
+av_audio_convert("cuidados.mp3", # nombre del archivo en mi pc
+                 output = "cuidados.wav", # nombre que va a tener el nuevo archivo convertido a wav
+                 format = "wav", sample_rate = 16000) # formato
+
+# 3. TRANSCRIPCIÓN (audio.whisper)
+
+# Descargo el modelo 
+# (podría saltear este paso poniendo la ruta en la función predict())
+model <- whisper("tiny") # descargo modelo liviano 
+
+# lo corro indicando el idioma (es multilingual)
+transcript <- predict(model, newdata = "cuidados.wav", language = "es") # modelo, audio, lenguaje
+
+# extraigo el df donde está el texto transcripto
+texto_df <- transcript$data # df tiene 4 cols segmento, inicio, fin, texto 
+
+# guardo el df
+save(texto_df,file="texto_df.RData") #o en el formato que quieras
+
+
+# para tener todo el texto en un string, colapso la columna text usando paste
+texto_vec <- paste(texto_df$text,collapse="")
+# cuento el número de caracteres
+nchar(texto_vec) # 2102 char
+
+# hago una tabla para visualizar los primeros 500 char
+tabla1 <- knitr::kable(texto_vec,
+                       col.names = "Tabaré Vázquez - Sistema de Cuidados", # agrego el nombre a la columna de la tabla
+                       format = "html", table.attr = "style='width:100%;'") %>% #formato
+  kableExtra::kable_styling(font_size = 24) %>% # defino tamaño de letra
+  kableExtra::kable_classic() # defino el estilo de la tabla
+
+tabla1

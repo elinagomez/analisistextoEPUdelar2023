@@ -700,20 +700,90 @@ query$related_queries %>%
 - Se combina con la librería `av` para transformar los audios a formato de archivo _.wav de 16 bit_, que es el requerido por `audio.whisper`
 
 
-# scraping + audio.whisper
+# audio.whisper + av
 
-- recuperación de audios de la web
+- Obtengo un audio de interés y lo convierto a **.wav** con el paquete `av`
 
-# scraping + audio.whisper + rgtp3
+```{r, whisper1, eval=F, echo=T}
+library(av) # conversor a .wav
+library(audio.whisper) # transcpción
 
-- El paquete `rgtp3`
+# 1. OBTENGO UN ARCHIVO DE AUDIO
+# descargo para el ejemplo un audio de la web (podría ser un archivo que ya tengo en mi pc)
+download.file("https://medios.presidencia.gub.uy/tav_portal/2018/noticias/AD_103/vazquez-cuidados.mp3", # url del audio
+              "cuidados.mp3", # nombre del archivo que quedará en mi pc
+              mode="wb") # modo web
 
-- ¿Para qué lo podemos utilizar? 
-Ejemplo Elina (clasificacion), 
-Ejemplo Manini (resumen y tema)
+# 2. CONVERSIÓN (av)
+# convierto a .wav 
+av_audio_convert("cuidados.mp3", # nombre del archivo en mi pc
+                 output = "cuidados.wav", # nombre del archivo convertido
+                 format = "wav", sample_rate = 16000) # formato
+```
+
+# audio.whisper
+
+- Realizo la transcripción con el modelo _tiny_ (el menos potente)
+
+```{r, whisper2, eval=F, echo=T}
+# Descargo el modelo 
+# (podría saltear este paso poniendo la ruta en la función predict())
+model <- whisper("tiny") # descargo modelo liviano 
+# lo corro indicando el idioma (es multilingual)
+transcript <- predict(model, newdata = "cuidados.wav", language = "es")
+# extraigo el df donde está el texto transcripto
+texto_df <- transcript$data # df tiene 4 cols segmento, inicio, fin, texto 
+# guardo el df
+save(texto_df,file="texto_df.RData") #o en el formato que quieras
+
+```
+# audio.whisper
+
+- Construyo un cuadro con  `knitr` y `kableExtra` con el texto
+
+```{r, whisper3, eval=F, echo=T}
+# unifico texto en un string colapso la columna text
+texto_vec <- paste(texto_df$text,collapse="")
+
+tabla1 <- knitr::kable(texto_vec,
+          col.names = "Tabaré Vázquez - Sistema de Cuidados", # agrego nombre 
+          format = "html", table.attr = "style='width:100%;'") %>% #formato
+  kableExtra::kable_styling(font_size = 24) %>% # defino tamaño de letra
+  kableExtra::kable_classic() # defino el estilo de la tabla
+
+```
+
+# audio.whisper
+
+![](imagenes/ej_whisper.jpeg)
+
+# audio.whisper + scraping
+
+- La utilidad de la transcripción es mayor cuanto más audios tengamos: transcribir una entrevista puede ser divertido, 10 es agotador, más de 10 hay contratar a alguien y en general no tenemos recursos
+
+- La potencia se acrecienta combinando herramientas
+
+- Un buen ejemplo es realizar scrapeo de audios de la web con `rvest`
 
 
-# 5. Youtube
+# audio.whisper + scraping + rgtp3
+
+- También podemos usar el paquete `rgtp3` que permite conectar R con la herramienta de openAI _chatGPT3_
+
+- La API es de pago, pero para un ejercicio básico alcanza con lo que te permite utilizar gratis
+
+- [Acá](https://github.com/elinagomez/analisistextoEPUdelar2023/blob/master/Clase2/Material/Recuperación_texto_audios.html) pueden descargar un ejemplo con:
+
+1. Descarga  audios `rvest`
+
+2. Transcripción con `audio.whisper`
+
+3. Resumen e identificación de tema principal con `rgpt3`
+
+- _[Acá](https://www.elinagomez.com/blog/2023-02-21-gpt3-ccss/)_ hay otro ejemplo de uso de `rgtp3` y pueden ver los pasos para conectar con la API
+
+
+# 5. YouTube
 
 - Hacer con las palabras del presidente
 
