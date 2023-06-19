@@ -93,7 +93,7 @@ Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAl
 
 **Exploración de fuentes de datos textuales:** 
 
-- Exploración y obtención de datos de diversa índole, contemplando las diferentes fuentes posibles: OCR , web sacraping, prensa digital, redes sociales, Youtube, APIs. 
+- Exploración y obtención de datos de diversa índole, contemplando las diferentes fuentes posibles: OCR, web sacraping, prensa digital, redes sociales, audio, Youtube, APIs. 
 
 
 # **Objetivos del curso**
@@ -101,7 +101,7 @@ Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAl
 **Análisis textual:** 
 
 - Codificación manual de textos y creación de redes multinivel (categorías, códigos y citas) mediante la plataforma RQDA().
-- Abordaje de los requerimientos previos (limpieza y homogenización) para el análisis de textos.
+- Abordaje de los requerimientos previos (limpieza y homogeneización) para el análisis de textos.
 - Trabajo con minería de textos, el cual se centrará en la noción de _corpus_ y sus posibilidades analíticas, desde lo más descriptivo a la aplicación de técnicas más complejas. 
 
 # **Objetivos del curso**
@@ -117,7 +117,8 @@ Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAl
 # **Objetivos del curso**
 
 **Visualización:** 
-Exploración de las diferentes posibilidades gráficas de visualización de los resultados del análisis textual (nubes de palabras, frecuencias, dendrogramas, etc.) y algunos ejemplos de visualización interactiva. 
+
+- Exploración de las diferentes posibilidades gráficas de visualización de los resultados del análisis textual (nubes de palabras, frecuencias, dendrogramas, etc.) y algunos ejemplos de visualización interactiva. 
 
 
 # **Esquema del curso**
@@ -139,29 +140,32 @@ Exploración de las diferentes posibilidades gráficas de visualización de los 
 # **Consejo**
 
 - Elegir un tema de interés
-- Hacerse una pregunta inicial (luego podrá variar o ampliarse)
-- Identificar una fuente textual para responderla (y en qué soporte está)
+- Hacerse una pregunta inicial
+- Identificar una fuente textual para responderla
 
 
 # **Ideas / Ejemplos**
 
 tema|política forestal uruguay
 -----|-----
-preguntas|¿cómo se desarrolló el debate parlamentario acerca de las modificaciones a la ley forestal? ¿qué palabras fueron más frecuentes? ¿qué temas fueron los preponderantes? ¿Qué emociones y sentimientos se desprenden de cada texto? ¿Hay diferencias entre los diferentes partidos políticos?
+preguntas|¿cómo se desarrolló el debate parlamentario acerca de las modificaciones a la ley forestal? ¿qué palabras fueron más frecuentes? ¿qué temas fueron los preponderantes? ¿qué emociones y sentimientos se desprenden de cada texto? ¿hay diferencias entre los diferentes partidos políticos?
+ | 
 fuentes|diarios de sesiones parlamento
 
 # **Ideas / Ejemplos**
 
 tema|investigación ciencias sociales
 -----|-----
-preguntas|¿Cuáles son los temas predominantes en la investigación en la FCS? ¿qué grado de pluralidad hay en las temáticas de investigación? ¿en qué nivel son citados los investigadores de la FCS?
+preguntas|¿cuáles son los temas predominantes en la investigación en la FCS? ¿qué grado de pluralidad hay en las temáticas de investigación? ¿en qué nivel son citados los investigadores de la FCS?
+ | 
 fuentes|revistas de departamentos de FCS
 
 # **Ideas / Ejemplos**
 
 tema| carnaval murgas
 -----|-----
-preguntas|¿qué temas preponderan en los textos de murga 2023? Son textos positivos, negativos o neutros? ¿Hay diferencias según el puesto de concurso? ¿Hay diferencias según participación de mujeres?
+preguntas|¿qué temas preponderan en los textos de murga 2023? Son textos positivos, negativos o neutros? ¿hay diferencias según el puesto de concurso? ¿hay diferencias según participación de mujeres?
+ | 
 fuente|textos de murgas
 
 
@@ -170,6 +174,7 @@ fuente|textos de murgas
 tema|conflictividad laboral
 -----|-----
 preguntas|¿qué características tuvo la conflictividad laboral en Uruguay en la segunda quincena de agosto de 2021?
+ | 
 fuentes|la diaria
 
 
@@ -178,6 +183,7 @@ fuentes|la diaria
 tema|estudios constitucionales
 -----|-----
 preguntas|¿qué similitudes y diferencias tienen las constituciones de Uruguay y Costa Rica en materia de libertad economica y civil?
+ | 
 fuentes|constituciones
 
 # **Ideas / Ejemplos**
@@ -185,6 +191,7 @@ fuentes|constituciones
 tema|género y política
 -----|-----
 preguntas|¿cómo se componen los discursos parlamentarios alrededor de los productos de gestión menstrual y la  menstruación en Uruguay y Colombia?
+ | 
 fuentes|diarios de sesiones, leyes
 
 
@@ -193,6 +200,7 @@ fuentes|diarios de sesiones, leyes
 tema|política usa
 -----|-----
 preguntas|¿qué sentimientos preponderan en los tweets de Biden y Trump?
+ | 
 fuentes|twitter
 
 
@@ -507,7 +515,7 @@ La curva de aprendizaje de R al comienzo suele resultar muy empinada. ¿Cómo po
 
 # Carga de datos R
 
-* Carga archivo en formato .RData
+* load(file = "ruta/archivo.Rdata") _Carga archivo en formato .RData_
 * save(obj1, obj2, obj3, file = "ruta/archivo.Rdata") _Respalda algunos objetos en formato .RData_
 * save.image("ruta/respaldo.RData") _Respalda todo el entorno de trabajo_
 
@@ -529,6 +537,7 @@ datos <- read.delim(file="ruta/archivo.txt", header = FALSE,
 
 Las rutas deben escribirse con la barra / y no la contrabarra \\. Si el archivo está en el directorio de trabajo, alcanza solo con llamar al archivo sin especificar la ruta. 
 
+Existen paquetes que facilitan la carga de datos, un ejemplo es la librería [`rio`](https://cran.r-project.org/web/packages/rio/index.html)
 
 
 # Trabajo con proyectos
@@ -646,6 +655,11 @@ Las rutas deben escribirse con la barra / y no la contrabarra \\. Si el archivo 
 <!-- - Cada observación forma una fila.      -->
 <!-- - Cada tipo de unidad observacional forma una tabla.   -->
 
+
+# Generalidades de **tidyverse**
+
+
+![](imagenes/tidyverse_packages.png)
 
 # Generalidades de **tidyverse**
 
@@ -790,7 +804,11 @@ world %>%
 
 Antes de realizar un análisis o de construir un modelo de aprendizaje, la discusión de datos es un paso crítico para preparar los datos de texto sin procesar en un formato apropiado.
 
-El texto puede ser considerado como una colección de documentos y un documento puede ser analizado en cadenas. En la limpieza de texto, los patrones de búsqueda se definen en expresiones regulares (abreviadas como regex() o regexp()) para "encontrar y eliminar" o "buscar y reemplazar" cadenas.
+El texto puede ser considerado como una colección de documentos y un documento puede ser analizado en cadenas. 
+
+En la limpieza de texto, los patrones de búsqueda se definen en expresiones regulares (abreviadas como regex() o regexp()) para "encontrar y eliminar" o "buscar y reemplazar" cadenas.
+
+- No es simple ni intuitivo trabajar con expresiones regulares, [acá](https://vimeo.com/544021539) pueden ver un taller realizado por Stephanie Orellana y Riva Qiroga 
 
 
 
@@ -826,11 +844,18 @@ El texto puede ser considerado como una colección de documentos y un documento 
 # Stringr
 
 
-- Para realizar estas tareas hay funciones básicas de _R base_. En el curso veremos las funciones que se incluyen en la librería [stringr](https://stringr.tidyverse.org/) de Tidyverse. 
+- Para manipulación de strings hay varias funciones básicas de _R base_: `nchar()`, `paste()`, `grep()`, `grepl()`, `sub()`, `gsub()`, `substr()`, `substring()`, `regexec()`, entre otras
+
+- Sin embargo, en el curso veremos principalmente las funciones de manipulación de strings que se incluyen en la librería [stringr](https://stringr.tidyverse.org/) de Tidyverse. 
 
 - [Procesamiento de cadenas](http://rafalab.dfci.harvard.edu/dslibro/procesamiento-de-cadenas.html)
 
-- [Hoja de ruta stringr](https://github.com/rstudio/cheatsheets/blob/main/translations/spanish/strings_es.pdf) 
+- [Hoja de ruta stringr](https://github.com/rstudio/cheatsheets/blob/main/translations/spanish/strings_es.pdf)  
+
+
+```{r echo=FALSE, out.width = "15%", fig.align = "right"}
+knitr::include_graphics("imagenes/stringr.png")
+```
 
 
 # Stringr
@@ -893,7 +918,7 @@ str_to_lower(c("I", "I"))
 
 # Stringr
 
-Funciones para pasar eliminar espacios en blanco:
+Funciones para eliminar espacios en blanco:
 
 ```{r eval=FALSE}
 library(stringr)
@@ -909,7 +934,7 @@ str_trim("\n\nString with trailing and leading white space\n\n")
 
 # Stringr
 
-Funciones para pasar eliminar espacios en blanco:
+Funciones para eliminar espacios en blanco:
 
 ```{r eval=FALSE}
 library(stringr)

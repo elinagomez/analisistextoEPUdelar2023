@@ -751,7 +751,9 @@ tabla1 <- knitr::kable(texto_vec,
   kableExtra::kable_classic() # defino el estilo de la tabla
 ```
 
-```{r echo=FALSE, out.width = "75%", fig.align = "center"}
+# audio.whisper
+
+```{r echo=FALSE, out.width = "100%", fig.align = "center"}
 knitr::include_graphics("imagenes/ej_whisper.jpeg")
 ```
 
@@ -796,7 +798,7 @@ knitr::include_graphics("imagenes/ej_whisper.jpeg")
 knitr::include_graphics("imagenes/youtube.png")
 ```
 
-# 5. youtubcaption
+# 5. youtubecaption
 
 - Es posible recuperar texto de todos los videos que cuentan con subtítulos (incoprorados o generados automáticamente)
 
@@ -804,9 +806,9 @@ knitr::include_graphics("imagenes/youtube.png")
 
 - `youtubecaption` recupera la transcripción de forma tabulada y ordenada para cada secuencia del video, por lo que luego es necesario agrupar por el identificador y recuperar la metadata original (fecha, resumen, canal, visualizciones, etc.)
 
-# 5. youtubcaption
+# 5. youtubecaption
 
-- Hay tantas alternativas como videos de existan: discursos, conferencias, entrevistas, canciones, películas, programas de tv...
+- Hay tantas alternativas como videos de YouTube existan: discursos, conferencias, entrevistas, canciones, películas, programas de tv...
 
 ```{r, youtube1, eval=F, echo=T}
 # hadley wickham
@@ -822,7 +824,7 @@ url3 <- "https://www.youtube.com/watch?v=LApsPiejZLI"
 caption3 <- get_caption(url3, language = "es")
 ```
 
-# 5. youtubcaption
+# 5. youtubecaption
 
 - También `youtubecaption` se potencia con la combinación de herramientas
 
