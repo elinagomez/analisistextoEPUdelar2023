@@ -56,6 +56,12 @@ knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
 Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
 
 
+# Objetivos de hoy
+
+```{r echo=FALSE, out.width = "80%", out.height = "80%", fig.align = "center"}
+knitr::include_graphics("imagenes/explore.png")
+```
+
 
 # Objetivos de hoy
 
@@ -659,16 +665,6 @@ query$related_queries %>%
 
 ```
 
-
-
-# Otros recursos disponibles
-
-
-- Paquete [internetarchive](devtools::install_github("ropensci/internetarchive", build_vignettes = TRUE)). Permite scrapear del 
-
-- Hemeroteca o biblioteca digital [archive.org](https://archive.org/) _gestionada por una organización sin ánimo de lucro dedicada a la preservación de archivos, capturas de sitios públicos de la Web, recursos multimedia, etc._
-
-
 # Otros recursos disponibles
 
 - Recursos en línea para el estudio de la conflictividad [http://observatoriodeconflictividad.org/](http://observatoriodeconflictividad.org/)
@@ -679,12 +675,18 @@ query$related_queries %>%
 
 - Autor: Agustín Nieto (Universidad Nacional de Mar del Plata)
 
+# Otros recursos disponibles
+
+- Paquete [internetarchive](devtools::install_github("ropensci/internetarchive", build_vignettes = TRUE)) permite scrapear del sitio **Internet Archive**
+
+- Hemeroteca o biblioteca digital [archive.org](https://archive.org/) _gestionada por una organización sin ánimo de lucro dedicada a la preservación de archivos, capturas de sitios públicos de la Web, recursos multimedia, etc._
+
 
 # 4. Audio 
 
-- El paquete [audio.whisper](https://github.com/bnosac/audio.whisper) permite utilizar en R la herramienta de reconocimiento de voz _["Whisper" Automatic Speech Recognition model](https://github.com/openai/whisper)_ desarrollada por openaAI.
+El paquete [audio.whisper](https://github.com/bnosac/audio.whisper) permite utilizar en R la herramienta de reconocimiento de voz _["Whisper" Automatic Speech Recognition model](https://github.com/openai/whisper)_ desarrollada por openaAI.
 
-- Recuperar texto de audios es una fuente casi inagotable (entrevistas, discursos, conversaciones, podcast, etc.).
+Recuperar texto de audios es una fuente casi inagotable (entrevistas, discursos, conversaciones, podcast, etc.).
 
 
 # audio.whisper
@@ -702,7 +704,7 @@ query$related_queries %>%
 
 # audio.whisper + av
 
-- Obtengo un audio de interés y lo convierto a **.wav** con el paquete `av`
+Obtengo un audio de interés y lo convierto a **.wav** con el paquete `av`
 
 ```{r, whisper1, eval=F, echo=T}
 library(av) # conversor a .wav
@@ -723,7 +725,7 @@ av_audio_convert("cuidados.mp3", # nombre del archivo en mi pc
 
 # audio.whisper
 
-- Realizo la transcripción con el modelo _tiny_ (el menos potente)
+Realizo la transcripción con el modelo _tiny_ (el menos potente)
 
 ```{r, whisper2, eval=F, echo=T}
 # Descargo el modelo 
@@ -739,7 +741,7 @@ save(texto_df,file="texto_df.RData") #o en el formato que quieras
 ```
 # audio.whisper
 
-- Construyo un cuadro con  `knitr` y `kableExtra` con el texto
+Construyo un cuadro con  `knitr` y `kableExtra` con el texto
 
 ```{r, whisper3, eval=F, echo=T}
 #olapso la columna text también podría usar un identificador y agrupar
@@ -757,7 +759,6 @@ tabla1 <- knitr::kable(texto_vec,
 knitr::include_graphics("imagenes/ej_whisper.jpeg")
 ```
 
-
 # audio.whisper + scraping
 
 - La utilidad de la transcripción es mayor cuanto más audios tengamos
@@ -771,9 +772,9 @@ knitr::include_graphics("imagenes/ej_whisper.jpeg")
 
 # audio.whisper + scraping + rgtp3
 
-- También podemos usar el paquete `rgtp3` que permite conectar R con la herramienta de openAI _chatGPT3_
+También podemos usar el paquete `rgtp3` que permite conectar R con la herramienta de openAI _chatGPT3_
 
-- La API es de pago, pero para un ejercicio básico alcanza con lo que te permite utilizar gratis
+La API es de pago, pero para un ejercicio básico alcanza con lo que te permite utilizar gratis
 
 - [Acá](https://github.com/elinagomez/analisistextoEPUdelar2023/blob/master/Clase2/Material/Recuperación_texto_audios.html) pueden descargar un ejemplo con:
 
@@ -788,11 +789,11 @@ knitr::include_graphics("imagenes/ej_whisper.jpeg")
 
 # 5. YouTube
 
-- El paquete [`youtubecaption`](https://github.com/jooyoungseo/youtubecaption) permite descargar los subtítulos de los videos de YouTube
+El paquete [`youtubecaption`](https://github.com/jooyoungseo/youtubecaption) permite descargar los subtítulos de los videos de YouTube
 
-- Trabaja sobre la librería de Python `youtube-transcript-api` 
+Trabaja sobre la librería de Python `youtube-transcript-api` 
 
-- Es necesario conectar R y Pyhton, lo que puede realizarse con librería `reticulate` que permite la instalación de _miniconda_ o la interfaz _Anaconda_ para gestionar los paquetes (ver archivo _[instalaciones](https://github.com/elinagomez/analisistextoEPUdelar2023/blob/master/Clase1/Instalaciones.pdf)_ del curso)
+Es necesario conectar R y Pyhton, lo que puede realizarse con librería `reticulate` que permite la instalación de _miniconda_ o la interfaz _Anaconda_ para gestionar los paquetes (ver archivo _[instalaciones](https://github.com/elinagomez/analisistextoEPUdelar2023/blob/master/Clase1/Instalaciones.pdf)_ del curso)
 
 ```{r echo=FALSE, out.width = "30%", fig.align = "right"}
 knitr::include_graphics("imagenes/youtube.png")
@@ -808,7 +809,7 @@ knitr::include_graphics("imagenes/youtube.png")
 
 # 5. youtubecaption
 
-- Hay tantas alternativas como videos de YouTube existan: discursos, conferencias, entrevistas, canciones, películas, programas de tv...
+Hay tantas alternativas como videos de YouTube existan: discursos, conferencias, entrevistas, canciones, películas, programas de tv...
 
 ```{r, youtube1, eval=F, echo=T}
 # hadley wickham
@@ -826,7 +827,7 @@ caption3 <- get_caption(url3, language = "es")
 
 # 5. youtubecaption
 
-- También `youtubecaption` se potencia con la combinación de herramientas
+También `youtubecaption` se potencia con la combinación de herramientas
 
 - [Acá](https://www.elinagomez.com/blog/2023-05-4-palabras-presidente/#fn1) hay un ejemplo de uso con videos del presidente Lacalle Pou:
 

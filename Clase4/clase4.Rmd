@@ -46,6 +46,11 @@ knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
 
 Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
 
+# Objetivos de hoy
+
+```{r echo=FALSE, out.width = "80%", out.height = "80%", fig.align = "center"}
+knitr::include_graphics("imagenes/analisis.png")
+```
 
 
 # Objetivos de hoy
@@ -53,8 +58,6 @@ Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAl
 - Presentación del paquete **RQDA** para procesamiento y codificación manual de textos. 
 
 - Creación de redes multinivel (categorías, códigos y citas) mediante la plataforma RQDA().
-
-
 
 
 # Encuadre teórico: Teoría Fundamentada
