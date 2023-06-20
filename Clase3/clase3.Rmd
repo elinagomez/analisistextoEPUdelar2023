@@ -1,5 +1,5 @@
 ---
-title: R aplicado al análisis cualitativo / FCS-UdelaR
+title: Recuperación y análisis de texto con R
 subtitle: Clase 3 - Educación Permanente FCS
    
 output: 
@@ -28,15 +28,23 @@ knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
 
 <center>
 
-![](imagenes/eg.png){ width=25% } 
+<!-- ![](imagenes/eg.png){ width=25% }  -->
 </center>
 
 
-**Mag. Elina Gómez (UMAD/FCS)**
+**Mag. Elina Gómez (UMAD)**
 
 [elina.gomez@cienciassociales.edu.uy](elina.gomez@cienciassociales.edu.uy)
 
 [www.elinagomez.com](www.elinagomez.com)
+
+
+\
+
+**Mag. Gustavo Méndez Barbato**
+
+[gustavo.mendez@cienciassociales.edu.uy](gustavo.mendez@cienciassociales.edu.uy)
+
 
 
 #
@@ -44,416 +52,257 @@ knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
 
 ![](imagenes/by-nc-sa.png){ width=18% }  
 
-Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
 
+Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
 
 
 # Objetivos de hoy
 
-- Fuentes de datos: _rtweet_
-- Procesamiento de strings
-
-
-# Credenciales
-
-1. Creamos la App en Twitter Dev
-2. Copiamos el bearer token
-3. Corremos la función rtweet_app() asignada a un objeto
-4. Guardamos con la función auth_save() 
-5. Cada vez cargamos con auth_as() 
-
-# Credenciales
-
-```{r eval=FALSE, message=FALSE, warning=FALSE}
-
-auth <- rtweet_app(bearer token)
-auth_save(auth,"authRCuali")
-auth_as("authRCuali") 
-
+```{r echo=FALSE, out.width = "80%", out.height = "80%", fig.align = "center"}
+knitr::include_graphics("imagenes/explore.png")
 ```
 
-# search_tweets()
+# Fuentes de datos
 
-```{r eval=FALSE, message=FALSE, warning=FALSE}
-fa <- search_tweets("@Frente_amplio", n = 18000, include_rts = FALSE)
+Las fuentes de datos que vamos a ver son:
 
-#Si quiero más límite:
-#retryonratelimit=TRUE
+1. Recuperación de documentos en imagen o pdf (OCR) 
 
-```
+2. Scraping web y parlamentario
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
-library(rtweet)
-load("~/rcuali2022/Clase3/Material/fa.RData")
+3. Prensa digital
 
-```
+4. Google Trends
 
-# search_tweets()
+5. Audio
 
-Los grafico usando la función _ts_plot_ para hacer series de tiempo.
+6. YouTube
 
-```{r echo=FALSE, message=FALSE, warning=FALSE,fig.asp = .50}
-library(ggplot2)
-library(dplyr)
-fa %>%
-ts_plot("5 hours") +
-ggplot2::theme(plot.title = ggplot2::element_text(face = "bold")) +
-ggplot2::labs(x = NULL, y = NULL,
-title = "Frecuencia de @Frente_Amplio de los últimos 9 días",
-caption = "Recuento de tweets en intervalos de 5 horas")
 
-```
+# Objetivos de hoy
 
-# search_tweets()
-
-Los grafico usando la función _ts_plot_ para hacer series de tiempo.
-
-```{r eval=FALSE, message=FALSE, warning=FALSE,fig.asp = .50}
-fa %>%
-ts_plot("5 hours") +
-ggplot2::theme(plot.title = ggplot2::element_text(face = "bold")) +
-ggplot2::labs(x = NULL, y = NULL,
-title = "Frecuencia de @Frente_Amplio de los últimos 9 días",
-caption = "Recuento de tweets en intervalos de 5 horas")
-
-```
-
-# get_followers()
-
-Esta función nos da un data.frame con el id de lxs usuarixs. Es importante poner el argumento _n = Inf_ para que incluya a todxs lxs usuarixs. 
-
-```{r eval=FALSE}
-
-fa_flw = get_followers("Frente_Amplio", n = Inf)
-#también retryonratelimit=TRUE para > 75000
-
-#para saber a quién sigue, sería:
-fa_frnd = get_friends("Frente_Amplio", n = Inf) 
-
-```
-
-# lookup_users()
-
-La función _lookup_users()_ nos permite obtener información de esos usuarixs. El primer argumento de la función es el nombre del objeto que contiene los ids de lxs seguidorxs. 
-
-```{r eval=FALSE}
-
-fa_flw_data = lookup_users(fa_flw$from_id)
-
-```
-
-# lookup_users()
-
-Con esta función podemos procesar información de diversa índole como:
-
-- Cantidad de seguidorxs
-
-- Cantidad de Tweets (incluidos los retweets) emitidos por el usuario
-
-- La fecha que la cuenta de usuario fue creada en Twitter
-
-- Localización
-
-Para ver todas las variables que incluye:
-
-[Todas las variables que incluye](https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/user-object.html) 
+- Fuentes de datos: Google Trends, Audio y YouTube
 
 
 
-# Cantidad de seguidorxs
+# 4. _gtrendsR_
 
-```{r eval=FALSE, message=FALSE, warning=FALSE}
 
-library(RColorBrewer)
-require(forcats)
-library(ggplot2)
+- El paquete [gtrendsR](https://github.com/PMassicotte/gtrendsR)
 
-ggplot(seguidores, aes(fct_infreq(candi)))+ geom_bar(fill= c("#FFB5E8","85E3FF")) +
-  geom_text(stat='count', aes(label=..count..), vjust=-1)+
-   xlab("Politicxs") +
-  ylab("Cantidad de seguidorxs")
+- Permite realizar búsquedas de los términos más buscados en Google, proporciona una métrica propia para saber el volumen de búsqueda asociado. 
 
+- Permite análisis longitudinales, por países,departamentos, etc. 
+
+- Es útil para analizar intereses/preocupaciones de las personas lo cual nos puede dar información del ámbito _privado_, trascendiendo o complementando con los mensajes emitidos de carácter público (rrss)
+
+
+# 4. _gtrendsR_: ejemplo con análisis del tema **agua**
+
+
+```{r echo=FALSE, out.width = "80%", out.height = "80%", fig.align = "center"}
+knitr::include_graphics("imagenes/evolucion_agua.png")
 ```
 
 
-# get_favorites()
+# 4. _gtrendsR_: ejemplo con análisis del tema **agua**
 
-Obtengo los _n_ estados favoritos más recientes de unx usuarix. 
 
-```{r eval=FALSE}
- dm_fav = get_favorites("Frente_Amplio", n = 2000)
+```{r echo=FALSE, out.width = "80%", out.height = "80%", fig.align = "center"}
+knitr::include_graphics("imagenes/evolucion_agua_sub20.png")
 ```
 
 
-# get_timelines()
 
-Obtengo los últimos 3200 estados de Twitter de unx o más usuarixs, para graficar series de tiempo con su frecuencia, según periodicidad de interés. 
-
-
-# get_timelines()
+# 4. _gtrendsR_: ejemplo con análisis del tema **agua**
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-
-#serie <- get_timelines(c("CosseCarolina", "LuisLacallePou"), n = 3200, retryonratelimit=TRUE)
-library(tidyverse)
-load("~/rcuali2022/Clase3/Material/swriecclp.RData")
-
-serie %>%
-  dplyr::filter(created_at > "2021-07-01") %>%
-  dplyr::group_by(screen_name,created_at) %>%
-  summarize(n=n())%>%
-  group_by(week = cut(created_at, "week"),screen_name) %>% summarise(value = sum(n))%>%
-  ggplot(ggplot2::aes(x = as.Date(week), y = value, group=screen_name,colour=screen_name)) +
-  geom_line()+
-  ggplot2::geom_point() +
-  scale_x_date(date_breaks = "4 month")+
-  ggplot2::theme_minimal() +
-  ggplot2::theme(
-    legend.title = ggplot2::element_blank(),
-    legend.position = "bottom",
-    plot.title = ggplot2::element_text(face = "bold")) +
-  ggplot2::labs(
-    x = NULL, y = NULL,
-    title = "Frecuencia de los estados de Twitter publicados",
-    subtitle = "Recuento de estados de Twitter agregados por semana - Julio 2021/Noviembre 2022"
-  )
-
-
+```{r echo=FALSE, out.width = "80%", out.height = "80%", fig.align = "center"}
+knitr::include_graphics("imagenes/mapa_agua.png")
 ```
 
 
-# Distribución espacial
 
-Estas consultas también pueden ser trabajadas por lo menos a nivel orientativo espacialmente, pudiendose obtener diversos [mapeos](http://www.rpubs.com/HAVB/mapeo_tweets)
-
-*Referencias:*
-
-- <https://rpubs.com/camilamila/tweets>
-- <https://github.com/mkearney/rtweet>
-- <https://mkearney.github.io/nicar_tworkshop/#1>
+# 4. _gtrendsR_: ejemplo con análisis del tema **agua**
 
 
-
-# Procesamiento de _strings_
-
-
-Antes de realizar un análisis o de construir un modelo de aprendizaje, la discusión de datos es un paso crítico para preparar los datos de texto sin procesar en un formato apropiado.
-
-El texto puede ser considerado como una colección de documentos y un documento puede ser analizado en cadenas. En la limpieza de texto, los patrones de búsqueda se definen en expresiones regulares (abreviadas como regex() o regexp()) para "encontrar y eliminar" o "buscar y reemplazar" cadenas.
-
-
-# grep
-
-__grep(patrón, cadena)__ devuelve por defecto una lista de índices. Si la expresión regular, patrón, coincide con un elemento particular en la cadena vectorial, devuelve el índice del elemento.
-
-Para devolver los valores reales de los elementos coincidentes, establezca la opción value=TRUE.
-
-- Creamos un vector "strings" y asignamos cuatro valores (string) a la variable.
-strings <- c("abcd", "cdab", "cabd", "c abd")
-
-# grep
-
-- Buscamos los valores que contengan 'ab', y nos indica sus posiciones
-grep("ab", strings)
-
-- Que es lo mismo que...
-grep("ab", strings, value = FALSE)
-
--Mientras que para obtener los valores usaremos...
- grep("ab", strings, value = TRUE)
-
-
-
-# sub() y gsub()
-
-__gsub(patrón, remplazo, string)__ devuelve la cadena modificada después de reemplazar cada ocurrencia de patrón con reemplazo en cadena.
-
-__sub(patrón, remplazo, string)__ reemplaza la primera aparición del patrón.
-
-
-# Stringr
-
-Funciones para separar un texto:
-
-```{r eval=FALSE}
-library(stringr)
-
-str_split(x, "\r")
-
-str_split(x, boundary("word"))
-
-##type = c("character", "line_break", "sentence", "word")
-
+```{r echo=FALSE, out.width = "80%", out.height = "80%", fig.align = "center"}
+knitr::include_graphics("imagenes/query_agua.png")
 ```
 
 
-# Stringr
 
-Funciones para combinar un texto:
+# 5. Audio 
 
-```{r eval=FALSE}
-library(stringr)
+El paquete [audio.whisper](https://github.com/bnosac/audio.whisper) permite utilizar en R la herramienta de reconocimiento de voz _["Whisper" Automatic Speech Recognition model](https://github.com/openai/whisper)_ desarrollada por openaAI.
 
-str_c("x", "y", sep = ", ")
-> [1] "x, y"
-##sep para controlar
+Recuperar texto de audios es una fuente casi inagotable (entrevistas, discursos, conversaciones, podcast, etc.).
+
+
+# audio.whisper
+
+- Tiene diferentes modelos que van desde el menos potente _(tiny)_ al más potente _(large)_
+
+- Cuanto mayor es la potencia y precisión del modelo más demora la transcripción
+
+- No todos están disponibles para español
+
+- Los pasos son sencillos y están bien explicados en el [repositorio del paquete](https://github.com/bnosac/audio.whisper)
+
+- Se combina con la librería `av` para transformar los audios a formato de archivo _.wav de 16 bit_, que es el requerido por `audio.whisper`
+
+
+# audio.whisper + av
+
+Obtengo un audio de interés y lo convierto a **.wav** con el paquete `av`
+
+```{r, whisper1, eval=F, echo=T}
+library(av) # conversor a .wav
+library(audio.whisper) # transcpción
+
+# 1. OBTENGO UN ARCHIVO DE AUDIO
+# descargo para el ejemplo un audio de la web (podría ser un archivo que ya tengo en mi pc)
+download.file("https://medios.presidencia.gub.uy/tav_portal/2018/noticias/AD_103/vazquez-cuidados.mp3", # url del audio
+              "cuidados.mp3", # nombre del archivo que quedará en mi pc
+              mode="wb") # modo web
+
+# 2. CONVERSIÓN (av)
+# convierto a .wav 
+av_audio_convert("cuidados.mp3", # nombre del archivo en mi pc
+                 output = "cuidados.wav", # nombre del archivo convertido
+                 format = "wav", sample_rate = 16000) # formato
 ```
 
+# audio.whisper
 
-# Stringr
+Realizo la transcripción con el modelo _tiny_ (el menos potente)
 
-Funciones para reemplazar un texto:
-
-```{r eval=FALSE}
-library(stringr)
-#la primer coincidencia
-str_replace(string, pattern, replacement)
-
-#todas las coincidencias
-str_replace_all(string, pattern, replacement)
-
-```
-
-# Stringr
-
-Funciones para pasar mayúscula/minúscula:
-
-```{r eval=FALSE}
-library(stringr)
-
-str_to_upper(c("i", "ı"))
-#> [1] "I" "I"
-
-str_to_lower(c("I", "I"))
-#> [1] "i" "ı"
+```{r, whisper2, eval=F, echo=T}
+# Descargo el modelo 
+# (podría saltear este paso poniendo la ruta en la función predict())
+model <- whisper("tiny") # descargo modelo liviano 
+# lo corro indicando el idioma (es multilingual)
+transcript <- predict(model, newdata = "cuidados.wav", language = "es")
+# extraigo el df donde está el texto transcripto
+texto_df <- transcript$data # df tiene 4 cols segmento, inicio, fin, texto 
+# guardo el df
+save(texto_df,file="texto_df.RData") #o en el formato que quieras
 
 ```
+# audio.whisper
 
-# Stringr
+Construyo un cuadro con  `knitr` y `kableExtra` con el texto
 
-Funciones para pasar eliminar espacios en blanco:
-
-```{r eval=FALSE}
-library(stringr)
-
-str_trim(string, side = c("both", "left", "right"))
-
-str_trim(" String with trailing and leading white space\t")
-#> [1] "String with trailing and leading white space"
-str_trim("\n\nString with trailing and leading white space\n\n")
-#> [1] "String with trailing and leading white space"
-
+```{r, whisper3, eval=F, echo=T}
+#olapso la columna text también podría usar un identificador y agrupar
+texto_vec <- paste(texto_df$text,collapse="")
+tabla1 <- knitr::kable(texto_vec,
+          col.names = "Tabaré Vázquez - Sistema de Cuidados", # agrego nombre 
+          format = "html", table.attr = "style='width:100%;'") %>% #formato
+  kableExtra::kable_styling(font_size = 24) %>% # defino tamaño de letra
+  kableExtra::kable_classic() # defino el estilo de la tabla
 ```
 
-# Stringr
+# audio.whisper
 
-Funciones para pasar eliminar espacios en blanco:
-
-```{r eval=FALSE}
-library(stringr)
-
-str_squish(" String with trailing, middle,   and leading white space\t")
-#> [1] "String with trailing, middle, and leading white space"
-str_squish("\n\nString with excess, trailing and leading white space\n\n")
-#> [1] "String with excess, trailing and leading white space"
-
+```{r echo=FALSE, out.width = "100%", fig.align = "center"}
+knitr::include_graphics("imagenes/ej_whisper.jpeg")
 ```
 
-# Caracteres especiales
+# audio.whisper + scraping
 
-Para construir consultas que incluyan metacaracteres, i.e.
+- La utilidad de la transcripción es mayor cuanto más audios tengamos
 
-`\\$ \\* \\+ \\. \\? \\[ \\] \\^ \\{ \\} \\| \\( \\)`
+- Transcribir una entrevista puede ser divertido, 10 es agotador, más de 10 hay contratar a alguien y en general no tenemos recursos
 
-Se debe agregar una retrobarra  `\\`
+- La potencia se acrecienta combinando herramientas
 
-# Metacaracteres especiales
-
-`\\t` : Tabulador
-
-`\\n` : Nueva línea
-
-`\\v` : Tabulación vertical
-
-`\\f` : Salto de formulario
-
-`\\r` : Salto de línea
+- Un buen ejemplo es realizar scrapeo de audios de la web con `rvest`
 
 
-<!-- # Cuantificadores -->
+# audio.whisper + scraping + rgtp3
 
-<!-- Los Cuantificadores especifican cuantas veces el patrón consultado pueda ocurrir. -->
+También podemos usar el paquete `rgtp3` que permite conectar R con la herramienta de openAI _chatGPT3_
 
-<!-- `*` : coincide al menos 0 veces. -->
+La API es de pago, pero para un ejercicio básico alcanza con lo que te permite utilizar gratis
 
-<!-- `+` : coincide al menos 1 vez. -->
+- [Acá](https://github.com/elinagomez/analisistextoEPUdelar2023/blob/master/Clase2/Material/Recuperación_texto_audios.html) pueden descargar un ejemplo con:
 
-<!-- `?` : coincide a lo sumo 1 vez. -->
+1. Descarga de audios `rvest`
 
-<!-- `{n}` : coincide exactamente $n$ veces. -->
+2. Transcripción con `audio.whisper`
 
-<!-- `{n,}` : coincide al menos $n$ veces. -->
+3. Resumen e identificación de tema principal con `rgpt3`
 
-<!-- `{,m}` : coincide a lo sumo $m$ vez. -->
-
-<!-- `{n,m}` : coincides entre $n$ y $m$ veces. -->
-
-<!-- # Posición -->
-
-<!-- `^` : Al inicio de la cadena. -->
-
-<!-- `$` : Al final de la cadena. -->
-
-<!-- `\b` : En los extremos de la palabra. -->
-
-<!-- `\B` : No en los extremos de la palabra. -->
-
-<!-- `\<` : Al inicio de la palabra. -->
-
-<!-- `\>` : Al final de la palabra. -->
+- _[Acá](https://www.elinagomez.com/blog/2023-02-21-gpt3-ccss/)_ hay otro ejemplo de uso de `rgtp3` (no de audio) donde pueden ver los pasos para conectar con la API
 
 
-<!-- # Caracteres por clases -->
+# 6. YouTube
 
-<!-- `[[:digit:]] or \\d or [0-9]` : digitos 0 1 2 3 4 5 6 7 8 9 -->
-<!-- `\\D or [^0-9]` : no-digitos -->
+El paquete [`youtubecaption`](https://github.com/jooyoungseo/youtubecaption) permite descargar los subtítulos de los videos de YouTube
 
-<!-- `[[:lower:]] or [a-z]` : letras minúsculas -->
-<!-- `[[:upper:]] or [A-Z]` : letras mayúsculas -->
-<!-- `[[:alpha:]] or [[:lower:][:upper:]] or [A-z]` : caracteres alfabeticos -->
+Trabaja sobre la librería de Python `youtube-transcript-api` 
 
-<!-- # Caracteres por clases -->
+Es necesario conectar R y Pyhton, lo que puede realizarse con librería `reticulate` que permite la instalación de _miniconda_ o la interfaz _Anaconda_ para gestionar los paquetes (ver archivo _[instalaciones](https://github.com/elinagomez/analisistextoEPUdelar2023/blob/master/Clase1/Instalaciones.pdf)_ del curso)
 
-<!-- `[[:alnum:]] or [[:alpha:][:digit:]] or [A-z0-9]`: caracteres alfanuméricos -->
+```{r echo=FALSE, out.width = "30%", fig.align = "right"}
+knitr::include_graphics("imagenes/youtube.png")
+```
 
-<!-- `\\w or [[:alnum:]_] or [A-z0-9_]` : caracteres de palabra -->
-<!-- `\\W or  [^A-z0-9_]` : No caracteres de palabra -->
+# 6. youtubecaption
 
-<!-- `[[:xdigit:]] or [0-9A-Fa-f]` :  dígitos hexadecimales (base 16) 0 1 2 3 4 5 6 7 8 9 A B C D E F a b c d e f -->
+- Es posible recuperar texto de todos los videos que cuentan con subtítulos (incoprorados o generados automáticamente)
 
-<!-- # Caracteres y espacios -->
+- Si los subtítulos son automáticos la fidelidad generalmente depende de la claridad del audio 
 
-<!-- `[[:blank:]]` : espacios y tabulaciones -->
+- `youtubecaption` recupera la transcripción de forma tabulada y ordenada para cada secuencia del video, por lo que luego es necesario agrupar por el identificador y recuperar la metadata original (fecha, resumen, canal, visualizciones, etc.)
 
-<!-- `[[:space:]] or \s` : todo tipo de caracteres de espaciado: tabulación, nueva línea, tabulación vertical, salto de formulario, Salto de linea, espacios -->
+# 6. youtubecaption
 
-<!-- `\\S` : Caracteres que no sean espacios -->
+Hay tantas alternativas como videos de YouTube existan: discursos, conferencias, entrevistas, canciones, películas, programas de tv...
 
-<!-- `[[:punct:]]` :  caracteres de punctuación -->
-<!-- `! " # $ % & ( ) * + , - . / : ; < = > ? @ [  ] ^ _  { | } ~` -->
+```{r, youtube1, eval=F, echo=T}
+# hadley wickham
+url <- "https://www.youtube.com/watch?v=cpbtcsGE0OA"
+caption <- get_caption(url)
 
-<!-- # Caracteres y espacios -->
+# suarez
+url2 <- "https://www.youtube.com/watch?v=KsE8a9NOtnU"
+caption2 <- get_caption(url2, language = "es")
 
-<!-- `[[:graph:]] or [[:alnum:][:punct:]]` : caracteres gráficos (legibles) -->
+# agarrate catalina
+url3 <- "https://www.youtube.com/watch?v=LApsPiejZLI"
+caption3 <- get_caption(url3, language = "es")
+```
 
-<!-- `[:print:]] or [[:alnum:][:punct:]\\s]` : caracteres sin espacios -->
+# 6. youtubecaption
 
-<!-- `[[:cntrl:]] or \\c` :  caracteres de control, como `\n` or `\r`, etc. -->
+También `youtubecaption` se potencia con la combinación de herramientas
 
-<!-- # Materiales extra -->
+- [Acá](https://www.elinagomez.com/blog/2023-05-4-palabras-presidente/#fn1) hay un ejemplo de uso con videos del presidente Lacalle Pou:
 
-<!-- [Hoja de ruta stringr](https://github.com/rstudio/cheatsheets/raw/master/translations/spanish/strings_Spanish.pdf) -->
+1. Scraping con [Apify](https://apify.com/)
+
+2. Descarga con  `youtubecaption`
+
+3. Análisis con `quanteda` y `udpipe`
+
+4. Visualización con `ggplot2`
 
 
+# Otros recursos disponibles
+
+- Recursos en línea para el estudio de la conflictividad [http://observatoriodeconflictividad.org/](http://observatoriodeconflictividad.org/)
+
+- Paquete [ACEP: Analisis Computacional de Eventos de Protesta](https://github.com/agusnieto77/ACEP)
+
+- _ACEP es un paquete de funciones en lenguaje R utiles para la deteccion y el analisis de eventos de protesta en corpus de textos periodísticos. Sus funciones son aplicables a cualquier corpus de textos. Ademas de las funciones, ACEP contiene también bases de datos con colecciones de notas sobre protestas y una colección de diccionarios de palabras conflictivas y otros tópicos referidos a diferentes aspectos del análisis de eventos de protesta._
+
+- Autor: Agustín Nieto (Universidad Nacional de Mar del Plata)
+
+# Otros recursos disponibles
+
+- Paquete [internetarchive](devtools::install_github("ropensci/internetarchive", build_vignettes = TRUE)) permite scrapear del sitio **Internet Archive**
+
+- Hemeroteca o biblioteca digital [archive.org](https://archive.org/) _gestionada por una organización sin ánimo de lucro dedicada a la preservación de archivos, capturas de sitios públicos de la Web, recursos multimedia, etc._
 
