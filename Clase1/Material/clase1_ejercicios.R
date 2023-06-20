@@ -1,4 +1,11 @@
+#------------------------------------------------------------------------------#
+#           Recuperación y análisis de texto con R                             # 
+#                  Educación Permanente FCS                                    #
+#                         Clase 1                                              # 
+#                      Live coding                                             #
+#------------------------------------------------------------------------------#
 
+# CLASE 1 - INTRODUCCION, TIDYVERSE Y STRINGS ----
 
 # Clase 1
 # Usamos R: ejercicios prácticos

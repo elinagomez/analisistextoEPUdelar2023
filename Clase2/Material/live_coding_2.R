@@ -1,9 +1,13 @@
+#------------------------------------------------------------------------------#
+#           Recuperación y análisis de texto con R                             # 
+#                  Educación Permanente FCS                                    #
+#                         Clase 2                                              # 
+#                      Live coding                                             #
+#------------------------------------------------------------------------------#
 
+# CLASE 2 - FUENTES DE DATOS ----
 
-
-# Fuentes de datos
-
-##1. Recuperación de documentos en imagen o pdf (OCR) ----
+## 1. Recuperación de documentos en imagen o pdf (OCR) ----
 
 
 ## Cargamos la librería necesaria:
@@ -41,20 +45,27 @@ espanol <- tesseract("spa")
 transcribopdf <- ocr("Clase2/Material/analesUruguay.pdf",engine = espanol)
 
 tabla=ocr_data("Clase2/Material/analesUruguay.pdf",engine = espanol)
-# Ejercicio 
+
+
+#### EJERCICIOS ----
 
 #- Replicar el OCR para la imagen _analesUruguay_3_
 
 #- Hacer las tablas de ambas
 
+
+# Solucion
 transcribojpg <- ocr("Clase2/Material/analesUruguay_3.png",engine = espanol)
 
 tablapng=ocr_data("Clase2/Material/analesUruguay_3.png",engine = espanol)
 
 
 
+#------------------------------------------------------------------------------#
 
-## Web scraping ----
+## 2. Scraping web y parlamentario ----
+
+#### Web scraping  ----
 
 library(rvest)
 library(dplyr)
@@ -87,13 +98,13 @@ a=url %>% read_html() %>%
   as.data.frame()
 
 
-# Ejercicio 
+#### EJERCICIOS ----
 
-#- Probar descargar titulares de otra web
+#- Descargar titulares de otra web
 
+#------------------------------------------------------------------------------#
 
-
-##Scrapeo parlamentario ----
+#### Scrapeo parlamentario ----
 
 ##Instalar PUY 
 ##remotes::install_github("Nicolas-Schmidt/puy")
@@ -115,13 +126,16 @@ library(puy)
 sesion = puy::add_party(sesion)
 
 
-# Ejercicio 
+#### EJERCICIOS ----
 
 #- Elegir una sesión parlamentaria, aplicar el OCR, agregar etiqueta partidaria y guardar en formato tabulado 
 
+#------------------------------------------------------------------------------#
 
 
-#gdeltr2 ----
+## 3. Prensa digital ----
+
+#### gdeltr2 ----
 
 #Instalación
 # devtools::install_github("hafen/trelliscopejs")
@@ -226,11 +240,13 @@ tema =  ft_v2_api(gkg_themes = "WB_2901_GENDER_BASED_VIOLENCE",modes = c("Artlis
 
 
 
-# Ejercicio 
+#### EJERCICIOS ----
 
 #- Aplicar dos de las funciones vistas sobre un tema diferente  
 
-##gtrendsR  ----
+#------------------------------------------------------------------------------#
+
+#### gtrendsR  ----
 
 
 library(gtrendsR)
@@ -295,13 +311,13 @@ mapa=tm_shape(paisescoord) +
 
 
 
-
-# Ejercicio 
-
-#- Realizar alguna visualización sobre un tema específico.   
+#### EJERCICIOS ----
 
 
-# audio whisper ----
+
+## 4. Audio ----
+
+#### audio whisper ----
 # Recuperación de texto a partir de audio
 
 library(av) # conversor a .wav
@@ -332,20 +348,38 @@ transcript <- predict(model, newdata = "cuidados.wav", language = "es") # modelo
 # extraigo el df donde está el texto transcripto
 texto_df <- transcript$data # df tiene 4 cols segmento, inicio, fin, texto 
 
-# guardo el df
-save(texto_df,file="texto_df.RData") #o en el formato que quieras
-
-
 # para tener todo el texto en un string, colapso la columna text usando paste
 texto_vec <- paste(texto_df$text,collapse="")
-# cuento el número de caracteres
-nchar(texto_vec) # 2102 char
 
-# hago una tabla para visualizar los primeros 500 char
+# hago una tabla para visualizar 
 tabla1 <- knitr::kable(texto_vec,
                        col.names = "Tabaré Vázquez - Sistema de Cuidados", # agrego el nombre a la columna de la tabla
                        format = "html", table.attr = "style='width:100%;'") %>% #formato
   kableExtra::kable_styling(font_size = 24) %>% # defino tamaño de letra
   kableExtra::kable_classic() # defino el estilo de la tabla
 
-tabla1
+tabla1 # imprimo la tabla
+
+#### EJERCICIOS ----
+
+# - Recuperar y transcribir en modelo tiny un audio breve (menos de 3 minutos) de https://www.gub.uy/presidencia/comunicacion/audios/breves  
+
+## 5. YouTube ----
+
+library(youtubecaption)
+
+# hadley wickham
+url <- "https://www.youtube.com/watch?v=cpbtcsGE0OA"
+caption <- get_caption(url)
+
+# suarez
+url2 <- "https://www.youtube.com/watch?v=KsE8a9NOtnU"
+caption2 <- get_caption(url2, language = "es")
+
+# agarrate catalina
+url3 <- "https://www.youtube.com/watch?v=LApsPiejZLI"
+caption3 <- get_caption(url3, language = "es")
+
+#### youtubecaption ----
+
+# - Recuperar el texto de los subtítulos de un video corto de YouTube
