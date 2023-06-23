@@ -1,0 +1,24 @@
+---
+title: "Bibliografía Básica - Curso Recuperación y análisis de texto con R (FCS/UdelaR)"
+author: "Mag. Elina Gómez | Mag. Gustavo Méndez"
+date: "Junio 2023"
+output: pdf_document
+urlcolor: blue
+number_sections: true
+---
+
+
+# 1. Recursos bibliográficos básicos
+
+- [Bit by bit (Matthew J. Salganik)](https://www.bitbybitbook.com/)
+- [Data Feminism o Feminismo de Datos (Catherine D'Ignazio y Lauren F. Klein)](https://data-feminism.mitpress.mit.edu/bienvenida)
+- [R para Ciencia de Datos (Hadley Wickham y Garrett Grolemund)](https://es.r4ds.hadley.nz/) - [(versión en pdf)](https://github.com/elinagomez/analisistextoEPUdelar2023/blob/master/Bibliograf%C3%ADa/r-para-ciencia-de-datos-r-for-datascience-spanish-r4ds.pdf)
+
+
+
+# 2. Otros recursos
+
+- [Tutoriales Ciencias Sociales Computacionales - SICSS](https://sicss.io/overview)
+- [Hojas de ruta (cheatsheets) en español](https://github.com/rstudio/cheatsheets/tree/main/translations/spanish)
+- [Intro web scraping con R (Riva Quiroga)](https://programminghistorian.org/es/lecciones/introduccion-al-web-scraping-usando-r)
+- [Recursos bibliográficos en Rstudio](https://www.rstudio.com/resources/books/)
