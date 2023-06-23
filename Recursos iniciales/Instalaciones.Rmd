@@ -21,10 +21,12 @@ number_sections: true
 
 ##Desde CRAN
 
-install.packages(c("knitr","tidyverse","quanteda", "quanteda.textplots",
-"quanteda.textstats", "remotes", "topicmodels", "readtext", "pdftools","devtools","stringi","gridExtra","knitr", "plotly",
-"kableExtra","rvest","speech","rtweet", "gmodels","forcats", "RSQLite", 
-"gtrendsR", "DBI", "igraph", "av", "udpipe", "spacyr", "syuzhet", "‘tesseract"))
+install.packages(c("knitr","tidyverse","quanteda", "quanteda.textplots", 
+                   "quanteda.textstats", "remotes", "topicmodels", "readtext",
+                   "pdftools","devtools","stringi","gridExtra","knitr", "plotly",
+                   "kableExtra","rvest","speech","rtweet", "gmodels","forcats", 
+                   "RSQLite", "gtrendsR", "DBI", "igraph", "av", "udpipe", "spacyr", 
+                   "syuzhet", "tesseract"))
 
 ##Desde GitHub
 
@@ -45,7 +47,7 @@ remotes::install_github("bnosac/audio.whisper", ref = "0.2.1")
 ##1) Instalar RTools 4.0: https://cran.r-project.org/bin/windows/Rtools/rtools40.html
 ##2)Instalación RGtk2 desde repositorio Microsoft
 
-url="https://cran.microsoft.com/snapshot/2021-12-15/bin/windows/contrib/4.1/RGtk2_2.20.36.2.zip"
+url="https://cran.r-project.org/src/contrib/Archive/RGtk2/RGtk2_2.20.36.3.tar.gz"
 install.packages(url, repos=NULL)
 
 library(RGtk2)
@@ -62,6 +64,8 @@ library(RQDA) ##Cargo y chequeo que esté bien
 RQDA() #Abro interfaz
 ```
 
+Nota: Este paquete puede darles dificultades al instalarlo. 
+En ese caso, nos avisan y vemos si podemos dar solución.
 
 ## 4. Youtubecaption
 
