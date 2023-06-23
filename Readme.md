@@ -1,0 +1,2 @@
+
+![](Recursos iniciales\difusion.jpg)

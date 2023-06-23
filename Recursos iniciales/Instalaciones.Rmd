@@ -31,7 +31,6 @@ install.packages(c("knitr","tidyverse","quanteda", "quanteda.textplots",
 remotes::install_github("Nicolas-Schmidt/puy")
 devtools::install_github("ben-aaron188/rgpt3")
 devtools::install_github("abresler/gdeltr2")
-
 ## Instalar RTools 4.3: https://cran.r-project.org/bin/windows/Rtools/rtools43/rtools.html
 remotes::install_github("bnosac/audio.whisper", ref = "0.2.1")
 
