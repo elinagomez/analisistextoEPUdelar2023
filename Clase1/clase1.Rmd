@@ -1083,11 +1083,20 @@ url_texto <- "https://www.ingenieria.unam.mx/dcsyhfi/material_didactico/Literatu
 mario <- readtext(url_texto)
 
 library(stringr)
-mario_sentencias=str_split(mario$text, "\n")%>%
-  unlist()%>%
-  str_trim("both")
 
-unlist(str_split(mario_sentencias, boundary("sentence")))
+# divido el texto en oraciones
+
+# usando %>% 
+mario_sentencias <- str_split(mario$text, boundary("sentence"))%>% # divido el texto en oraciones
+  unlist()%>% # convierto el texto en un vector
+  str_trim("both") # elimino espacios
+
+# sin %>% 
+mario_sentencias2 <- str_trim(unlist(str_split(mario$text, boundary("sentence"))), "both") 
+
+# compruebo que son iguales
+identical(mario_sentencias, mario_sentencias2)
+#> [1] TRUE
 
 ```
 

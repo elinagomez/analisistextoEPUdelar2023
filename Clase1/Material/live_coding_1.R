@@ -11,15 +11,19 @@
 
 ## Creación de proyectos 
 
-# Quienes tienen usuario de github:
+## Quienes tienen usuario/a de github:
 
-# 1. Clonar el repositorio del curso en su pc local
-# 2. Abrir el archivo live_coding_1.R alojado en la carpeta Clase 1
+# 1. Clonar el repositorio del curso https://github.com/elinagomez/analisistextoEPUdelar2023 en su pc local
+# 2. Abrir el archivo del proyecto analisistextoEPUdelar2023.Rproj 
+# 3. Abrir el archivo live_coding_1.R alojado en la carpeta Clase1/Material
 
-# Quienes no tienen usuario de github:
+## Quienes no tienen usuario/a de github:
 
-# 1. Descargar el repositorio, descomprimirlo y alojarlo en una carpeta denominada analisistextoEPUdelar2023
-# 2. Abrir el archivo live_coding_1.R alojado en la carpeta Clase 1
+# 1. Descargar el repositorio del curso de https://github.com/elinagomez/analisistextoEPUdelar2023 
+##(Code y luego download Zip) descomprimirlo y alojarlo en una carpeta local denominada analisistextoEPUdelar2023 
+# 2. Abrir el archivo del proyecto analisistextoEPUdelar2023.Rproj 
+# 3. Abrir el archivo live_coding_1.R alojado en la carpeta Clase1/Material
+
 
 #-----------------------------------------------------------------------------#
 
@@ -136,11 +140,26 @@ mario <- readtext(url_texto)
 
 library(stringr)
 
+# lo que estaba
 mario_sentencias=str_split(mario$text, "\n")%>%
   unlist()%>%
   str_trim("both")
 
 unlist(str_split(mario_sentencias, boundary("sentence")))
+
+# divido el texto en oraciones
+
+# usando %>% 
+mario_sentencias <- str_split(mario$text, boundary("sentence"))%>% # divido el texto en oraciones
+  unlist()%>% # convierto el texto en un vector
+  str_trim("both") # elimino espacios
+
+# sin %>% 
+mario_sentencias2 <- str_trim(unlist(str_split(mario$text, boundary("sentence"))), "both") 
+
+# compruebo que son iguales
+identical(mario_sentencias, mario_sentencias2)
+
 
 # Ejercicio 3 ----
 
