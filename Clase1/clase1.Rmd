@@ -133,7 +133,7 @@ Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAl
 
 - Posibilidad de clonar repositorio GitHub y trabajar con proyecto y control de versiones.
 
-- [https://github.com/elinagomez/rcuali2022](https://github.com/elinagomez/rcuali2022)
+- [https://github.com/elinagomez/analisistextoEPUdelar2023](https://github.com/elinagomez/analisistextoEPUdelar2023)
 
 [Tutorial R+ GitHub](http://destio.us.es/calvo/asignaturas/ge_esco/tutorialusargitgithubrstudio/UsarGitGithubconRStudio.html)
 
@@ -524,6 +524,10 @@ A diferencia de otras funciones para cargar archivos, la función _load( )_ es l
 
 # Carga de datos csv o txt
 
+Las rutas deben escribirse con la barra / y no la contrabarra \\. Si el archivo está en el directorio de trabajo, alcanza solo con llamar al archivo sin especificar la ruta. 
+
+_Existen paquetes que facilitan la carga de datos, un ejemplo es_ [`rio`](https://cran.r-project.org/web/packages/rio/index.html)
+
 ```{r eval=FALSE}
 
 datos <- read.table(file="ruta/archivo.txt", header=FALSE, 
@@ -533,11 +537,6 @@ datos <- read.csv(file="ruta/archivo.csv", header=TRUE,
 datos <- read.delim(file="ruta/archivo.txt", header = FALSE, 
                     sep = "/")
 ```
-
-
-Las rutas deben escribirse con la barra / y no la contrabarra \\. Si el archivo está en el directorio de trabajo, alcanza solo con llamar al archivo sin especificar la ruta. 
-
-Existen paquetes que facilitan la carga de datos, un ejemplo es la librería [`rio`](https://cran.r-project.org/web/packages/rio/index.html)
 
 
 # Trabajo con proyectos
@@ -555,8 +554,28 @@ Existen paquetes que facilitan la carga de datos, un ejemplo es la librería [`r
 
 # Trabajo con proyectos
 
-
 ![](imagenes/proyectos.png) 
+
+# Ejercicio 1: Trabajo con proyectos
+
+## Quienes tienen usuario/a de github:
+
+1. Clonar el [repositorio del curso](https://github.com/elinagomez/analisistextoEPUdelar2023) en su pc local
+2. Abrir el archivo del proyecto analisistextoEPUdelar2023.Rproj 
+3. Abrir el archivo live_coding_1.R alojado en la carpeta Clase1/Material
+
+## Quienes no tienen usuario/a de github:
+
+1. Descargar el [repositorio del curso](https://github.com/elinagomez/analisistextoEPUdelar2023), (Code y luego download Zip) descomprimirlo y alojarlo en una carpeta local denominada analisistextoEPUdelar2023 
+2. Abrir el archivo del proyecto analisistextoEPUdelar2023.Rproj 
+3. Abrir el archivo live_coding_1.R alojado en la carpeta Clase1/Material
+
+
+# Ejercicio 1: Trabajo con proyectos
+
+- Quienes sigan la opción 1, cada vez que abran Rstudio se sugiere realizar un pull para visualizar posibles cambios en el repositorio. 
+
+- Quienes sigan la opción 2, tengan en cuenta que no visualizarán los cambios que se realicen en el repositorio. _(Sugerimos que se hagan usuario de github y clonen el repositorio en la clase siguiente)._
 
 
 <!-- # Algunas funciones básicas: exploración -->
@@ -646,29 +665,29 @@ Existen paquetes que facilitan la carga de datos, un ejemplo es la librería [`r
 <!-- * Hacemos un gráfico de barras de las frecuencias de **dist_rec** -->
 
 
-<!-- # Generalidades de **tidyverse** -->
-
-<!-- - En R, paquetes como **ggplot2** y **dplyr** han adquirido gran popularidad, y ahora forman parte de **tidyverse** -->
-<!-- - Estos paquete se basan en los principios de 'tidy data' para mayor consistencia y velocidad de procesamiento: -->
-
-<!-- - Cada Variable forma una columna.     -->
-<!-- - Cada observación forma una fila.      -->
-<!-- - Cada tipo de unidad observacional forma una tabla.   -->
-
-
 # Generalidades de **tidyverse**
-
 
 ![](imagenes/tidyverse_packages.png)
 
 # Generalidades de **tidyverse**
 
-*Recomiendo la consulta:*
+- En R, paquetes como **ggplot2**, **dplyr** y **stringr** han adquirido gran popularidad, y ahora forman parte de **tidyverse**
+- Estos paquete se basan en los principios de 'tidy data' para mayor consistencia y velocidad de procesamiento:
+
+- Cada Variable forma una columna.
+- Cada observación forma una fila.
+- Cada tipo de unidad observacional forma una tabla.
+
+
+# Generalidades de **tidyverse**
+
+*Recomendamos la consulta:*
 
 - [Hoja de ruta de dplyr en español](https://raw.githubusercontent.com/rstudio/cheatsheets/main/translations/spanish/data-transformation_es.pdf) 
 
 - [Hoja de ruta de ggplot2 en español](https://diegokoz.github.io/intro_ds/fuentes/ggplot2-cheatsheet-2.1-Spanish.pdf) 
 
+- [Hoja de ruta stringr en español](https://github.com/rstudio/cheatsheets/blob/main/translations/spanish/strings_es.pdf) 
 
 
 # Selección por atributos
@@ -767,6 +786,15 @@ world %>%
 ```
 
 
+# Ejercicio 2: Tidyverse
+
+## Tidyverse
+
+1. Cargar la base `world` en formato .RData
+
+2. Imprimir una tabla con los tres continentes con mayor territorio 
+
+
 # Combinando objetos
 
 - `Join` combina tablas basadas en una variable compartida ("key")
@@ -795,8 +823,6 @@ world %>%
 |------------------|--------------------------|
 | left_join(x, y)  | merge(x, y, all.x=TRUE)  |
 | right_join(x, y) | merge(x, y, all.y=TRUE)  |
-
-
 
 
 # Manipulación de _strings_
@@ -843,108 +869,239 @@ En la limpieza de texto, los patrones de búsqueda se definen en expresiones reg
 
 # Stringr
 
-
 - Para manipulación de strings hay varias funciones básicas de _R base_: `nchar()`, `paste()`, `grep()`, `grepl()`, `sub()`, `gsub()`, `substr()`, `substring()`, `regexec()`, entre otras
 
 - Sin embargo, en el curso veremos principalmente las funciones de manipulación de strings que se incluyen en la librería [stringr](https://stringr.tidyverse.org/) de Tidyverse. 
 
-- [Procesamiento de cadenas](http://rafalab.dfci.harvard.edu/dslibro/procesamiento-de-cadenas.html)
+- Una de las ventajas de stringr es que todas la funciones comienzan con `str_` a diferencia del base que hay que memorizar distintos nombres
 
-- [Hoja de ruta stringr](https://github.com/rstudio/cheatsheets/blob/main/translations/spanish/strings_es.pdf)  
-
-
-```{r echo=FALSE, out.width = "15%", fig.align = "right"}
+```{r echo=FALSE, out.width = "10%", fig.align = "right"}
 knitr::include_graphics("imagenes/stringr.png")
 ```
 
+# Stringr
+
+- [Hoja de ruta stringr](https://github.com/rstudio/cheatsheets/blob/main/translations/spanish/strings_es.pdf) 
+
+- En esta [Introducción a la ciencia de datos](http://rafalab.dfci.harvard.edu/dslibro/procesamiento-de-cadenas.html#expresiones-regulares) encuentran una buena introducción al procesamiento de cadenas 
+
+```{r echo=FALSE, out.width = "10%", fig.align = "right"}
+knitr::include_graphics("imagenes/stringr.png")
+```
+
+<!-- # Stringr -->
+
+<!-- Funciones para separar un texto: -->
+
+<!-- [str_split](https://stringr.tidyverse.org/reference/str_split.html) -->
+
+<!-- ```{r eval=FALSE} -->
+<!-- library(stringr) -->
+
+<!-- str_split(x "\r) -->
+
+<!-- str_split(x, boundary("word")) -->
+
+<!-- ##type = c("character", "line_break", "sentence", "word") -->
+<!-- ``` -->
 
 # Stringr
 
 Funciones para separar un texto:
 
+[str_split](https://stringr.tidyverse.org/reference/str_split.html)
+
 ```{r eval=FALSE}
-library(stringr)
+x <- "Este es un curso de Recuperacion y analisis de texto con R"
 
-str_split(x, "\r")
+# divido por espacio en blanco
+str_split(x, " ")  # string, pattern
 
-str_split(x, boundary("word"))
+#> [[1]]
+ [1] "Este" "es" "un" "curso" "de" "Recuperacion" "y" "analisis" "de"          
+[10] "texto" "con" "R"
 
-##type = c("character", "line_break", "sentence", "word")
+# la cadena puede ir en el argumento string sin crear un objeto previo
+str_split("Este es un curso de Recuperacion y analisis de texto con R", " ") 
 
+# variante con regex
+str_split(x, "\\s") # string, pattern
+# otra variante divido por palabra
+str_split(x, boundary("word")) #string, boundary()
 ```
 
+<!-- # Stringr -->
+
+<!-- Funciones para combinar un texto: -->
+
+<!-- [str_c](https://stringr.tidyverse.org/reference/str_c.html) -->
+
+<!-- ```{r eval=FALSE} -->
+<!-- library(stringr) -->
+
+<!-- str_c("x", "y", sep = ", ") -->
+<!-- > [1] "x, y" -->
+<!-- ##sep para controlar -->
+<!-- ``` -->
 
 # Stringr
 
 Funciones para combinar un texto:
 
-```{r eval=FALSE}
-library(stringr)
+[str_c](https://stringr.tidyverse.org/reference/str_c.html)
 
-str_c("x", "y", sep = ", ")
-> [1] "x, y"
-##sep para controlar
+```{r eval=FALSE}
+x <- "Este es un curso de Recuperacion y analisis de texto con R"
+y <- "Es un curso de educación permanente."
+
+# combino los vectores con un punto seguido de un espacio
+str_c(x, y, sep = ". ") # string1, string2, sep (para controlar)
+
+#> [1] "Este es un curso de Recuperacion y analisis de texto con R. Es un curso de educación permanente."
 ```
 
+<!-- # Stringr -->
+
+<!-- Funciones para reemplazar un texto: -->
+
+<!-- [str_replace](https://stringr.tidyverse.org/reference/str_replace.html) -->
+
+<!-- ```{r eval=FALSE} -->
+<!-- library(stringr) -->
+<!-- #la primera coincidencia -->
+<!-- str_replace(string, pattern, replacement) -->
+
+<!-- #todas las coincidencias -->
+<!-- str_replace_all(string, pattern, replacement) -->
+
+<!-- ``` -->
 
 # Stringr
 
 Funciones para reemplazar un texto:
 
-```{r eval=FALSE}
-library(stringr)
-#la primer coincidencia
-str_replace(string, pattern, replacement)
+[str_replace](https://stringr.tidyverse.org/reference/str_replace.html)
 
-#todas las coincidencias
-str_replace_all(string, pattern, replacement)
+```{r eval=FALSE}
+x <- "Este es un curso de Recuperacion y analisis de texto con R"
+
+# reemplazo primera ocurrencia de "de" por un .
+str_replace(x, "de", ".") # string, pattern, replacement 
+
+#> [1] "Este es un curso . Recuperacion y analisis de texto con R"
+
+# reemplazo todas las ocurrencias de "de" por un .
+str_replace_all(x, "de", ".") # string, pattern, replacement
+
+#> [1] "Este es un curso . Recuperacion y analisis . texto con R"
 
 ```
+
+
+<!-- # Stringr -->
+
+<!-- Funciones para pasar mayúscula/minúscula: -->
+
+<!-- [str_to_upper / to_lower](https://stringr.tidyverse.org/reference/case.html) -->
+
+<!-- ```{r eval=FALSE} -->
+<!-- library(stringr) -->
+
+<!-- str_to_upper(c("i", "ı")) -->
+<!-- #> [1] "I" "I" -->
+
+<!-- str_to_lower(c("I", "I")) -->
+<!-- #> [1] "i" "ı" -->
+
+<!-- ``` -->
 
 # Stringr
 
 Funciones para pasar mayúscula/minúscula:
 
+[str_to_upper / to_lower](https://stringr.tidyverse.org/reference/case.html)
+
 ```{r eval=FALSE}
-library(stringr)
+x <- "Este es un curso de Recuperacion y analisis de texto con R"
 
-str_to_upper(c("i", "ı"))
-#> [1] "I" "I"
+str_to_upper(x) # string
 
-str_to_lower(c("I", "I"))
-#> [1] "i" "ı"
+#>[1] "ESTE ES UN CURSO DE RECUPERACION Y ANALISIS DE TEXTO CON R"
+
+str_to_lower(x) # string
+
+#> [1] "este es un curso de recuperacion y analisis de texto con r"
 
 ```
+
 
 # Stringr
 
 Funciones para eliminar espacios en blanco:
 
+[str_trim](https://stringr.tidyverse.org/reference/str_trim.html)
+
 ```{r eval=FALSE}
-library(stringr)
+x <- "  Este es un curso de Recuperacion y analisis de texto con R  "
 
-str_trim(string, side = c("both", "left", "right"))
+# elimino espacios al inicio de la cadena
+str_trim(x, side = "left") # string, side = c("both", "left", "right")
 
-str_trim(" String with trailing and leading white space\t")
-#> [1] "String with trailing and leading white space"
-str_trim("\n\nString with trailing and leading white space\n\n")
-#> [1] "String with trailing and leading white space"
+#> [1] "Este es un curso de Recuperacion y analisis de texto con R  "
+
+# elimino espacios al inicio y final de la cadena
+str_trim(x) # por defecto side = both
+
+#> [1] "Este es un curso de Recuperacion y analisis de texto con R"
 
 ```
+
 
 # Stringr
 
 Funciones para eliminar espacios en blanco:
 
-```{r eval=FALSE}
-library(stringr)
+[str_squish](https://stringr.tidyverse.org/reference/str_trim.html)
 
-str_squish(" String with trailing, middle,   and leading white space\t")
-#> [1] "String with trailing, middle, and leading white space"
-str_squish("\n\nString with excess, trailing and leading white space\n\n")
-#> [1] "String with excess, trailing and leading white space"
+```{r eval=FALSE}
+# elimino espacios al inicio y final de la cadena y reemplaza a un espacio el resto 
+# str_squish(string)
+str_squish(" Este es un   curso de Recuperacion   y analisis de texto con R\t")
+
+#> [1] "Este es un curso de Recuperacion y analisis de texto con R"
 
 ```
+
+# Stringr
+
+Ejemplo extrayendo texto de internet:
+
+```{r eval=FALSE}
+library(readtext)
+url_texto <- "https://www.ingenieria.unam.mx/dcsyhfi/material_didactico/Literatura_Hispanoamericana_Contemporanea/Autores_B/BENEDETTI/Poemas.pdf"
+# Extraemos el texto
+mario <- readtext(url_texto)
+
+library(stringr)
+mario_sentencias=str_split(mario$text, "\n")%>%
+  unlist()%>%
+  str_trim("both")
+
+unlist(str_split(mario_sentencias, boundary("sentence")))
+
+```
+
+
+# Ejercicio 3: stringr
+
+## Manipulación de strings
+
+1. Cargue, extraiga de internet o cree una cadena de texto
+
+2. Aplique, de forma separada, al menos tres funciones de stringr
+
+3. Simplifique el ejercicio anterior utilizando el %>% 
+
 
 # Caracteres especiales
 
