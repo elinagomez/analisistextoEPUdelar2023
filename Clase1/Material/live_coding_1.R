@@ -91,7 +91,7 @@ x <- "Este es un curso de Recuperacion y analisis de texto con R"
 y <- "Es un curso de educación permanente."
 
 # combino los vectores con un punto seguido de un espacio
-str_c(x, y, sep = ". ") # string1, string2, sep (para controlar)
+str_c(x, y, sep = ". ") # string1, string2, separador
 
 ## funciones para reemplazar un texto:
 
@@ -140,13 +140,6 @@ mario <- readtext(url_texto)
 
 library(stringr)
 
-# lo que estaba
-mario_sentencias=str_split(mario$text, "\n")%>%
-  unlist()%>%
-  str_trim("both")
-
-unlist(str_split(mario_sentencias, boundary("sentence")))
-
 # divido el texto en oraciones
 
 # usando %>% 
@@ -170,43 +163,66 @@ identical(mario_sentencias, mario_sentencias2)
 # 3. Simplifique el ejercicio anterior utilizando el %>% 
 
 
-# ##type = c("character", "sentence", "word")
-# 
-# str_c("x", "y", sep = ", ")
-# #> [1] "x, y"
-# 
-# #la primer coincidencia
-# str_replace(string, pattern, replacement) 
-# 
-# #todas las coincidencias
-# str_replace_all(string, pattern, replacement)
-# 
-# 
-# str_to_upper(c("i", "ı"))
-# #> [1] "I" "I"
-# 
-# str_to_lower(c("I", "I"))
-# #> [1] "i" "ı"
-# 
-# str_trim(string, side = c("both", "left", "right"))
-# 
-# str_trim(" String with trailing and leading white space ")
-# #> [1] "String with trailing and leading white space"
-# str_trim("\n\nString with trailing and leading white space\n\n")
-# #> [1] "String with trailing and leading white space"
-# 
-# 
-# str_squish(" String with trailing, middle,   and leading white space\t")
-# # #> [1] "String with trailing, middle, and leading white space"
-
-
-
-
-
-
 #-----------------------------------------------------------------------------#
 
+# 4. Caracteres especiales y expresiones regulares ----
 
+## Cuantificadores
+
+vec <- c("AB", "A1B", "A11B", "A111B", "A1111B", "A2B", "A1q2")
+
+str_detect(vec, "A1*B") # `*` : coincide al menos 0 veces.
+#detecta coincidencia siempre que a una A le siga una B 
+#y en los casos en que una A y una B estén separadas por 1 o muchos 1.
+#Si hay algún otro caracter en el medio no detecta coincidencia
+
+str_detect(vec, "A1+B") # `+` : coincide al menos 1 vez.
+#detecta coincidencia siempre que una A y B estén separadas por 1 o muchos 1.
+#Si hay ninguno o algún otro caracter en el medio no detecta coincidencia
+
+str_detect(vec, "A1?B")
+#detecta coincidencia siempre que una A y B estén juntas o separadas por un 1.
+#Si algún otro caracter o más de un 1 en el medio no detecta coincidencia
+
+## Posición
+
+vec <- c("abxxxx", "xxxxabxxxx", "xxxxxab")
+
+str_detect(vec, "^ab") # ^: inicio
+#detecta coincidencia sólo cuando "ab" está al inicio de la cadena
+
+str_detect(vec, "ab$") # $: final
+#> #detecta coincidencia sólo cuando "ab" está al final de la cadena
+
+
+## Clases
+
+vec <- c("12345", "hola", "HOLA", "Hola", "Hola12345", "$#&/(#")
+
+str_detect(vec, "[[:alnum:]]")
+#detecta coincidencia si hay caracteres alfanuméricos
+
+str_detect(vec, "[[:digit:]]")
+str_detect(vec, "\\d")
+str_detect(vec, "[0-9]")
+#detecta coincidencia si hay números
+
+str_detect(vec, "[[:alpha:]]")
+str_detect(vec, "[A-z]")
+#detecta coincidencia si hay letras
+
+str_detect(vec, "[A-Z]")
+#detecta coincidencia si hay letras mayusculas
+
+str_detect(vec, "[a-z]")
+#detecta coincidencia si hay letras minúsculas
+
+## Expresiones regulares
+vec <- c("12312342312345", "hola", "HOLA", "Hola", "Hola12345", "$#&/(#")
+
+str_detect(vec, "^[A-Z].*\\d$") # inicio mayuscula, fin número, pueden existir caracteres en medio
+
+#-----------------------------------------------------------------------------#
 
 # Material Extra: Manipulación de cadenas (base) ----
 

@@ -955,7 +955,7 @@ x <- "Este es un curso de Recuperacion y analisis de texto con R"
 y <- "Es un curso de educación permanente."
 
 # combino los vectores con un punto seguido de un espacio
-str_c(x, y, sep = ". ") # string1, string2, sep (para controlar)
+str_c(x, y, sep = ". ") # string1, string2, separador
 
 #> [1] "Este es un curso de Recuperacion y analisis de texto con R. Es un curso de educación permanente."
 ```
@@ -1015,11 +1015,12 @@ str_replace_all(x, "de", ".") # string, pattern, replacement
 
 <!-- ``` -->
 
+
 # Stringr
 
 Funciones para pasar mayúscula/minúscula:
 
-[str_to_upper / to_lower](https://stringr.tidyverse.org/reference/case.html)
+[str_to_upper / str_to_lower](https://stringr.tidyverse.org/reference/case.html)
 
 ```{r eval=FALSE}
 x <- "Este es un curso de Recuperacion y analisis de texto con R"
@@ -1100,6 +1101,14 @@ identical(mario_sentencias, mario_sentencias2)
 
 ```
 
+# stringr, R-base y stringi
+
+- `stringr` tiene muchas más funciones, algunas sin equivalente directo en R-base
+[Comparativo stringr - base](http://rafalab.dfci.harvard.edu/dslibro/procesamiento-de-cadenas.html#stringr)
+
+- `str_view()`, `str_detect()`, `str_extract()`,`str_sub()`, `str_count()` son algunas de las funciones más útiles para el procesamiento 
+
+- Además existe el paquete [`stringi`](https://cran.r-project.org/web/packages/stringi/index.html) que tiene aún más funciones que `stringr`
 
 # Ejercicio 3: stringr
 
@@ -1151,6 +1160,40 @@ Los Cuantificadores especifican cuantas veces el patrón consultado pueda ocurri
 
 `{n,m}` : coincides entre $n$ y $m$ veces.
 
+
+# Cuantificadores
+
+El cuantificador refiere al caracter inmediatamente anterior
+
+- Ejemplos
+
+```{r eval=FALSE}
+str_detect(string, pattern)
+
+vec <- c("AB", "A1B", "A11B", "A111B", "A1111B", "A2B", "A1q2")
+
+str_detect(vec, "A1*B") # `*` : coincide al menos 0 veces.
+#> [1]  TRUE  TRUE  TRUE  TRUE  TRUE FALSE FALSE
+
+#detecta coincidencia siempre que a una A le siga una B 
+#y en los casos en que una A y una B estén separadas por 1 o muchos 1.
+#Si hay algún otro caracter en el medio no detecta coincidencia
+
+str_detect(vec, "A1+B") # `+` : coincide al menos 1 vez.
+#> [1] FALSE  TRUE  TRUE  TRUE  TRUE FALSE FALSE
+#detecta coincidencia siempre que una A y B estén separadas por 1 o muchos 1.
+#Si hay ninguno o algún otro caracter en el medio no detecta coincidencia
+
+str_detect(vec, "A1?B")
+#> [1]  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE
+#detecta coincidencia siempre que una A y B estén juntas o separadas por un 1.
+#Si algún otro caracter o más de un 1 en el medio no detecta coincidencia
+
+```
+
+Fuente: adaptado de [Introducción a la ciencia de datos](http://rafalab.dfci.harvard.edu/dslibro/procesamiento-de-cadenas.html#expresiones-regulares)
+
+
 # Posición
 
 `^` : Al inicio de la cadena.
@@ -1166,13 +1209,36 @@ Los Cuantificadores especifican cuantas veces el patrón consultado pueda ocurri
 `\>` : Al final de la palabra.
 
 
+# Posición
+
+- Ejemplos
+
+```{r eval=FALSE}
+
+str_detect(string, pattern)
+
+vec <- c("abxxxx", "xxxxabxxxx", "xxxxxab")
+
+str_detect(vec, "^ab")
+#> [1]  TRUE FALSE FALSE
+#detecta coincidencia sólo cuando "ab" está al inicio de la cadena
+
+str_detect(vec, "ab$")
+#> [1] FALSE FALSE  TRUE
+#> #detecta coincidencia sólo cuando "ab" está al final de la cadena
+
+```
+
 # Caracteres por clases
 
 `[[:digit:]] or \\d or [0-9]` : digitos 0 1 2 3 4 5 6 7 8 9
+
 `\\D or [^0-9]` : no-digitos
 
 `[[:lower:]] or [a-z]` : letras minúsculas
+
 `[[:upper:]] or [A-Z]` : letras mayúsculas
+
 `[[:alpha:]] or [[:lower:][:upper:]] or [A-z]` : caracteres alfabeticos
 
 # Caracteres por clases
@@ -1180,9 +1246,47 @@ Los Cuantificadores especifican cuantas veces el patrón consultado pueda ocurri
 `[[:alnum:]] or [[:alpha:][:digit:]] or [A-z0-9]`: caracteres alfanuméricos
 
 `\\w or [[:alnum:]_] or [A-z0-9_]` : caracteres de palabra
+
 `\\W or  [^A-z0-9_]` : No caracteres de palabra
 
 `[[:xdigit:]] or [0-9A-Fa-f]` :  dígitos hexadecimales (base 16) 0 1 2 3 4 5 6 7 8 9 A B C D E F a b c d e f
+
+
+# Caracteres por clases
+
+- Ejemplos
+
+```{r eval=FALSE}
+
+str_detect(string, pattern)
+
+vec <- c("12345", "hola", "HOLA", "Hola", "Hola12345", "$#&/(#")
+
+str_detect(vec, "[[:alnum:]]")
+#> [[1]  TRUE  TRUE  TRUE  TRUE  TRUE FALSE
+#detecta coincidencia si hay caracteres alfanuméricos
+
+str_detect(vec, "[[:digit:]]")
+str_detect(vec, "\\d")
+str_detect(vec, "[0-9]")
+#> [1]  TRUE FALSE FALSE FALSE  TRUE FALSE
+#detecta coincidencia si hay números
+
+str_detect(vec, "[[:alpha:]]")
+str_detect(vec, "[A-z]")
+#> [1] FALSE  TRUE  TRUE  TRUE  TRUE FALSE
+#detecta coincidencia si hay letras
+
+str_detect(vec, "[A-Z]")
+#> [1] FALSE FALSE  TRUE  TRUE  TRUE FALSE
+#detecta coincidencia si hay letras mayusculas
+
+str_detect(vec, "[a-z]")
+#> [1] FALSE  TRUE FALSE  TRUE  TRUE FALSE
+#detecta coincidencia si hay letras minúsculas
+
+```
+
 
 # Caracteres y espacios
 
@@ -1204,11 +1308,23 @@ Los Cuantificadores especifican cuantas veces el patrón consultado pueda ocurri
 `[[:cntrl:]] or \\c` :  caracteres de control, como `\n` or `\r`, etc.
 
 
+# Expresiones regulares
+
+Las expresiones regulares mas complejas combinan los ejemplos anteriores (y otros)
+
+- Ejemplo:
+
+Necesito una expresión regular que detecte solo el quinto elemento de este vector 
+
+```{r eval=FALSE}
+
+vec <- c("12312342312345", "hola", "HOLA", "Hola", "Hola12345", "$#&/(#")
+
+str_detect(vec, "^[A-Z].*\\d$") # inicio mayuscula, fin número, pueden existir caracteres en medio
+#> [1]  FALSE FALSE FALSE FALSE  TRUE FALSE
 
 
-
-
-
+```
 
 
 <!-- # ¿Qué es Análisis de Contenidos? -->
@@ -1327,6 +1443,4 @@ Los Cuantificadores especifican cuantas veces el patrón consultado pueda ocurri
 <!-- - Jaime Andréu Abela “Las técnicas de Análisis de Contenido: una revisión actualizada.” Universidad de Granada, España -->
 
 <!-- - José Antonio Tinto Arandes (2013) “El análisis de contenido como herramienta de utilidad para la realización de una investigación descriptiva. Un ejemplo de aplicación práctica utilizado para conocer las investigaciones realizadas sobre la imagen de marca de España y el efecto país de  origen”. Universidad de los Andes, Venezuela -->
-
-
 
