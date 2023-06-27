@@ -12,15 +12,14 @@
 
 ## Cargamos la librería necesaria:
 library(readtext)
+
 ##Abro los textos en formato .txt y visualizo cómo los carga
-txt <- readtext::readtext("Clase2/Material/")
+txt <- readtext::readtext("Clase2/Material/Mujeres_Adultos_1.txt")
 # Determinamos el pdf con el que trabajar
 pdf <- readtext("Clase2/Material/text.pdf")
 url <- readtext("https://www.ingenieria.unam.mx/dcsyhfi/material_didactico/Literatura_Hispanoamericana_Contemporanea/Autores_B/BENEDETTI/Poemas.pdf")
 
 Encoding(txt$text)="UTF-8"
-
-
 
 #pdftools
 
@@ -29,7 +28,8 @@ library(pdftools)
 pdf_texto <- pdf_text("Clase2/Material/marcha_1973.pdf")
 
 
-write.csv(pdf_texto,"Clase2/Material/pdf_texto.csv")
+# # write.csv
+# write.csv(pdf_texto,"Clase2/Material/pdf_texto.csv")
 
 
 ##Reconocimiento óptico de caracteres en imagenes
@@ -47,19 +47,20 @@ transcribopdf <- ocr("Clase2/Material/analesUruguay.pdf",engine = espanol)
 tabla=ocr_data("Clase2/Material/analesUruguay.pdf",engine = espanol)
 
 
-#### EJERCICIOS ----
+#### EJERCICIO 1 ----
 
-#- Replicar el OCR para la imagen _analesUruguay_3_
+# Ejercicio 1
 
-#- Hacer las tablas de ambas
+## Reconocimiento óptico de caracteres
+
+# 1. Replicar el OCR para la imagen _analesUruguay3_ y __marcha_1973__
+
+# 2. Hacer la tabla de ambas 
 
 
 # Solucion
-transcribojpg <- ocr("Clase2/Material/analesUruguay_3.png",engine = espanol)
-
-tablapng=ocr_data("Clase2/Material/analesUruguay_3.png",engine = espanol)
-
-
+# transcribopng <- ocr("Clase2/Material/analesUruguay_3.png",engine = espanol)
+# tablapng=ocr_data("Clase2/Material/analesUruguay_3.png",engine = espanol)
 
 #------------------------------------------------------------------------------#
 
@@ -98,9 +99,12 @@ a=url %>% read_html() %>%
   as.data.frame()
 
 
-#### EJERCICIOS ----
+#### EJERCICIO 2 ----
 
-#- Descargar titulares de otra web
+## Scrapeo web con rvest
+
+# 1. Descargar titulares de otra web
+# 2. Scapear dos elementos htlml diferentes 
 
 #------------------------------------------------------------------------------#
 
@@ -126,9 +130,12 @@ library(puy)
 sesion = puy::add_party(sesion)
 
 
-#### EJERCICIOS ----
+#### EJERCICIO 3 ----
 
-#- Elegir una sesión parlamentaria, aplicar el OCR, agregar etiqueta partidaria y guardar en formato tabulado 
+# 1. Elegir una sesión parlamentaria
+# 2. Aplicar el OCR
+# 3. Agregar etiqueta partidaria 
+# 4. Guardar en formato tabulado 
 
 #------------------------------------------------------------------------------#
 
@@ -240,9 +247,9 @@ tema =  ft_v2_api(gkg_themes = "WB_2901_GENDER_BASED_VIOLENCE",modes = c("Artlis
 
 
 
-#### EJERCICIOS ----
+#### EJERCICIO 4 ----
 
-#- Aplicar dos de las funciones vistas sobre un tema diferente  
+# 1. Aplicar dos de las funciones vistas sobre un tema diferente  
 
 #------------------------------------------------------------------------------#
 

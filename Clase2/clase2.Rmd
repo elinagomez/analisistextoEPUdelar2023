@@ -84,11 +84,16 @@ Las fuentes de datos que vamos a ver son:
 
 # Objetivos de hoy
 
-- Fuentes de datos: OCR, Scraping web y parlamentario, prensa digital
+- Fuentes de datos:
+
+1. Recuperación de documentos en imagen o pdf (OCR) 
+
+2. Scraping web y parlamentario
+
+3. Prensa digital
 
 
-# 1. Recuperación de documentos en imagen o pdf (OCR)
-
+# Previo: carga de archivos de texto
 
 Existen diferentes librerías de R que nos permiten recuperar documentos en diferentes formatos:
 
@@ -98,39 +103,37 @@ Existen diferentes librerías de R que nos permiten recuperar documentos en dife
 - [pdftools](https://docs.ropensci.org/pdftools/)
 
 
-<!-- - El paquete [readtext](https://cran.r-project.org/web/packages/readtext/vignettes/readtext_vignette.html) tiene una función con le mismo nombre _readtext()_ que permite cargar archivos en cualquier formato de texto (txt, pdf, doc, docx, odt o incluso alojado en uno de estos formatos en la web). -->
+# readtext
+
+- El paquete [readtext](https://cran.r-project.org/web/packages/readtext/vignettes/readtext_vignette.html) tiene una función con le mismo nombre _readtext()_ que permite cargar archivos en cualquier formato de texto (txt, pdf, doc, docx, odt o incluso alojado en uno de estos formatos en la web).
+
+- `readtext::readtext()`
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+library(readtext)
+##Abro los textos en formato .txt y visualizo cómo los carga
+txt <- readtext::readtext("Clase2/Material/Mujeres_Adultos_1.txt")
+# Determinamos el pdf con el que trabajar
+pdf <- readtext("Clase2/Material/text.pdf")
+url <- readtext("https://www.ingenieria.unam.mx/dcsyhfi/material_didactico/Literatura_Hispanoamericana_Contemporanea/Autores_B/BENEDETTI/Poemas.pdf")
+```
+
+# pdftools
+
+Para recuperar textos en pdf existe la librería [pdftools](https://docs.ropensci.org/pdftools/) que se basa en el paquete _Rpoppler_ (Kurt Hornik).
+
+- `pdftools::pdf_text()`
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+library(pdftools)
+# Extraemos el texto
+pdf_texto <- pdf_text("Clase2/Material/marcha_1973.pdf")
+```
 
 
-<!-- # readtext::readtext() -->
+# 1. Recuperación de documentos en imagen o pdf (OCR)
 
-<!-- ```{r eval=FALSE, message=FALSE, warning=FALSE} -->
-<!-- library(readtext) -->
-<!-- ##Abro los textos en formato .txt y visualizo cómo los carga -->
-<!-- txt <- readtext::readtext("Clase2/Material/Mujeres_Adultos_1.txt") -->
-<!-- # Determinamos el pdf con el que trabajar -->
-<!-- pdf <- readtext("Clase2/Material/text.pdf") -->
-<!-- url <- readtext("https://www.ingenieria.unam.mx/dcsyhfi/material_didactico/Literatura_Hispanoamericana_Contemporanea/Autores_B/BENEDETTI/Poemas.pdf") -->
-<!-- ``` -->
-
-
-<!-- # pdftools::pdf_text() -->
-
-<!-- Para recuperar textos en pdf existe la librería [pdftools](https://docs.ropensci.org/pdftools/) que se basa en el paquete _Rpoppler_ (Kurt Hornik). -->
-
-<!-- # pdftools::pdf_text() -->
-
-<!-- Tiene una función pdf_text() -->
-
-<!-- ```{r eval=FALSE, message=FALSE, warning=FALSE} -->
-<!-- library(pdftools) -->
-<!-- # Extraemos el texto -->
-<!-- pdf_texto <- pdf_text("Clase2/Material/marcha_1973.pdf") -->
-<!-- ``` -->
-
-
-# tesseract OCR
-
-Tesseract es un motor de OCR ( _reconocimiento óptico de caracteres_) para varios sistemas operativos. Es software libre, liberado bajo la licencia Apache, Versión 2.0 y su desarrollo es financiado por Google desde el 2006.
+Tesseract es un motor de OCR _(reconocimiento óptico de caracteres)_ para varios sistemas operativos. Es software libre, liberado bajo la licencia Apache, Versión 2.0 y su desarrollo es financiado por Google desde el 2006.
 
 [Acá se encuentra la documentación](https://opensource.google/projects/tesseract), cuenta con *más de 100 idiomas.*
 
@@ -138,7 +141,7 @@ Tesseract es un motor de OCR ( _reconocimiento óptico de caracteres_) para vari
 
 Existe un paquete de R [bien documentado](https://cran.r-project.org/web/packages/tesseract/vignettes/intro.html) que se llama _tesseract_ y que cuenta con funciones que permiten el reconocimiento de caracteres incluso en español, descargando una base de entrenamiento del motor.
 
-# tesseract OCR: 
+# tesseract OCR 
 
 Descargo un documento histórico del repositorio [Internet Archive](https://archive.org/search.php?query=creator%3A%22Ateneo+del+Uruguay%22)
 
@@ -151,6 +154,7 @@ tesseract_download("spa")
 (espanol <- tesseract("spa"))
 #Probamos:
 transcribopdf <- ocr("analesUruguay.pdf", engine = espanol)
+
 ```
 
 # tesseract OCR
@@ -158,17 +162,17 @@ transcribopdf <- ocr("analesUruguay.pdf", engine = espanol)
 La función _ocr_data()_ devuelve una tabla dónde cada fila es una palabra con la confianza asociada a la misma y la ubicación exacta. 
 
 
-<!-- # Ejercicio  -->
-
-<!-- - Replicar el OCR para la imagen _marcha_1973_ -->
-
-<!-- - Hacer las tablas de ambas -->
-
-
 # magick
 
 El paquete _magick_ complementa a _tesseract_ en cuento a mejora de la calidad de las imagenes que sirven de input. Cuenta con varias funciones para mejorar la resolución, el color, contraste, espacios en blanco. Puede ser utilizado como paso previo. 
 
+# Ejercicio 1
+
+## Reconocimiento óptico de caracteres
+
+1. Replicar el OCR para la imagen _analesUruguay3_ y _marcha_1973_
+
+2. Hacer la tabla de ambas 
 
 
 # 2. Web scraping
@@ -233,7 +237,9 @@ Para usar rvest, se requiere conocer las instrucciones en código, a las que lla
 
 # Ejemplo rvest: texto
 
-Descargo la extensión del [SelectorGadget](http://selectorgadget.com/) de Chrome e [instalo](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb) y busco el nombre del nodo o elementos en una pagina que me interese scrapear 
+- Opción 1: Descargo la extensión del [SelectorGadget](http://selectorgadget.com/) de Chrome e [instalo](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb) y busco el nombre del nodo o elementos en una pagina que me interese scrapear 
+
+- Opción 2: Usar las herramientas de desarrollo de los navegadores a través de la opción _inspect_ o _inspeccionar_ que muestra el código html de la página y las reglas de estilo (CSS)
 
 # Ejemplo rvest: texto
 
@@ -264,13 +270,21 @@ titulares = mvdportal %>%
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE}
 
-url <- 'https://en.wikipedia.org/wiki/R_(programming_language)'
+url <- 'https://es.wikipedia.org/wiki/Anexo:Ríos_de_Uruguay'
 
-url %>% read_html() %>% 
-        html_elements(css = '.wikitable') %>% 
-        html_table() 
+url %>% read_html() %>%
+  html_elements(css = '.wikitable') %>%
+  html_table() 
 
 ```
+
+# Ejercicio 2
+
+## Scrapeo web con rvest
+
+1. Descargar titulares de otra web
+2. Scapear dos elementos html diferentes 
+
 
 
 # _speech_
@@ -354,6 +368,15 @@ Si quality es TRUE:
 
 - Existe una Shiny de speech que permite descargar de forma tabulada las sesiones sin escribir código: [https://bancodedatos-fcs.shinyapps.io/shiny_speech/](https://bancodedatos-fcs.shinyapps.io/shiny_speech/)
 
+
+# Ejercicio 3
+
+## Scrapeo parlamentario con speech
+
+1. Elegir una sesión parlamentaria
+2. Aplicar el OCR
+3. Agregar etiqueta partidaria 
+4. Guardar en formato tabulado 
 
 
 # 3. Prensa digital
@@ -536,6 +559,11 @@ tema =  ft_v2_api(gkg_themes = "WB_2901_GENDER_BASED_VIOLENCE",modes = c("Artlis
 
 ```
 
+# Ejercicio 4
+
+## Prensa digital
+
+1. Aplicar dos de las funciones vistas sobre un tema diferente  
 
 
 <!-- # 6. APIs de redes sociales  -->
