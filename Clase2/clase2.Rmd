@@ -170,7 +170,7 @@ El paquete _magick_ complementa a _tesseract_ en cuento a mejora de la calidad d
 
 ## Reconocimiento óptico de caracteres
 
-1. Replicar el OCR para la imagen _analesUruguay3_ y _marcha_1973_
+1. Replicar el OCR para los archivos _analesUruguay3_ y _marcha_1973_
 
 2. Hacer la tabla de ambas 
 
@@ -317,9 +317,9 @@ library(speech)
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE}
 
-url <- "http://bit.ly/35AUVF4"
+url <- "https://parlamento.gub.uy/documentosyleyes/documentos/diarios-de-sesion/5515/IMG"
 
-sesion <- speech_build(file = url)
+sesion <- speech::speech_build(file = url)
 
 ```
 
@@ -330,7 +330,7 @@ sesion <- speech_build(file = url)
 
 #Función completa
 
-sesion <- speech_build(file = url, 
+sesion <- speech::speech_build(file = url, 
 #url a pdf
 compiler = FALSE, 
 #compila discursos de unx mismx legisladorx
@@ -361,8 +361,16 @@ Si quality es TRUE:
 
 # _puy_
 
-- Es posible combinar con el paquete _puy_ para recuperar el dato del partido político al que pertenece
+- Es posible combinar con el paquete _puy_ para recuperar el dato del partido político al que pertenece 
 
+- `puy::add_party()`
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+#agrego partido político
+sesion <- puy::add_party(sesion)
+
+```
 
 # _speech App_
 

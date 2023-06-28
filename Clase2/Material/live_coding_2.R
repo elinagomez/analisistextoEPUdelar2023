@@ -116,18 +116,26 @@ a=url %>% read_html() %>%
 
 ##Speech - ejemplo
 
-url = "https://parlamento.gub.uy/documentosyleyes/documentos/diario-de-sesion/senadores/6280/IMG/0?width=800&height=600&hl=en_US1&iframe=true&rel=nofollow"
+url <- "https://parlamento.gub.uy/documentosyleyes/documentos/diarios-de-sesion/5515/IMG"
+
+sesion <- speech::speech_build(file = url)
 
 
-url = "https://parlamento.gub.uy/documentosyleyes/documentos/diario-de-sesion/representantes/6447/IMG/0?width=800&height=600&hl=en_US1&iframe=true&rel=nofollow"
+#Función completa
+sesion <- speech::speech_build(file = url, 
+                               #url a pdf
+                               compiler = FALSE, 
+                               #compila discursos de unx mismx legisladorx
+                               quality = TRUE,
+                               #aporta dos índices de calidad
+                               add.error.sir = c("SEf'IOR"),
+                               ##forma errónea que lo que identifica a el/la legisladorx
+                               rm.error.leg = c("PRtSIDENTE", "SUB", "PRfSlENTE"))
+##identifica a el/la legisladorx que debe eliminarse
 
-library(speech)
-#url <- "http://bit.ly/35AUVF4"
-sesion <- speech_build(file = url,compiler = T)
+#agrego partido político
+sesion <- puy::add_party(sesion)
 
-
-library(puy)
-sesion = puy::add_party(sesion)
 
 
 #### EJERCICIO 3 ----
