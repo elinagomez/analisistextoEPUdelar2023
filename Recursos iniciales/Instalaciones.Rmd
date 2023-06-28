@@ -24,12 +24,13 @@ number_sections: true
 install.packages(c("knitr","tidyverse","quanteda", "quanteda.textplots", 
                    "quanteda.textstats", "remotes", "topicmodels", "readtext",
                    "pdftools","devtools","stringi","gridExtra","knitr", "plotly",
-                   "kableExtra","rvest","speech","rtweet", "gmodels","forcats", 
+                   "kableExtra","rvest","rtweet", "gmodels","forcats", 
                    "RSQLite", "gtrendsR", "DBI", "igraph", "av", "udpipe", "spacyr", 
                    "syuzhet", "tesseract"))
 
 ##Desde GitHub
 
+remotes::install_github("Nicolas-Schmidt/speech") # devel version 0.1.6
 remotes::install_github("Nicolas-Schmidt/puy")
 devtools::install_github("ben-aaron188/rgpt3")
 devtools::install_github("abresler/gdeltr2")
@@ -45,9 +46,10 @@ remotes::install_github("bnosac/audio.whisper", ref = "0.2.1")
 ```{r eval=FALSE}
 
 ##1) Instalar RTools 4.0: https://cran.r-project.org/bin/windows/Rtools/rtools40.html
-##2)Instalación RGtk2 desde repositorio Microsoft
 
-url="https://cran.r-project.org/src/contrib/Archive/RGtk2/RGtk2_2.20.36.3.tar.gz"
+##2)Instalación RGtk2 desde archivo zip alojado en el repositorio del curso
+
+url="https://github.com/elinagomez/analisistextoEPUdelar2023/raw/master/Recursos%20iniciales/RGtk2.zip"
 install.packages(url, repos=NULL)
 
 library(RGtk2)
