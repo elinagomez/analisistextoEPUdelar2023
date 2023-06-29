@@ -227,12 +227,11 @@ Para usar rvest, se requiere conocer las instrucciones en código, a las que lla
 
 # ¿Cómo usar rvest?
 
-- `html_name()` obtiene los atributos html
-- `html_text()` extrae el texto html
+- `html_nodes()` devuelve la sección o elemento que indiquemos
+- `html_name()` devuelve el nombre de un elemento html
 - `html_attr()` regresa los atributos específicos html (ej. href)
-- `html_attrs()` obtiene los atributos html
+- `html_text()` extrae el texto html
 - `html_table()` convierte una tabla html en una estructura de datos en R
-
 
 
 # Ejemplo rvest: texto
@@ -282,7 +281,7 @@ url %>% read_html() %>%
 
 ## Scrapeo web con rvest
 
-1. Descargar titulares de otra web
+1. Descargar noticias o información de otra web
 2. Scapear dos elementos html diferentes 
 
 
@@ -382,7 +381,7 @@ sesion <- puy::add_party(sesion)
 ## Scrapeo parlamentario con speech
 
 1. Elegir una sesión parlamentaria
-2. Aplicar el OCR
+2. Aplicar la funcion speech_build 
 3. Agregar etiqueta partidaria 
 4. Guardar en formato tabulado 
 

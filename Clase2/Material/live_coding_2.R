@@ -14,12 +14,16 @@
 library(readtext)
 
 ##Abro los textos en formato .txt y visualizo cómo los carga
+txt <- readtext::readtext("Clase2/Material/")
 txt <- readtext::readtext("Clase2/Material/Mujeres_Adultos_1.txt")
 # Determinamos el pdf con el que trabajar
 pdf <- readtext("Clase2/Material/text.pdf")
 url <- readtext("https://www.ingenieria.unam.mx/dcsyhfi/material_didactico/Literatura_Hispanoamericana_Contemporanea/Autores_B/BENEDETTI/Poemas.pdf")
 
 Encoding(txt$text)="UTF-8"
+Encoding(txt$text)="ASCII"
+Encoding(txt$text)="latin1"
+
 
 #pdftools
 
@@ -28,8 +32,8 @@ library(pdftools)
 pdf_texto <- pdf_text("Clase2/Material/marcha_1973.pdf")
 
 
-# # write.csv
-# write.csv(pdf_texto,"Clase2/Material/pdf_texto.csv")
+# write.csv
+write.csv(pdf_texto,"Clase2/Material/pdf_texto.csv")
 
 
 ##Reconocimiento óptico de caracteres en imagenes
@@ -46,6 +50,9 @@ transcribopdf <- ocr("Clase2/Material/analesUruguay.pdf",engine = espanol)
 
 tabla=ocr_data("Clase2/Material/analesUruguay.pdf",engine = espanol)
 
+# unifico el texto en un vector
+library(tidyverse)
+texto2 <- str_c(tabla$word, collapse = " ")
 
 #### EJERCICIO 1 ----
 
@@ -59,8 +66,8 @@ tabla=ocr_data("Clase2/Material/analesUruguay.pdf",engine = espanol)
 
 
 # Solucion
-# transcribopng <- ocr("Clase2/Material/analesUruguay_3.png",engine = espanol)
-# tablapng=ocr_data("Clase2/Material/analesUruguay_3.png",engine = espanol)
+transcribopng <- ocr("Clase2/Material/analesUruguay_3.png",engine = espanol)
+tablapng=ocr_data("Clase2/Material/analesUruguay_3.png",engine = espanol)
 
 #------------------------------------------------------------------------------#
 
@@ -72,9 +79,6 @@ library(rvest)
 library(dplyr)
 
 #Defino mi sitio html: Montevideo portal
-
-library(dplyr)
-
 mvdportal = rvest::read_html("https://www.montevideo.com.uy/index.html") 
 
 resumenes = mvdportal %>%
@@ -91,20 +95,18 @@ titulares = mvdportal %>%
 
 #write.csv(titulares,"Material/titulares.csv")
 
-url <- 'https://en.wikipedia.org/wiki/R_(programming_language)'
+url <- 'https://es.wikipedia.org/wiki/Anexo:Ríos_de_Uruguay'
 
-a=url %>% read_html() %>% 
-  html_elements(css = '.wikitable') %>% 
-  html_table() %>% 
-  as.data.frame()
-
+url %>% read_html() %>%
+  html_elements(css = '.wikitable') %>%
+  html_table()
 
 #### EJERCICIO 2 ----
 
 ## Scrapeo web con rvest
 
-# 1. Descargar titulares de otra web
-# 2. Scapear dos elementos htlml diferentes 
+# 1. Descargar noticias o información de otra web
+# 2. Scrapear dos elementos html diferentes 
 
 #------------------------------------------------------------------------------#
 
@@ -120,6 +122,7 @@ url <- "https://parlamento.gub.uy/documentosyleyes/documentos/diarios-de-sesion/
 
 sesion <- speech::speech_build(file = url)
 
+sesion <- speech::speech_build(file = url, compiler = TRUE, quality = TRUE)
 
 #Función completa
 sesion <- speech::speech_build(file = url, 
@@ -131,7 +134,6 @@ sesion <- speech::speech_build(file = url,
                                add.error.sir = c("SEf'IOR"),
                                ##forma errónea que lo que identifica a el/la legisladorx
                                rm.error.leg = c("PRtSIDENTE", "SUB", "PRfSlENTE"))
-##identifica a el/la legisladorx que debe eliminarse
 
 #agrego partido político
 sesion <- puy::add_party(sesion)
@@ -141,7 +143,7 @@ sesion <- puy::add_party(sesion)
 #### EJERCICIO 3 ----
 
 # 1. Elegir una sesión parlamentaria
-# 2. Aplicar el OCR
+# 2. Aplicar la funcion speech_build 
 # 3. Agregar etiqueta partidaria 
 # 4. Guardar en formato tabulado 
 
@@ -164,68 +166,43 @@ loc = gdeltr2::dictionary_country_domains()
 
 
 
-##mode:"ArtList" (listado de artículos)
-
-articulos  = gdeltr2::ft_v2_api(
-  terms = c("astesiano"),
+articulos = gdeltr2::ft_v2_api(
+  terms = c("Messi"),
   modes = c("ArtList"),
   visualize_results = F,
   timespans = "55 days",
-  source_countries = "UY"
-) 
-
-articulos_comb  = gdeltr2::ft_v2_api(
-  terms = c('"gobierno" corrupción'),
-  modes = c("ArtList"),
-  visualize_results = F,
-  timespans = "55 days",
-  source_countries = "UY")
-
+  source_countries = "AR"
+)
 
 
 ##mode:"TimelineVol" o "TimelineVolInfo"
 
 intensidad = gdeltr2::ft_v2_api(
-  terms = c("astesiano"),
+  terms = c("Messi"),
   modes = c("TimelineVol"),
   visualize_results = F,
-  timespans = "55 days",
-  source_countries = "UY"
-) 
+  timespans = "1 days",
+  source_countries = "AR"
+)
 
 intensidad_info = gdeltr2::ft_v2_api(
-  terms = c("Lacalle Pou"),
+  terms = c("Messi"),
   modes = c("TimelineVolInfo"),
   visualize_results = F,
   timespans = "55 days",
-  source_countries = "UY"
-) 
-
-##mode:"TimelineTone" 
+  source_countries = "AR"
+)
 
 tono_diario = gdeltr2::ft_v2_api(
-  terms = c("Lacalle Pou"),
+  terms = c("Kirchner"),
   modes = c("TimelineTone"),
   visualize_results = F,
   timespans = "30 days",
-  source_countries = "UY"
-) 
-
-##mode:"ToneChart" 
-
-tonos = gdeltr2::ft_v2_api(
-  terms = c("Lacalle Pou"),
-  modes = c("ToneChart"),
-  visualize_results = F,
-  timespans = "30 days",
-  source_countries = "UY"
-) 
-
+  source_countries = "AR"
+)
 
 
 ##Indicadores de inestabilidad
-
-
 
 inestabilidad_zona <-
   gdeltr2::instability_api_locations(
@@ -240,6 +217,7 @@ inestabilidad_zona <-
     visualize = T
   )
 
+inestabilidad_zona[1]
 
 ##busqueda por temas
 
@@ -248,16 +226,78 @@ df_gkg <-
   gdeltr2::dictionary_ft_codebook(code_book = "gkg")
 
 
-tema =  ft_v2_api(gkg_themes = "WB_2901_GENDER_BASED_VIOLENCE",modes = c("Artlist"),
+tema =  gdeltr2::ft_v2_api(gkg_themes = "WB_2901_GENDER_BASED_VIOLENCE",modes = c("Artlist"),
                   visualize_results = F,
                   timespans = "55 days")
 
 
-
+ultimo = gdeltr2::ft_trending_terms("http://data.gdeltproject.org/gdeltv2/20230629031500.translation.export.CSV.zip")
 
 #### EJERCICIO 4 ----
 
 # 1. Aplicar dos de las funciones vistas sobre un tema diferente  
 
 #------------------------------------------------------------------------------#
+
+
+
+# ##mode:"ArtList" (listado de artículos)
+# 
+# articulos = gdeltr2::ft_v2_api(
+#   terms = c("Lacalle Pou"),
+#   modes = c("ArtList"),
+#   visualize_results = F,
+#   timespans = "55 days",
+#   source_countries = "UY"
+# ) 
+# 
+# articulos_comb  = gdeltr2::ft_v2_api(
+#   terms = c('"gobierno" corrupción'),
+#   modes = c("ArtList"),
+#   visualize_results = F,
+#   timespans = "55 days",
+#   source_countries = "UY")
+# 
+# 
+# 
+# ##mode:"TimelineVol" o "TimelineVolInfo"
+# 
+# intensidad = gdeltr2::ft_v2_api(
+#   terms = c("astesiano"),
+#   modes = c("TimelineVol"),
+#   visualize_results = F,
+#   timespans = "55 days",
+#   source_countries = "UY"
+# ) 
+# 
+# intensidad_info = gdeltr2::ft_v2_api(
+#   terms = c("Lacalle Pou"),
+#   modes = c("TimelineVolInfo"),
+#   visualize_results = F,
+#   timespans = "55 days",
+#   source_countries = "UY"
+# ) 
+# 
+# ##mode:"TimelineTone" 
+# 
+# tono_diario = gdeltr2::ft_v2_api(
+#   terms = c("Lacalle Pou"),
+#   modes = c("TimelineTone"),
+#   visualize_results = F,
+#   timespans = "30 days",
+#   source_countries = "UY"
+# ) 
+# 
+# ##mode:"ToneChart" 
+# 
+# tonos = gdeltr2::ft_v2_api(
+#   terms = c("Lacalle Pou"),
+#   modes = c("ToneChart"),
+#   visualize_results = F,
+#   timespans = "30 days",
+#   source_countries = "UY"
+# ) 
+
+
+##mode:"ArtList" (listado de artículos)
 
