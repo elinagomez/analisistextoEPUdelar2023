@@ -227,7 +227,7 @@ Para usar rvest, se requiere conocer las instrucciones en código, a las que lla
 
 # ¿Cómo usar rvest?
 
-- `html_nodes()` devuelve la sección o elemento que indiquemos
+- `html_elements()` devuelve los elementos html seleccionados
 - `html_name()` devuelve el nombre de un elemento html
 - `html_attr()` regresa los atributos específicos html (ej. href)
 - `html_text()` extrae el texto html
@@ -239,6 +239,9 @@ Para usar rvest, se requiere conocer las instrucciones en código, a las que lla
 - Opción 1: Descargo la extensión del [SelectorGadget](http://selectorgadget.com/) de Chrome e [instalo](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb) y busco el nombre del nodo o elementos en una pagina que me interese scrapear 
 
 - Opción 2: Usar las herramientas de desarrollo de los navegadores a través de la opción _inspect_ o _inspeccionar_ que muestra el código html de la página y las reglas de estilo (CSS)
+
+- Opción 3: Usar plataformas web con herramientas de scrapeo como [Apify](https://apify.com/)
+
 
 # Ejemplo rvest: texto
 

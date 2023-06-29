@@ -13,16 +13,29 @@
 ## Cargamos la librería necesaria:
 library(readtext)
 
-##Abro los textos en formato .txt y visualizo cómo los carga
+##Abro los archivos de la carpeta y visualizo cómo los carga
 txt <- readtext::readtext("Clase2/Material/")
+##Abro un archivo .txt y visualizo cómo lo carga
 txt <- readtext::readtext("Clase2/Material/Mujeres_Adultos_1.txt")
+cat(txt$text) # imprimo en consola para visualizar el texto cargado
+
+# reviso el encoding para chequear caracteres incorrectamente leídos
+Encoding(txt$text) # consulto el encoding del texto
+
+Encoding(txt$text)="UTF-8" # asigno un encoding y veo si está ok
+
+cat(txt$text) # imprimo en consola para ver si se arreglo el problema
+
+Encoding(txt$text)="latin1" # asigno otro encoding y veo si está ok
+
+cat(txt$text) # imprimo en consola para ver si se arreglo el problema
+
+
 # Determinamos el pdf con el que trabajar
 pdf <- readtext("Clase2/Material/text.pdf")
-url <- readtext("https://www.ingenieria.unam.mx/dcsyhfi/material_didactico/Literatura_Hispanoamericana_Contemporanea/Autores_B/BENEDETTI/Poemas.pdf")
 
-Encoding(txt$text)="UTF-8"
-Encoding(txt$text)="ASCII"
-Encoding(txt$text)="latin1"
+# Determinamos el pdf en una url con el que trabajar
+url <- readtext("https://www.ingenieria.unam.mx/dcsyhfi/material_didactico/Literatura_Hispanoamericana_Contemporanea/Autores_B/BENEDETTI/Poemas.pdf")
 
 
 #pdftools
@@ -33,7 +46,7 @@ pdf_texto <- pdf_text("Clase2/Material/marcha_1973.pdf")
 
 
 # write.csv
-write.csv(pdf_texto,"Clase2/Material/pdf_texto.csv")
+write.csv(pdf_texto,"Clase2/Material/pdf_texto.csv") # guardo el objeto en un archivo csv
 
 
 ##Reconocimiento óptico de caracteres en imagenes
@@ -45,14 +58,15 @@ tesseract_info()
 tesseract_download("spa")
 # asignar
 espanol <- tesseract("spa")
-#Probamos:
-transcribopdf <- ocr("Clase2/Material/analesUruguay.pdf",engine = espanol)
 
-tabla=ocr_data("Clase2/Material/analesUruguay.pdf",engine = espanol)
+#Probamos:
+transcribopdf <- ocr("Clase2/Material/analesUruguay.pdf",engine = espanol) #  devuelve vector
+
+tabla=ocr_data("Clase2/Material/analesUruguay.pdf",engine = espanol) # devuelve tibble (dataframe)
 
 # unifico el texto en un vector
-library(tidyverse)
-texto2 <- str_c(tabla$word, collapse = " ")
+texto2 <- stringr::str_c(tabla$word, collapse = " ") # colapso los tres elementos del vector separando por un espacio
+
 
 #### EJERCICIO 1 ----
 
@@ -66,8 +80,8 @@ texto2 <- str_c(tabla$word, collapse = " ")
 
 
 # Solucion
-transcribopng <- ocr("Clase2/Material/analesUruguay_3.png",engine = espanol)
-tablapng=ocr_data("Clase2/Material/analesUruguay_3.png",engine = espanol)
+# transcribopng <- ocr("Clase2/Material/analesUruguay_3.png",engine = espanol)
+# tablapng=ocr_data("Clase2/Material/analesUruguay_3.png",engine = espanol)
 
 #------------------------------------------------------------------------------#
 
@@ -79,14 +93,14 @@ library(rvest)
 library(dplyr)
 
 #Defino mi sitio html: Montevideo portal
-mvdportal = rvest::read_html("https://www.montevideo.com.uy/index.html") 
+mvdportal = rvest::read_html("https://www.montevideo.com.uy/index.html") # leo todo el contenido html y guardo en un objeto
 
-resumenes = mvdportal %>%
-  html_elements(".text")%>% #defino el elemento que identifiqué con el SelectorGadget 
-  html_text()%>%
-  as.data.frame()
+resumenes = mvdportal %>% 
+  html_elements(".text") %>% #defino el elemento que identifiqué con el SelectorGadget
+  html_text()%>% # extraigo el texto
+  as.data.frame() # convierto la salida en un data frame
 
-#write.csv(resumenes,"Material/resumenes.csv")
+#write.csv(resumenes,"Clase2/Material/resumenes.csv")
 
 titulares = mvdportal %>%
   html_elements("a")%>%
@@ -95,11 +109,15 @@ titulares = mvdportal %>%
 
 #write.csv(titulares,"Material/titulares.csv")
 
-url <- 'https://es.wikipedia.org/wiki/Anexo:Ríos_de_Uruguay'
 
-url %>% read_html() %>%
-  html_elements(css = '.wikitable') %>%
-  html_table()
+# descargo de tabla html
+url <- 'https://es.wikipedia.org/wiki/Anexo:Ríos_de_Uruguay' # identifico url
+
+url %>% read_html() %>% # aplico la función de leer el contenido html sin guardarla en un objeto
+  html_elements(css = '.wikitable') %>% # selecciono un estilo css específico que es el de las tablas
+  html_table() # función que convierte la extracción en una tabla de r
+## como no asigné este código a ningún objeto, se va a imprimir en la consola
+
 
 #### EJERCICIO 2 ----
 
@@ -111,6 +129,9 @@ url %>% read_html() %>%
 #------------------------------------------------------------------------------#
 
 #### Scrapeo parlamentario ----
+
+##Instalar última versión dev de speech desde github 
+##remotes::install_github("Nicolas-Schmidt/speech")
 
 ##Instalar PUY 
 ##remotes::install_github("Nicolas-Schmidt/puy")
