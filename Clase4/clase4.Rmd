@@ -153,6 +153,31 @@ Existen software y paquetes que ayudan al proceso de análisis y codificación d
 * Renombrar códigos y categorías de códigos.
 
 
+# Instalación
+
+```{r eval=FALSE}
+
+##1) Instalar RTools 4.0: https://cran.r-project.org/bin/windows/Rtools/rtools40.html
+
+##2)Instalación RGtk2 desde archivo zip alojado en el repositorio del curso
+
+url="https://github.com/elinagomez/analisistextoEPUdelar2023/raw/master/Recursos%20iniciales/RGtk2.zip"
+install.packages(url, repos=NULL)
+
+library(RGtk2)
+##OK + Instalar, luego reiniciar R.
+
+##3)
+devtools::install_github("jverzani/gWidgets2RGtk2", INSTALL_opts = "--no-multiarch")
+
+##4)
+devtools::install_github("RQDA/RQDA", INSTALL_opts = "--no-multiarch")
+
+##5)
+library(RQDA) ##Cargo y chequeo que esté bien
+RQDA() #Abro interfaz
+```
+
 <!-- # Instalación  -->
 
 <!-- #Documentación y adaptación para versión R nueva en: <https://github.com/RQDA/RQDA> -->
@@ -192,7 +217,6 @@ Existen software y paquetes que ayudan al proceso de análisis y codificación d
 
 - El menú incluye: **Proyectos**, **Archivos**, **Códigos**, **Categoría de códigos**, **Casos**, **Atributos**, **Memos**
 
-
 [Otras funcionalidades](http://rqda.r-forge.r-project.org/documentation_2.html)
 
 # Ventajas y desventajas
@@ -214,10 +238,10 @@ Desventajas:
 - **Archivos**: se importan los archivos de texto plano .txt (codificación ASII por defecto pero se puede modificar).  
 - **Códigos**: son las _etiquetas_ que se asigna a cada cita en los diferentes archivos. Un resumen se puede obtener con getCodingTable() ("Número de codificaciones para cada código", "Número promedio de palabras asociadas con cada código" y "Número de archivos asociados con cada código"). 
 - **Categoría de códigos**: son las categorías de nivel superior, a las que se asocia conceptualmente a los códigos. 
-- **Categoría de archivos**: son las categorías que agrupan a cada uno de los archivos según algún criterio de nivel superior.
 
 # Menú
 
+- **Categoría de archivos**: son las categorías que agrupan a cada uno de los archivos según algún criterio de nivel superior.
 - **Casos**: es la unidad de análisis que se está trabajando, se puede asignar a un archivo o una parte del mismo. 
 - **Atributos**: los atributos sirven para la clasificación cuantitativa. Se puede asignar a un archivo o a un caso. 
 - **Memos**: son notas que se pueden crear tanto para los archivos, códigos, categorías, etc. 
