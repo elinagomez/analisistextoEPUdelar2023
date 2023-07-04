@@ -336,7 +336,7 @@ filesByCodes(codingTable = c("coding", "coding2"))
 
 # Búsqueda de códigos
 
-La función _getCodingsByOne()_ sirve para buscar las cofificaciones asociadas a los códigos. Es posible buscar codificaciones cruzadas.
+La función _getCodingsByOne()_ sirve para buscar las codificaciones asociadas a los códigos. Es posible buscar codificaciones cruzadas.
 
 ```{r eval=FALSE}
 
@@ -350,6 +350,23 @@ getCodingsByOne(1) %and% getCodingsByOne(9)
 #podría ser: %and%; %or%; %not%
 
 ```
+
+
+# Codificaciones y códigos
+
+Para llegar a una tabla con los códigos y codificaciones, itero sobre cada uno.
+
+```{r eval=FALSE}
+
+tabla=RQDA::getCodingTable()
+out = vector("list", length = max(tabla$cid))
+for(i in 1:max(tabla$cid)) {         
+  out[[i]] <- rbind(RQDA::getCodingsByOne(i) )
+}
+data = do.call(rbind, out)
+
+```
+
 
 # Co-ocurrencia de códigos
 
@@ -396,7 +413,7 @@ Instalación de RQDAPlus para el análisis rápido de datos
 remotes::install_github ("stats4sd/RQDAPlus", upgrade = "always")
 
 # 2. Escriba 
-RQDAPlus::RQDAPlus("C:/FilePath/nombreDeArchivo. rqda")
+RQDAPlus::RQDAPlus("C:/FilePath/nombreDeArchivo.rqda")
 ```
 
 
@@ -420,7 +437,7 @@ Para hacer consultas más específicas que no sean las de las funciones vistas, 
 
 ## RQDA
 
-1. Abrir el proyecto _clase_4_Ejemplo_Acoso.rqda_
+1. Abrir el proyecto _Proyecto_InsercionInt.rqda_
 
 2. Crear dos categorías con dos códigos en cada una y citas asociadas
 

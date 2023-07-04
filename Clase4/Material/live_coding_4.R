@@ -95,11 +95,11 @@ data = do.call(rbind, out)
 
 devtools::install_github("stats4sd/RQDAPlus", upgrade = "always")
 
-RQDAPlus::RQDAPlus("C:/Users/Usuario/Downloads/Final Analisis.VersionMAca.rqda")
+RQDAPlus::RQDAPlus("Clase4/Material/Proyecto_InsercionInt.rqda")
 
 
 
-#1. Abrir el proyecto _clase_4_Ejemplo_Acoso.rqda_
+#1. Abrir el proyecto _Proyecto_InsercionInt.rqda_
 
 library(RQDA)
 RQDA()
@@ -130,7 +130,7 @@ ggplot(cods, aes(codename, fill=filename)) + geom_bar(stat="count") +
   ylab("Frecuencia de códigos por documento") + xlab("Códigos")
 
 
-RQDAPlus::RQDAPlus("Clase4/Material/clase_4_Ejemplo_Acoso.rqda")
+RQDAPlus::RQDAPlus("Clase4/Material/Proyecto_InsercionInt.rqda")
 
 
 ##Abrir archivos masivos
@@ -147,7 +147,7 @@ RQDAPlus::RQDAPlus("Clase4/Material/clase_4_Ejemplo_Acoso.rqda")
 # 
 # ## RQDA
 # 
-# 1. Abrir el proyecto _clase_4_Ejemplo_Acoso.rqda_
+# 1. Abrir el proyecto _Proyecto_InsercionInt.rqda_
 # 
 # 2. Crear dos categorías con dos códigos en cada una y citas asociadas
 # 
