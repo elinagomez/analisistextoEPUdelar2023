@@ -99,24 +99,6 @@ RQDAPlus::RQDAPlus("C:/Users/Usuario/Downloads/Final Analisis.VersionMAca.rqda")
 
 
 
-
-# Ejercicio
-
-# 1. Abrir el proyecto _clase_4_Ejemplo_Acoso.rqda_
-# 
-# 2. Crear dos categorías con dos códigos en cada una y citas asociadas
-# 
-# 3. Averiguar el número de caracteres asociado a cada código
-# 
-# 4. Hacer un plot de las categorías y códigos
-# 
-# 5. Hacer un data.frame _cods_ con los códigos asociados a cada documento.
-
-
-
-
-
-
 #1. Abrir el proyecto _clase_4_Ejemplo_Acoso.rqda_
 
 library(RQDA)
@@ -148,7 +130,7 @@ ggplot(cods, aes(codename, fill=filename)) + geom_bar(stat="count") +
   ylab("Frecuencia de códigos por documento") + xlab("Códigos")
 
 
-RQDAPlus:: RQDAPlus("Clase4/Material/clase_4_Ejemplo_Acoso.rqda")
+RQDAPlus::RQDAPlus("Clase4/Material/clase_4_Ejemplo_Acoso.rqda")
 
 
 ##Abrir archivos masivos
@@ -161,3 +143,18 @@ RQDAPlus:: RQDAPlus("Clase4/Material/clase_4_Ejemplo_Acoso.rqda")
 # RQDA::write.FileList(lista) 
 
 
+# # Ejercicio 1
+# 
+# ## RQDA
+# 
+# 1. Abrir el proyecto _clase_4_Ejemplo_Acoso.rqda_
+# 
+# 2. Crear dos categorías con dos códigos en cada una y citas asociadas
+# 
+# 3. Averiguar el número de caractéres asociado a cada código
+# 
+# 4. Hacer un plot de las categorías y códigos
+# 
+# 5. Hacer un data.frame _cods_ con los códigos asociados a cada documento.
+# 
+# 6. Hacer un gráfico con ggplot con la frecuencia de los códigos asociados a cada documento

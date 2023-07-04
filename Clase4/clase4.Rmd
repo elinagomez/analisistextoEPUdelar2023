@@ -56,6 +56,11 @@ knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
 Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
 
 
+# Objetivos de hoy
+
+```{r echo=FALSE, out.width = "80%", out.height = "80%", fig.align = "center"}
+knitr::include_graphics("imagenes/analisis.png")
+```
 
 # Objetivos de hoy
 
@@ -128,6 +133,8 @@ Existen software y paquetes que ayudan al proceso de análisis y codificación d
 
 - **RQDA** es un paquete para el análisis cualitativo de textos, el cual permite la codificación de textos.   
 - Se conecta con todas las funcionalidades de R por lo que se puede combinar el análisis cualitativo y cuantitativo. 
+- **Información completa:**  [http://rqda.r-forge.r-project.org/](http://rqda.r-forge.r-project.org/)
+
 
 # **¿Qué nos permite?**
 
@@ -146,35 +153,33 @@ Existen software y paquetes que ayudan al proceso de análisis y codificación d
 * Renombrar códigos y categorías de códigos.
 
 
-# Instalación 
+<!-- # Instalación  -->
 
-#Documentación y adaptación para versión R nueva en: <https://github.com/RQDA/RQDA>
+<!-- #Documentación y adaptación para versión R nueva en: <https://github.com/RQDA/RQDA> -->
 
-```{r message=FALSE, warning=FALSE,eval=FALSE}
+<!-- ```{r message=FALSE, warning=FALSE,eval=FALSE} -->
 
-pkgs <- c("RSQLite", "gWidgets2RGtk2", "DBI",
-          "stringi", "RGtk2", "igraph", "gWidgets2", 
-          "devtools")
-install.packages(pkgs)
+<!-- pkgs <- c("RSQLite", "gWidgets2RGtk2", "DBI", -->
+<!--           "stringi", "RGtk2", "igraph", "gWidgets2",  -->
+<!--           "devtools") -->
+<!-- install.packages(pkgs) -->
 
-library(RGtk2) ##Poner OK para instalar Gtk2 
-devtools::install_github("RQDA/RQDA", 
-INSTALL_opts = "--no-multiarch")
-```
-
-
-# Instalación 
+<!-- library(RGtk2) ##Poner OK para instalar Gtk2  -->
+<!-- devtools::install_github("RQDA/RQDA",  -->
+<!-- INSTALL_opts = "--no-multiarch") -->
+<!-- ``` -->
 
 
-```{r message=FALSE, warning=FALSE,eval=FALSE}
-
-library(RQDA) ##Cargo y chequeo que esté bien
-RQDA() #Abro interfaz
-
-```
+<!-- # Instalación  -->
 
 
-**Información completa:**  [http://rqda.r-forge.r-project.org/](http://rqda.r-forge.r-project.org/)
+<!-- ```{r message=FALSE, warning=FALSE,eval=FALSE} -->
+
+<!-- library(RQDA) ##Cargo y chequeo que esté bien -->
+<!-- RQDA() #Abro interfaz -->
+
+<!-- ``` -->
+
 
 # **Interface**
 
@@ -361,22 +366,35 @@ Otras funciones se pueden encontrar en la documentación del paquete:
 Es una shiny app que complementa las funcionalidades y permite un procesamiento visual de los datos. 
 
 Instalación de RQDAPlus para el análisis rápido de datos
-    1. Escriba remotes:: install_github ("stats4sd/RQDAPlus", upgrade = "always")
-    2. Escriba RQDAPlus:: RQDAPlus ("C:/FilePath/nombreDeArchivo. rqda")
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+# 1. Escriba
+remotes::install_github ("stats4sd/RQDAPlus", upgrade = "always")
+
+# 2. Escriba 
+RQDAPlus::RQDAPlus("C:/FilePath/nombreDeArchivo. rqda")
+```
+
 
 # RQDAPlus
 
 ¿Qué puede hacer RQDAPlus?
-    • Tablas de frecuencia de co-ocurrencia de cualquier código (s), categorías de código y/o caso (s)
-    • Tablas de texto de co-ocurrencias de cualquier código (s), categorías de código y/o caso (s)
-    • Textos de salida de cualquier co-ocurrencia en formato csv o html
-    • Crear nubes de palabras para cualquier código(s), categorías de código, y/o caso (s) seleccionados.
-    • Tabla de matriz de adyacencia que muestre la frecuencia de los códigos.
-    • Crea análisis gráfico de redes  mostrando la relación de los códigos entre archivos (y agrupación de códigos basado en la ubicación entre archivos).
+
+- Tablas de frecuencia de co-ocurrencia de cualquier código(s), categorías de código y/o caso(s).  
+- Tablas de texto de co-ocurrencias de cualquier código(s), categorías de código y/o caso(s).  
+- Textos de salida de cualquier co-ocurrencia en formato csv o html.  
+- Crear nubes de palabras para cualquier código(s), categorías de código, y/o caso(s) seleccionados.  
+- Tabla de matriz de adyacencia que muestre la frecuencia de los códigos.  
+- Crea análisis gráfico de redes  mostrando la relación de los códigos entre archivos (y agrupación de códigos basado en la ubicación entre archivos).  
+
+# RQDAQuery
+
+Para hacer consultas más específicas que no sean las de las funciones vistas, se debe utilizar la función `RQDAQuery` cuyo único argumento sera una consulta `SQL` en formato `character`  
 
 
+# Ejercicio 1
 
-# Ejercicio
+## RQDA
 
 1. Abrir el proyecto _clase_4_Ejemplo_Acoso.rqda_
 
@@ -390,9 +408,6 @@ Instalación de RQDAPlus para el análisis rápido de datos
 
 6. Hacer un gráfico con ggplot con la frecuencia de los códigos asociados a cada documento
 
-# RQDAQuery
-
-Para hacer consultas más específicas que no sean las de las funciones vistas, se debe utilizar la función `RQDAQuery` cuyo único argumento sera una consulta `SQL` en formato `character`  
 
 
 

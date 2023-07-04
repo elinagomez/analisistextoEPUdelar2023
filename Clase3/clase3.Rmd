@@ -130,7 +130,13 @@ knitr::include_graphics("imagenes/mapa_agua.png")
 knitr::include_graphics("imagenes/query_agua.png")
 ```
 
+# EJERCICIO 1
 
+## Búsquedas de google con gtrendsR
+
+1. Realizar una búsqueda de interés general para el último mes 
+2. Realizar una búsqueda de interés general para el último año
+3. Graficar ambos resultados
 
 # 5. Audio 
 
@@ -237,6 +243,18 @@ La API es de pago, pero para un ejercicio básico alcanza con lo que te permite 
 - _[Acá](https://www.elinagomez.com/blog/2023-02-21-gpt3-ccss/)_ hay otro ejemplo de uso de `rgtp3` (no de audio) donde pueden ver los pasos para conectar con la API
 
 
+# EJERCICIO 2 
+
+## Recuperación de texto de audios
+
+1. Recuperar y transcribir con modelo tiny un audio breve (menos de 3 minutos)
+2. Recuperar y transcribir con modelo medium el mismo audio
+3. Imprimir en consola ambos resultados y comparar los textos
+
+_Opción de descarga: [sitio Presidencia de la República](https://www.gub.uy/presidencia/comunicacion/audios/breves)_
+
+
+
 # 6. YouTube
 
 El paquete [`youtubecaption`](https://github.com/jooyoungseo/youtubecaption) permite descargar los subtítulos de los videos de YouTube
@@ -288,6 +306,13 @@ También `youtubecaption` se potencia con la combinación de herramientas
 3. Análisis con `quanteda` y `udpipe`
 
 4. Visualización con `ggplot2`
+
+
+# EJERCICIO 3
+
+## Subtítulos de YouTube
+
+1. Recuperar el texto de los subtítulos de un video corto de YouTube
 
 
 # Otros recursos disponibles

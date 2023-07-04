@@ -80,9 +80,13 @@ mapa=tm_shape(paisescoord) +
 
 
 
-#### EJERCICIOS ----
+#### EJERCICIO 1 ----
 
-# - Realizar una búsqueda de interés general para el último mes y una para el último año. Graficar
+## Búsquedas de google con gtrendsR
+
+# 1. Realizar una búsqueda de interés general para el último mes 
+# 2. Realizar una búsqueda de interés general para el último año
+# 3. Graficar ambos resultados
 
 
 ## 5. Audio ----
@@ -130,10 +134,14 @@ tabla1 <- knitr::kable(texto_vec,
 
 tabla1 # imprimo la tabla
 
-#### EJERCICIOS ----
+#### EJERCICIO 2 ----
 
+## Recuperación de texto de audios
 
-# - Recuperar y transcribir en modelo tiny un audio breve (menos de 3 minutos) de https://www.gub.uy/presidencia/comunicacion/audios/breves  
+# 1. Recuperar y transcribir con modelo tiny un audio breve (menos de 3 minutos)
+# 2. Recuperar y transcribir con modelo medium el mismo audio
+# 3. Imprimir en consola ambos resultados y comparar los textos 
+# Opción de descarga: https://www.gub.uy/presidencia/comunicacion/audios/breves  
 
 ## 6. YouTube ----
 
@@ -151,9 +159,12 @@ caption2 <- get_caption(url2, language = "es")
 url3 <- "https://www.youtube.com/watch?v=LApsPiejZLI"
 caption3 <- get_caption(url3, language = "es")
 
-#### youtubecaption ----
 
-# - Recuperar el texto de los subtítulos de un video corto de YouTube
+#### EJERCICIO 3 ----
+
+## Subtítulos de YouTube
+
+# 1. Recuperar el texto de los subtítulos de un video corto de YouTube
 
 
 
