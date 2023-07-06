@@ -128,6 +128,12 @@ Existen software y paquetes que ayudan al proceso de análisis y codificación d
 - RQDA
 - entre otros. 
 
+# Encuadre teórico: Teoría Fundamentada Computacional
+
+- Nelson (2020)
+
+![](imagenes/nelson.jpg)
+
 
 # **RQDA**
 
