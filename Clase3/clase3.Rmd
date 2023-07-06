@@ -144,6 +144,8 @@ El paquete [audio.whisper](https://github.com/bnosac/audio.whisper) permite util
 
 Recuperar texto de audios es una fuente casi inagotable (entrevistas, discursos, conversaciones, podcast, etc.).
 
+Trabajar en el entorno local de R, garantiza privacidad de la información (ejemplo entrevistas confidenciales)
+
 
 # audio.whisper
 
@@ -151,7 +153,7 @@ Recuperar texto de audios es una fuente casi inagotable (entrevistas, discursos,
 
 - Cuanto mayor es la potencia y precisión del modelo más demora la transcripción
 
-- No todos están disponibles para español
+- Es multilingüe
 
 - Los pasos son sencillos y están bien explicados en el [repositorio del paquete](https://github.com/bnosac/audio.whisper)
 
@@ -214,6 +216,14 @@ tabla1 <- knitr::kable(texto_vec,
 ```{r echo=FALSE, out.width = "100%", fig.align = "center"}
 knitr::include_graphics("imagenes/ej_whisper.jpeg")
 ```
+
+# audio.whisper
+
+- Los modelos utilizan mucha memoria RAM y esto puede crashear la sesión
+
+- Una alternativa eficiente, sobre todo cuando se trabaja con modelos potentes es descargar los modelos y cargar los archivos locales
+
+- [Sitio para descargar modelos](https://huggingface.co/ggerganov/whisper.cpp/tree/main)
 
 # audio.whisper + scraping
 

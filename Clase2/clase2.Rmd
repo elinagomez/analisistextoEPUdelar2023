@@ -399,6 +399,8 @@ sesion <- puy::add_party(sesion)
 
 - Acumula desde enero 2009. Tiene tres módulos: Indicadores, Entidades y Cluster.
 
+_Consulta combinada de palabras claves: ["Lacalle Pou", "Cabildo Abierto"] -> Lacalle Pou y Cabildo Abierto_
+
 
 # _Proyecto Gdelt_
 
