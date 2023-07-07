@@ -22,14 +22,18 @@ load("~/rcuali2022/Clase5/Material/intervenciones.RData")
 #aplico la función dfm con los argumentos para limpiar el texto e indicar grupos
 
 dfm_intervenciones <- quanteda::dfm(quanteda::tokens(intervenciones$speech,
-                                                     remove_punct = TRUE,
-                                                     remove_numbers = TRUE),
-                                    tolower=TRUE,
-                                    verbose = FALSE) %>%
-  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),tolower(intervenciones$legislator),"presi*"),
+                                remove_punct = TRUE,
+                                remove_numbers = TRUE),
+                                tolower=TRUE,
+                                verbose = FALSE) %>%
+  quanteda::dfm_remove(pattern = c(quanteda::stopwords("spanish"),
+                      tolower(intervenciones$legislator),"presi*"),
                        min_nchar=3)%>%
-  quanteda::dfm_trim(min_termfreq = 6)%>% 
+  quanteda::dfm_trim(min_termfreq = 6)%>%
+  #dfm_tfidf()%>% ## puedo ponderar con tf-idf 
   quanteda::dfm_group(groups = intervenciones$party)
+
+
 
 sacopalabras= c(quanteda::stopwords("spanish"),tolower(intervenciones$legislator),"presidente")
 
@@ -56,7 +60,7 @@ topfeatures(dfm_intervenciones,20) ##veo principales palabras
 #Nubes de palabras con quanteda
 
 ##Nubes de palabras sin desagregación
-quanteda.textplots::textplot_wordcloud(dfm_intervenciones, min.count = 2,max_words = 500,
+quanteda.textplots::textplot_wordcloud(dfm_tfidf(dfm_intervenciones), min.count = 2,max_words = 200,
    random.order = TRUE,colors = RColorBrewer::brewer.pal(8,"Dark2"),comparison = F)
 
 
@@ -73,18 +77,18 @@ quanteda::topfeatures(dfm_intervenciones,20)
 ##Grafico palabras más frecuentes
 
 #creo un objeto con la 20 principales palabras 
-top = data.frame(topfeatures(dfm_intervenciones,20))
+top = data.frame(topfeatures(dfm_tfidf(dfm_intervenciones),20))
 
 #las defino como rownames
 top$palabra = rownames(top)
 
 #hago el gráfico con ggplot
 topplot = top[1:20, ] %>%
-  ggplot(aes(x = reorder(palabra, topfeatures.dfm_intervenciones..20.), 
-             y = topfeatures.dfm_intervenciones..20., fill = palabra)) + 
+  ggplot(aes(x = reorder(palabra, topfeatures.dfm_tfidf.dfm_intervenciones...20.), 
+             y = topfeatures.dfm_tfidf.dfm_intervenciones...20., fill = palabra)) + 
   geom_col(show.legend = FALSE) +
   coord_flip() +
-  geom_text(aes(hjust = -0.1, label = topfeatures.dfm_intervenciones..20.)) +
+  geom_text(aes(hjust = -0.1, label = round(topfeatures.dfm_tfidf.dfm_intervenciones...20.,1))) +
   theme_minimal() +
   theme(axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text = element_text(size = 15)) +
   ggtitle("Palabras más frecuentes (n=20)") +
@@ -96,7 +100,7 @@ topplot = top[1:20, ] %>%
 
 
 
-quanteda.textstats::textstat_simil(dfm_intervenciones,selection = "reforma",
+quanteda.textstats::textstat_simil(dfm_tfidf(dfm_intervenciones),selection = "reforma",
                                    method = "correlation",margin = "features")%>%
   as.data.frame()%>%
   dplyr::arrange(-correlation)%>%
@@ -118,7 +122,7 @@ DT::datatable(kwic)
 
 ##Redes de co-ocurrencia
 
-base_fcm= dfm_intervenciones%>%
+base_fcm= dfm_tfidf(dfm_intervenciones) %>%
   fcm(context = "document")
 
 View(data.frame(base_fcm))

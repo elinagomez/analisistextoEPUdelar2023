@@ -128,6 +128,13 @@ dfm_intervenciones <- quanteda::dfm(quanteda::tokens(intervenciones$speech,
 
 ```
 
+# Ponderación
+
+- Como factor de ponderación del dfm puedo usar la métrica *_tf-idf_* que relativiza el peso de cada término, poniendo en relación la frecuencia de aparición por el inverso de la frecuencia en los documentos. 
+- Ayuda a identificar los términos más frecuentes en un documento pero que no lo son en todos.  
+- No es posible usarlo en funciones que impliquen agrupación. 
+
+- La función de quanteda es _dfm_tfidf()_
 
 # Nubes de palabras: general
 
@@ -135,14 +142,14 @@ Las nubes de palabras las hago con la función **textplot_wordcloud** del paquet
 
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE}
-quanteda.textplots::textplot_wordcloud(dfm_intervenciones, min.count = 2,max_words = 200,
+quanteda.textplots::textplot_wordcloud(dfm_tfidf(dfm_intervenciones), min.count = 2,max_words = 200,
    random.order = FALSE,colors = RColorBrewer::brewer.pal(8,"Dark2"),comparison = F)
 ```
 
 # Nubes de palabras: general
 
 ```{r wcgeneral, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.height = 10, fig.width = 10, fig.align = "center",out.width = "150%"}
- quanteda.textplots::textplot_wordcloud(dfm_intervenciones, min.count = 2,max_words = 200,
+ quanteda.textplots::textplot_wordcloud(dfm_tfidf(dfm_intervenciones), min.count = 2,max_words = 200,
    random.order = FALSE,colors = RColorBrewer::brewer.pal(8,"Dark2"),comparison = F)
 ```
 
@@ -184,18 +191,18 @@ topfeatures(dfm_intervenciones,20)
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #creo un objeto con la 20 principales palabras 
-top = data.frame(topfeatures(dfm_intervenciones,20))
+top = data.frame(topfeatures(dfm_tfidf(dfm_intervenciones),20))
 
 #las defino como rownames
 top$palabra = rownames(top)
 
 #hago el gráfico con ggplot
 topplot = top[1:20, ] %>%
-  ggplot(aes(x = reorder(palabra, topfeatures.dfm_intervenciones..20.), 
-             y = topfeatures.dfm_intervenciones..20., fill = palabra)) + 
+  ggplot(aes(x = reorder(palabra, topfeatures.dfm_tfidf.dfm_intervenciones...20.), 
+             y = topfeatures.dfm_tfidf.dfm_intervenciones...20., fill = palabra)) + 
   geom_col(show.legend = FALSE) +
   coord_flip() +
-  geom_text(aes(hjust = -0.1, label = topfeatures.dfm_intervenciones..20.)) +
+  geom_text(aes(hjust = -0.1, label = round(topfeatures.dfm_tfidf.dfm_intervenciones...20.,1))) +
   theme_minimal() +
   theme(axis.title.y = element_blank(), axis.title.x = element_blank(), axis.text = element_text(size = 15)) +
   ggtitle("Palabras más frecuentes (n=20)") +
@@ -215,7 +222,7 @@ topplot
 - Defino el método de similitud ("correlation", "cosine", "jaccard", "ejaccard", "dice", "edice", "hamman", "simple matching")
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
-quanteda.textstats::textstat_simil(dfm_intervenciones,selection = "sindicato",
+quanteda.textstats::textstat_simil(dfm_tfidf(dfm_intervenciones),selection = "sindicato",
                                    method = "correlation",margin = "features")%>%
   as.data.frame()%>%
   dplyr::arrange(-correlation)%>%
@@ -227,7 +234,7 @@ quanteda.textstats::textstat_simil(dfm_intervenciones,selection = "sindicato",
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.asp=0.60}
 
-quanteda.textstats::textstat_simil(dfm_intervenciones,selection = "sindicato",
+quanteda.textstats::textstat_simil(dfm_tfidf(dfm_intervenciones),selection = "sindicato",
                                    method = "correlation",margin = "features")%>%
   as.data.frame()%>%
   dplyr::arrange(-correlation)%>%
@@ -242,7 +249,7 @@ quanteda.textstats::textstat_simil(dfm_intervenciones,selection = "sindicato",
 # Asociación de palabras: $reforma
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,fig.asp=0.60}
-quanteda.textstats::textstat_simil(dfm_intervenciones,selection = "reforma",
+quanteda.textstats::textstat_simil(dfm_tfidf(dfm_intervenciones),selection = "reforma",
                                    method = "correlation",margin = "features")%>%
   as.data.frame()%>%
   dplyr::arrange(-correlation)%>%
@@ -284,7 +291,7 @@ window = 5)
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-base_fcm= dfm_intervenciones%>% ##armo una matriz de co-ocurrencia
+base_fcm= dfm_tfidf(dfm_intervenciones)%>% ##armo una matriz de co-ocurrencia
   fcm(context = "document")
 
 feat <- names(topfeatures(base_fcm, 25)) 
