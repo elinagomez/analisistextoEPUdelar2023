@@ -55,6 +55,11 @@ knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
 
 Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
 
+# Objetivos de hoy
+
+```{r echo=FALSE, out.width = "80%", out.height = "80%", fig.align = "center"}
+knitr::include_graphics("imagenes/analisis_viz.png")
+```
 
 
 # Objetivos de hoy
@@ -63,6 +68,50 @@ Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAl
 - Nubes de palabras
 - Asociaciones
 - Redes
+- Categorías gramaticales con paquetes **spacyr** y **udpipe**
+
+
+# Algunas nociones previas
+
+- Pre procesamiento: antes del análisis necesitamos realizar un conjunto de actividades destinadas a preparar el texto
+- Su complejidad dependerá de las características del texto que tengamos 
+- Siempre está en función de los objetivos de la tarea que nos propongamos
+- No hay una receta única
+
+
+# Algunas nociones previas
+
+ Pre-procesamiento:
+ 
+- Limipeza o eliminación del ruido (ej. números de página, encabezados, saltos de línea, etc.)
+
+- Normalización:
+1. Tokenización: dividir el texto en unidades más pequeñas (caracteres, palabras, oraciones)
+2. Steeming: cortar las palabras para quedarnos con la raíz (gato, gata, gatitos -> gat*)
+3. Lematización: quedarnos con la forma canónica de la palabra (tipo las entradas de un diccionario)
+4. Homogeneización: eliminación de números, puntuación, símbolos, convertir a minúsculas, eliminación de stopwords (palabras no sustantivas para el análisis), etc.
+
+
+# Algunas nociones previas
+
+- El lenguaje (y sus usos) son complejos y eso genera muchas veces necesidad de desambiguar. 
+
+- Ejemplo: tokenizando por palabras ¿Nueva York o Graciela Bianchi son una palabra o dos? ¿Las tomamos como un token o como dos?
+
+- En última instancia, la respuesta es una decisión que hay que justificar como cualquier otra decisión metodológica
+
+- Además: es importante conocer cómo tokenizan las diferentes herramientas, especialmente si vamos a usar distintas
+ 
+
+# Algunas nociones previas
+
+- **Corpus**: colección de textos escritos, orales o ambos. 
+En linguística [1] conjunto cerrado de textos o de datos destinado a la investigación científica concreta. 
+[2] Muestra representativa de una lengua (datos lingüísticos reales que reflejen el uso de la lengua)
+
+- **Palabras**: en nuestro contexto de análisis son palabras distintas en un corpus
+
+- **Tokens**: en nuestro contexto de análisis son el total de palabras (apariciones) en un corpus (siempre que tokenizemos por palabras)
 
 
 # Paquete quanteda
@@ -73,8 +122,54 @@ Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAl
 
 - Sus capacidades coinciden o superan las que se ofrecen en muchas aplicaciones de software para usuarios finales, muchas de las cuales son caras y no de código abierto. 
 
+
+# quanteda
+
 - [Documentación quanteda](https://cran.r-project.org/web/packages/quanteda/quanteda.pdf)
-- [Más infrormación](https://quanteda.io/) 
+- [Tutorial](https://tutorials.quanteda.io/) 
+- [Más información](https://quanteda.io/) 
+
+
+Algunos de los conjuntos de funciones de quanteda fueron independizándose en paquetes específicos:
+`quanteda.textplots`, `quanteda.textmodels` y `quanteda.textstats`
+
+
+# quanteda: objetos
+
+`quanteda` tiene sus propios tipos de objetos
+
+- `corpus`  
+Guarda cadenas de caracteres y variables en un marco de datos  
+Combina textos con variables a nivel de documento  
+
+- `tokens`  
+Almacena tokens en una lista de vectores  
+Conserva las posiciones de las palabras
+
+- `dfm` (document-feature matrix)   
+Representa frecuencias de características en documentos en una matriz  
+No tiene información sobre las posiciones de las palabras  
+
+
+# quanteda: flujo
+
+```{r echo=FALSE, out.width = "80%", out.height = "80%", fig.align = "center"}
+knitr::include_graphics("imagenes/quanteda.png")
+```
+
+Fuente: quanteda.io
+
+# quanteda: análisis básicos
+
+- Frecuencia de palabras y frecuencias ponderadas de términos
+- Asociación y correlación 
+- Identificación del contexto de aparición de palabras y co-ocurrencia
+- Uso de diccionarios para identificar o clasificar textos
+- Visualizaciones específicas: nubes de palabras, redes de co-ocurrencia
+
+
+
+
 
 
 # Caso práctico: LUC en el Senado
@@ -84,7 +179,7 @@ Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAl
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 
-load("~/rcuali2022/Clase5/Material/intervenciones.RData")
+load("Material/intervenciones.RData")
 
 ```
 
@@ -93,7 +188,7 @@ load("~/rcuali2022/Clase5/Material/intervenciones.RData")
 
 
 - Creo un Document feature matrix (DFM), aplicando algunos argumentos que me permiten limpiar las palabras que no me interesan al efecto del análisis. 
-    - Homogeinizo las palabras en minúscula
+    - Homogeneizo las palabras en minúscula
     - Elimino números
     - Elimino puntuaciones 
     - Elimino stopwords (por defecto y lista propia con palabras varias (ej. "Risas"))
@@ -314,6 +409,6 @@ quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, vertex_siz
 
 ```
 
+# **spacyr** y **udpipe**
 
-
-
+- Categorías gramaticales (ampliar)
