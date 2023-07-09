@@ -16,7 +16,7 @@ url <- "https://parlamento.gub.uy/documentosyleyes/documentos/diarios-de-sesion/
 # compilo por legislador/a
 sesion <- speech_build(url, compiler = TRUE)
 
-# Alternativa: cargo el diario de sesion compilado desde el repositorio
+# Alternativa: cargo el diario de sesión compilado desde el repositorio
 # load("Material/sesion.Rdata")
 
 

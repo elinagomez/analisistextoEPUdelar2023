@@ -88,7 +88,7 @@ knitr::include_graphics("imagenes/analisis_viz.png")
 - Normalización:
 1. Tokenización: dividir el texto en unidades más pequeñas (caracteres, palabras, oraciones)
 2. Steeming: cortar las palabras para quedarnos con la raíz (gato, gata, gatitos -> gat*)
-3. Lematización: quedarnos con la forma canónica de la palabra (tipo las entradas de un diccionario)
+3. Lematización: quedarnos con la forma canónica de la palabra (ej. entradas de un diccionario)
 4. Homogeneización: eliminación de números, puntuación, símbolos, convertir a minúsculas, eliminación de stopwords (palabras no sustantivas para el análisis), etc.
 
 
@@ -509,6 +509,72 @@ quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, vertex_siz
 4. Armar redes para un partido específico
 
 
+
+
+# Categorías gramaticales 
+
+La categorías gramaticales se dividen en dos:
+
+- Categorías léxicas
+
+- Categorías sintagmáticas
+
+# Categorías léxicas
+
+* Clases abiertas
+
+– nombre/sustantivo (casa, casas, felicidad)
+
+– verbo (cantar, cantando, cantado, canten, sabe, sé)
+
+– adjetivo (alto, alta, lindos, inteligente, solo)
+
+– adverbio (medio, simplemente, solo, ayer)
+
+* Clases cerradas
+– determinante (incluye artículo) (el, una, unos, esos,
+nuestro, algún)
+
+– preposición (a, de, por, contra)
+
+– pronombre (yo, él, mí, se, aquello, donde, que)
+
+– conjunción (y, o, pero, si, que, aunque)
+
+
+# Categorías sintagmáticas
+
+- Los sintagmas o grupos son conjuntos de palabras en donde podemos identificar un núcleo.
+- Tienen estructura interna.
+- Cumplen diversas funciones dentro de la oración.
+
+
+# POS-tagging
+
+- Analiza el texto a nivel de palabra
+
+- Etiqueta las categorías gramaticales según [categorías universales](https://universaldependencies.org/u/pos/)
+
+- Algunos taggers incorporan información sobre entidades (NER)
+
+
 # **spacyr** y **udpipe**
 
-- Categorías gramaticales (ampliar)
+- Algunos de los paquetes que realizan esto en R son:
+
+* [spacyr](https://cran.r-project.org/web/packages/spacyr/vignettes/using_spacyr.html) 
+
+
+
+* [udpipe](https://cran.r-project.org/web/packages/udpipe/vignettes/udpipe-annotation.html)
+
+
+# Ejemplo de uso de **udpipe** en español
+
+
+- En [esta entrada](https://www.elinagomez.com/blog/2023-05-4-palabras-presidente/) se encuentra un ejemplo de uso de _udpipe_ para anotar declaraciones del presidente y graficar categorías gramaticales. 
+
+
+
+
+
