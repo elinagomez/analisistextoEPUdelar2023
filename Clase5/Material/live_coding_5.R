@@ -1,5 +1,67 @@
+#------------------------------------------------------------------------------#
+#           Recuperación y análisis de texto con R                             # 
+#                  Educación Permanente FCS                                    #
+#                         Clase 5                                              # 
+#                      Live coding                                             #
+#------------------------------------------------------------------------------#
 
-##Clase 5
+# Presentación de quanteda ----
+
+library(speech)
+library(quanteda)
+
+# diario de sesion
+url <- "https://parlamento.gub.uy/documentosyleyes/documentos/diarios-de-sesion/3339/IMG"
+
+# compilo por legislador/a
+sesion <- speech_build(url, compiler = TRUE)
+
+# Alternativa: cargo el diario de sesion compilado desde el repositorio
+# load("Material/sesion.Rdata")
+
+
+## 1. Corpus ----
+
+# creo un corpus con la variable speech
+sesion_corpus <- corpus(sesion, text_field = "speech")
+
+# imprimo en pantalla y veo el objeto corpus
+print(sesion_corpus)
+
+# veo la estructura imprimiendo los primeros dos elementos
+head(summary(sesion_corpus), 2)
+
+
+## 2. Tokens ----
+
+# tokenizo en palabras
+sesion_corpus_toks <- tokens(sesion_corpus, what = "word") # what por defecto es palabras
+
+# tokenizo en oraciones
+sesion_corpus_toks3 <- tokens(sesion_corpus, what = "sentence")
+
+# existe la posibiildad de tokenizar en caracteres
+
+# tokenizo en palabras elimino puntuacion
+sesion_corpus_toks2 <- tokens(sesion_corpus, what = "word", remove_punct = TRUE) # what por defecto es palabras
+
+
+## 3. dfm ----
+
+# creo un dfm con el corpus de la sesion tokenizado en palabras
+sesion_corpus_toks_dfm <- dfm(sesion_corpus_toks)
+
+# número de documentos (es el mismo número que en corpus y tokens: 57 = cada legislador/a)
+ndoc(sesion_corpus_toks_dfm)
+
+# número de caracetrísticas (es algo así como el token o unidad básica de un dfm)
+nfeat(sesion_corpus_toks_dfm)
+
+# número de tokens es distinto (devuelve tokens por documento)
+ntoken(sesion_corpus_toks_dfm)
+
+
+# Caso práctico ----
 
 
 ## Limpieza de texto con paquete **quanteda**
@@ -138,12 +200,11 @@ quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8,
 
 
 
-# Ejercicio
+# EJERCICIO 1
 
-
-## Descargar menciones de un diario de sesión de interés
-## Realizar una nube de palabras desagregada por partido
-## Encontrar asociaciones de palabras relevantes 
-## Armar redes para un partido específico
+# 1. Descargar menciones de un diario de sesión de interés
+## 2. Realizar una nube de palabras desagregada por partido
+## 3. Encontrar asociaciones de palabras relevantes 
+## 4. Armar redes para un partido específico
 
 

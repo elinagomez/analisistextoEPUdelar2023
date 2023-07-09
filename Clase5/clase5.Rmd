@@ -127,6 +127,7 @@ En linguística [1] conjunto cerrado de textos o de datos destinado a la investi
 
 - [Documentación quanteda](https://cran.r-project.org/web/packages/quanteda/quanteda.pdf)
 - [Tutorial](https://tutorials.quanteda.io/) 
+- [Cheat Sheet](https://posit.co/wp-content/uploads/2022/10/quanteda.pdf)
 - [Más información](https://quanteda.io/) 
 
 
@@ -150,14 +151,108 @@ Conserva las posiciones de las palabras
 Representa frecuencias de características en documentos en una matriz  
 No tiene información sobre las posiciones de las palabras  
 
-
 # quanteda: flujo
 
 ```{r echo=FALSE, out.width = "80%", out.height = "80%", fig.align = "center"}
 knitr::include_graphics("imagenes/quanteda.png")
 ```
 
-Fuente: quanteda.io
+
+# quanteda: corpus
+
+- Creo un corpus a partir de un diario de sesión compilado con speech (por legislador/a)
+
+```{r eval=FALSE}
+library(speech)
+library(quanteda)
+
+# diario de sesion
+url <- "https://parlamento.gub.uy/documentosyleyes/documentos/diarios-de-sesion/3339/IMG"
+
+# compilo por legislador/a
+sesion <- speech_build(url, compiler = TRUE)
+
+# creo un corpus con la variable speech
+sesion_corpus <- corpus(sesion, text_field = "speech") # data, variable donde está el texto
+
+```
+
+# quanteda: corpus
+
+- El corpus permite trabajar con el texto y mantener el vínculo con las variables de origen 
+
+- También da un conteo de types (palabras), tokens, sentences 
+
+- En el ejemplo, el speech de cada legislador es un documento (text1, text2... text57) y en docvars se guardan todas las variables restantes de la base compilada con un identificador que permite combinar texto y variables
+
+```{r eval=FALSE}
+
+# Corpus consisting of 57 documents and 7 docvars.
+
+```
+
+# quanteda: tokens
+
+- Tokenizo el corpus de la sesion en palabras y en oraciones
+
+```{r eval=FALSE}
+# tokenizo en palabras
+sesion_corpus_toks <- tokens(sesion_corpus, what = "word") # what por defecto es palabras
+
+# tokenizo en oraciones
+sesion_corpus_toks3 <- tokens(sesion_corpus, what = "sentence")
+
+# tokenizo en palabras y elimino puntuacion
+sesion_corpus_toks2 <- tokens(sesion_corpus, what = "word", remove_punct = TRUE) 
+```
+
+# quanteda: tokens
+
+- Los tokens permiten trabajar con unidades de texto más pequeñas que el corpus original, realizar análisis con operaciones posicionales y mantener el vínculo con las variables de origen de cada documento
+
+- En el ejemplo, el speech de cada legislador es un string (text1, text2... text57) dividido en la unidad que definamos (caracter, palabra, oración) y en el objeto se guardan todas las variables restantes de la base compilada con un identificador que permite combinar tokens y variables
+
+# quanteda: tokens
+
+- Al tokenizar muchas veces se realizan conjuntamente operaciones de limpieza y homogeneización (ej, `remove_punct()`, `remove_numbers()`, `remove_url()`, etc.)
+
+- Se puede clasificar los tokens a partir de diccionarios específicos con `tokens_lookup()` e identificar el contexto de aparición con `kwic()`
+
+
+# quanteda: dfm
+
+- Construyo una matriz de características del documento (dfm) al corpus de la sesion tokenizado en palabras
+
+```{r eval=FALSE}
+# creo un dfm con el corpus de la sesion tokenizado en palabras
+sesion_corpus_toks_dfm <- dfm(sesion_corpus_toks)
+
+# número de documentos (es el mismo número que en corpus y tokens: 57 = cada legislador/a)
+ndoc(sesion_corpus_toks_dfm)
+
+# número de caracetrísticas (es algo así como el token o unidad básica de un dfm)
+nfeat(sesion_corpus_toks_dfm)
+
+# número de tokens es distinto (devuelve tokens por documento)
+ntoken(sesion_corpus_toks_dfm)
+```
+
+# quanteda: dfm
+
+Es el objeto "estrella" de quanteda y permite entre otras cosas:
+
+- Hacer análisis estadísticos a partir de las unidades básicas de un texto (ej. palabras)
+- Realizar selecciones por características (ej. número de caracteres)
+- Clasificar con diccionarios con `dfm_lookup()` 
+- Agrupar por alguna variable de interés con `dfm_group()`
+
+# quanteda: fcm
+
+- Un `fcm` (feature co-occurrence matrix) es una matriz de co-ocurrencia de tokens
+- Técnicamente es otro tipo de objeto de quanteda, que se construye a partir de un `dfm`
+- Es lo que nos permite hacer análisis de redes de co-ocurrencia
+- Generalmente se usa en conjunto con otras funciones que permiten selecciones más precisas de tokens, como las palabras más frecuentes con `top_features()`
+
 
 # quanteda: análisis básicos
 
@@ -166,10 +261,6 @@ Fuente: quanteda.io
 - Identificación del contexto de aparición de palabras y co-ocurrencia
 - Uso de diccionarios para identificar o clasificar textos
 - Visualizaciones específicas: nubes de palabras, redes de co-ocurrencia
-
-
-
-
 
 
 # Caso práctico: LUC en el Senado
@@ -408,6 +499,15 @@ quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, vertex_siz
 
 
 ```
+
+# EJERCICIO 1
+
+## Diarios de sesiones del parlamento con `speech` y `quanteda`
+1. Descargar menciones de un diario de sesión de interés
+2. Realizar una nube de palabras desagregada por partido
+3. Encontrar asociaciones de palabras relevantes 
+4. Armar redes para un partido específico
+
 
 # **spacyr** y **udpipe**
 
