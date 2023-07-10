@@ -1,6 +1,6 @@
 ---
-title: R aplicado al análisis cualitativo / FCS-UdelaR
-subtitle: Clase 5 - Educación Permanente FCS
+title: Recuperación y análisis de texto con R
+subtitle: Clase 6 - Educación Permanente FCS
    
 output: 
         beamer_presentation: 
@@ -28,15 +28,23 @@ knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
 
 <center>
 
-![](imagenes/eg.png){ width=25% } 
+<!-- ![](imagenes/eg.png){ width=25% }  -->
 </center>
 
 
-**Mag. Elina Gómez (UMAD/FCS)**
+**Mag. Elina Gómez (UMAD)**
 
 [elina.gomez@cienciassociales.edu.uy](elina.gomez@cienciassociales.edu.uy)
 
 [www.elinagomez.com](www.elinagomez.com)
+
+
+\
+
+**Mag. Gustavo Méndez Barbato**
+
+[gustavo.mendez@cienciassociales.edu.uy](gustavo.mendez@cienciassociales.edu.uy)
+
 
 
 #
@@ -44,8 +52,8 @@ knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
 
 ![](imagenes/by-nc-sa.png){ width=18% }  
 
-Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
 
+Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
 
 
 
@@ -53,8 +61,8 @@ Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAl
 
 - Diccionarios
 - Análisis de sentimiento y su definición
-- Diccionario LWIC-Spanish
 - Método Syuzhet
+- Modelos no supervisados
 
 
 ```{r include=FALSE}
@@ -62,6 +70,7 @@ library(quanteda)
 library(stringr)
 library(rtweet)
 library(dplyr)
+library(ggplot2)
 
 ##me logeo y autorizo
 #rtweet::create_token()
@@ -69,12 +78,9 @@ library(dplyr)
 load("~/rcuali2022/Clase6/Material/tweets_fa.RData")
 load("~/rcuali2022/Clase6/Material/tweets_pn.RData")
 
-tweets_fa <- get_timeline(user="@Frente_amplio",n = 5000)
 
 ##alguna limpieza previa de tweets:
 
-#sacar espacios
-tweets_fa$full_text <- str_replace_all(tweets_fa$full_text," ","")
 # sacar URLs
 tweets_fa$full_text <- str_replace_all(tweets_fa$full_text, "http[[:alnum;]]*","")
 tweets_fa$full_text <- str_replace_all(tweets_fa$full_text, "s://t.co/[[:alnum;]]*","")
@@ -87,14 +93,9 @@ tweets_fa$full_text <- str_replace_all(tweets_fa$full_text,"#[a-z,A-Z]*","")
 tweets_fa$full_text <- str_replace_all(tweets_fa$full_text,"@[a-z,A-Z]*","")
 
 
-
-
-tweets_pn <- get_timeline(user="@PNACIONAL",n = 5000)
-
 ##alguna limpieza previa de tweets:
 
-#sacar espacios
-tweets_pn$full_text <- str_replace_all(tweets_pn$full_text," "," ")
+
 # sacar URLs
 tweets_pn$full_text <- str_replace_all(tweets_pn$full_text, "http[[:alnum;]]*","")
 tweets_pn$full_text <- str_replace_all(tweets_pn$full_text, "s://t.co/[[:alnum;]]*","")
@@ -184,16 +185,19 @@ midic_result=rbind(midic_result_fa,midic_result_pn)
 
 tabla = midic_result  %>%
   group_by(partido)%>%
-  summarise(social = sum(social), social_prop = (sum(social)/sum(social,economia,seguridad,no_aparece))*100, 
-            economia = sum(economia), economia_prop = (sum(economia)/sum(social,economia,seguridad,no_aparece))*100,
-            seguridad = sum(seguridad), seguridad_prop = (sum(seguridad)/sum(social,economia,seguridad,no_aparece))*100)
+ tidyr::pivot_longer(cols = c(social,economia,seguridad,no_aparece))%>%
+  filter(name!="no_aparece")%>%
+  group_by(partido, name)%>%
+ summarise(N = sum(value)) %>%
+  mutate(Prop = round((N/sum(N))*100,1))
 
 
 tabla=as.data.frame(tabla)
 
 library(knitr)
-kable(tabla)
-
+library(kableExtra)
+kable(tabla)%>%
+  kableExtra::row_spec(3, extra_css = "border-bottom: 3px solid;") 
 ```
 
 
@@ -203,75 +207,76 @@ El análisis de sentimiento se refiere a los diferentes métodos de lingüístic
 
 # Análisis de sentimiento
 
-Se presentan dos métodos para analizar sentimiento de los documentos:
-
-- Diccionario LIWC-Spanish: con la función dfm_lookup() de _quanteda_ identifica en los documentos las emociones presentes en el diccionario y establece puntajes para cada uno, a partir de la estandarización de los mismos.   
 
 - Método Syuzhet: utiliza la función get_sentiment() de _syuzhet_ asigna puntajes a cada documento según el método y lenguaje indicado. El método **syuzhet** es un diccionario de sentimientos desarrollado en el Laboratorio Literario de Nebraska. 
 
 
-# Análisis de sentimiento
+- [Artículo interesante sobre Syuzhet](http://www.digitalhumanities.org/dhq/vol/16/2/000612/000612.html)
 
 
-El Diccionario **Linguistic Inquiry and Word Count** (LIWC): _"Permite determinar el grado en que autores/hablantes usan palabras que connotan emociones positivas o negativas, auto-referencias, palabras extensas o palabras que se refieren a sexo, comer o religión. El programa fue diseñado para analizar simple y rápidamente más de 70 dimensiones del lenguaje a través de cientos de muestras de texto en segundos."_
-
-<http://www.liwc.net/liwcespanol/>
+<!-- # Análisis de sentimiento -->
 
 
-# Análisis de sentimiento
+<!-- El Diccionario **Linguistic Inquiry and Word Count** (LIWC): _"Permite determinar el grado en que autores/hablantes usan palabras que connotan emociones positivas o negativas, auto-referencias, palabras extensas o palabras que se refieren a sexo, comer o religión. El programa fue diseñado para analizar simple y rápidamente más de 70 dimensiones del lenguaje a través de cientos de muestras de texto en segundos."_ -->
 
-```{r eval=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
-#Abro el diccionario
-lwic <- readRDS("Clase6/Material/EmoPosNeg_SPA.rds")
-sent_dfm_fa <- dfm_lookup(dfm_fa, dictionary = lwic)
-sent_fa=convert(sent_dfm_fa, to = "data.frame") 
-
-##creo un score que es la diferencia entre términos positivos y negativos, y los vinculo con las variables de agregación de los documentos
-sent_fa$puntaje <- sent_fa$EmoPos-sent_fa$EmoNeg
-sent_fa$sentimiento=ifelse(sent_fa$puntaje<0,"Negativo","Positivo")
-sent_fa$sentimiento=ifelse(sent_fa$puntaje==0,"Neutral",sent_fa$sentimiento)
-sent_fa$partido="Frente Amplio"
-
-```
-
-# Análisis de sentimiento: LIWC
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
-lwic <- readRDS("C:/Users/Usuario/Documents/rcuali2022/Clase6/Material/EmoPosNeg_SPA.rds")
-
-sent_dfm_fa <- dfm_lookup(dfm_fa, dictionary = lwic)
-
-sent_fa=convert(sent_dfm_fa, to = "data.frame") 
-
-##creo un score que es la difrencia entre términos positivos y negativos, y los vinculo con las variables de agregación de los documentos
-sent_fa$puntaje <- sent_fa$EmoPos-sent_fa$EmoNeg
-sent_fa$sentimiento=ifelse(sent_fa$puntaje<0,"Negativo","Positivo")
-sent_fa$sentimiento=ifelse(sent_fa$puntaje==0,"Neutral",sent_fa$sentimiento)
-sent_fa$partido="Frente Amplio"
-
-sent_dfm_pn <- dfm_lookup(dfm_pn, dictionary = lwic)
-sent_pn=convert(sent_dfm_pn, to = "data.frame") 
-##creo un score que es la difrencia entre términos positivos y negativos, y los vinculo con las variables de agregación de los documentos
-sent_pn$puntaje <- sent_pn$EmoPos-sent_pn$EmoNeg
-sent_pn$sentimiento=ifelse(sent_pn$puntaje<0,"Negativo","Positivo")
-sent_pn$sentimiento=ifelse(sent_pn$puntaje==0,"Neutral",sent_pn$sentimiento)
-sent_pn$partido="Partido Nacional"
+<!-- <http://www.liwc.net/liwcespanol/> -->
 
 
-sentimiento=rbind(sent_fa,sent_pn)
+<!-- # Análisis de sentimiento -->
+
+<!-- ```{r eval=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE} -->
+<!-- #Abro el diccionario -->
+<!-- lwic <- readRDS("Clase6/Material/EmoPosNeg_SPA.rds") -->
+<!-- sent_dfm_fa <- dfm_lookup(dfm_fa, dictionary = lwic) -->
+<!-- sent_fa=convert(sent_dfm_fa, to = "data.frame")  -->
+
+<!-- ##creo un score que es la diferencia entre términos positivos y negativos, y los vinculo con las variables de agregación de los documentos -->
+<!-- sent_fa$puntaje <- sent_fa$EmoPos-sent_fa$EmoNeg -->
+<!-- sent_fa$sentimiento=ifelse(sent_fa$puntaje<0,"Negativo","Positivo") -->
+<!-- sent_fa$sentimiento=ifelse(sent_fa$puntaje==0,"Neutral",sent_fa$sentimiento) -->
+<!-- sent_fa$partido="Frente Amplio" -->
+
+<!-- ``` -->
+
+<!-- # Análisis de sentimiento: LIWC -->
+
+<!-- ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE} -->
+<!-- lwic <- readRDS("C:/Users/Usuario/Documents/rcuali2022/Clase6/Material/EmoPosNeg_SPA.rds") -->
+
+<!-- sent_dfm_fa <- dfm_lookup(dfm_fa, dictionary = lwic) -->
+
+<!-- sent_fa=convert(sent_dfm_fa, to = "data.frame")  -->
+
+<!-- ##creo un score que es la difrencia entre términos positivos y negativos, y los vinculo con las variables de agregación de los documentos -->
+<!-- sent_fa$puntaje <- sent_fa$EmoPos-sent_fa$EmoNeg -->
+<!-- sent_fa$sentimiento=ifelse(sent_fa$puntaje<0,"Negativo","Positivo") -->
+<!-- sent_fa$sentimiento=ifelse(sent_fa$puntaje==0,"Neutral",sent_fa$sentimiento) -->
+<!-- sent_fa$partido="Frente Amplio" -->
+
+<!-- sent_dfm_pn <- dfm_lookup(dfm_pn, dictionary = lwic) -->
+<!-- sent_pn=convert(sent_dfm_pn, to = "data.frame")  -->
+<!-- ##creo un score que es la difrencia entre términos positivos y negativos, y los vinculo con las variables de agregación de los documentos -->
+<!-- sent_pn$puntaje <- sent_pn$EmoPos-sent_pn$EmoNeg -->
+<!-- sent_pn$sentimiento=ifelse(sent_pn$puntaje<0,"Negativo","Positivo") -->
+<!-- sent_pn$sentimiento=ifelse(sent_pn$puntaje==0,"Neutral",sent_pn$sentimiento) -->
+<!-- sent_pn$partido="Partido Nacional" -->
 
 
-library(dplyr)
-library(ggplot2)
+<!-- sentimiento=rbind(sent_fa,sent_pn) -->
 
 
-sentimiento_tabla <- sentimiento %>% group_by(partido,sentimiento) %>% summarise(count=n()) %>% 
-mutate(per = prop.table(count)*100)
+<!-- library(dplyr) -->
+<!-- library(ggplot2) -->
 
-ggplot(sentimiento_tabla, aes(x=partido, y=per, fill=sentimiento))+
-  geom_bar(position="dodge", stat="identity")+
-  scale_fill_manual(values = c("#EB594D", "#FFFAA4","#98E898"))
-```
+
+<!-- sentimiento_tabla <- sentimiento %>% group_by(partido,sentimiento) %>% summarise(count=n()) %>%  -->
+<!-- mutate(per = prop.table(count)*100) -->
+
+<!-- ggplot(sentimiento_tabla, aes(x=partido, y=per, fill=sentimiento))+ -->
+<!--   geom_bar(position="dodge", stat="identity")+ -->
+<!--   scale_fill_manual(values = c("#EB594D", "#FFFAA4","#98E898")) -->
+<!-- ``` -->
+
 
 # Análisis de sentimiento: Syuzhet
 
@@ -407,32 +412,32 @@ Los modelos de escalamiento de posiciones de documentos se dividen en:
 Aquí veremos algunos con el paquete **quanteda**
 
 
-# Modelos de escalamiento: supervisado
+<!-- # Modelos de escalamiento: supervisado -->
 
-El método **wordscores** fue desarrollado por Laver, Benoit y Garry's (2003) para escalar textos en una sola dimensión, dado un conjunto de textos de referencia o de anclaje cuyos valores se establecen a través de puntuaciones de referencia.
+<!-- El método **wordscores** fue desarrollado por Laver, Benoit y Garry's (2003) para escalar textos en una sola dimensión, dado un conjunto de textos de referencia o de anclaje cuyos valores se establecen a través de puntuaciones de referencia. -->
 
-Funciones:
+<!-- Funciones: -->
 
-_textmodel_wordscores()_ : entrena el modelo según puntuaciones de referencia conocidas.
+<!-- _textmodel_wordscores()_ : entrena el modelo según puntuaciones de referencia conocidas. -->
 
-_predict()_ : se estiman las posiciones para los textos sin puntajes conocidos.
-
-
-# Modelos de escalamiento: supervisado
-
-```{r eval=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
-library(quanteda)
-
-ws <- textmodel_wordscores(dfm, ref_scores,
-scale="linear",smooth=0.01)
-
-scores_dfm<-predict(ws, se.fit = TRUE,
-interval = "confidence")
-
-```
+<!-- _predict()_ : se estiman las posiciones para los textos sin puntajes conocidos. -->
 
 
-[Ejemplo práctico](https://tutorials.quanteda.io/machine-learning/wordscores/)
+<!-- # Modelos de escalamiento: supervisado -->
+
+<!-- ```{r eval=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE} -->
+<!-- library(quanteda) -->
+
+<!-- ws <- textmodel_wordscores(dfm, ref_scores, -->
+<!-- scale="linear",smooth=0.01) -->
+
+<!-- scores_dfm<-predict(ws, se.fit = TRUE, -->
+<!-- interval = "confidence") -->
+
+<!-- ``` -->
+
+
+<!-- [Ejemplo práctico](https://tutorials.quanteda.io/machine-learning/wordscores/) -->
 
 
 <!-- # Modelos de escalamiento: no supervisado -->
@@ -497,8 +502,5 @@ En español:
 
 
 <https://www.thinkingondata.com/without-dictionaries-no-sentiment-analysis/>
-
-
-
 
 

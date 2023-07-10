@@ -1,30 +1,28 @@
+#------------------------------------------------------------------------------#
+#           Recuperación y análisis de texto con R                             # 
+#                  Educación Permanente FCS                                    #
+#                         Clase 6                                              # 
+#                      Live coding                                             #
+#------------------------------------------------------------------------------#
 
-
-
-
-##Clase 6
 
 library(quanteda)
 library(stringr)
 library(rtweet)
 library(dplyr)
+library(tidyr)
+library(ggplot2)
 
-##me logeo y autorizo
-#rtweet::create_token()
 
-load("~/rcuali2022/Clase6/Material/tweets_fa.RData")
-load("~/rcuali2022/Clase6/Material/tweets_pn.RData")
+load("Clase6/Material/tweets_fa.RData")
+load("Clase6/Material/tweets_pn.RData")
 
-tweets_fa <- get_timeline(user="@Frente_amplio",n = 5000)
+##1. Realizo limpieza inicial de tweets:
 
-##alguna limpieza previa de tweets:
-
-#sacar espacios
-#tweets_fa$full_text <- str_replace_all(tweets_fa$full_text," ","")
+##Frente amplio
 # sacar URLs
 tweets_fa$full_text <- str_replace_all(tweets_fa$full_text, "http[[:alnum;]]*","")
 tweets_fa$full_text <- str_replace_all(tweets_fa$full_text, "s://t.co/[[:alnum;]]*","")
-
 # sacar toda referencia a RT
 tweets_fa$full_text <- str_replace(tweets_fa$full_text,"RT @[a-z,A-Z]*: ","")
 # sacar hashtags
@@ -32,15 +30,7 @@ tweets_fa$full_text <- str_replace_all(tweets_fa$full_text,"#[a-z,A-Z]*","")
 # sacar referencias a otros screen_names
 tweets_fa$full_text <- str_replace_all(tweets_fa$full_text,"@[a-z,A-Z]*","")
 
-
-
-
-tweets_pn <- get_timeline(user="@PNACIONAL",n = 5000)
-
-##alguna limpieza previa de tweets:
-
-#sacar espacios
-#tweets_pn$full_text <- str_replace_all(tweets_pn$full_text," "," ")
+##Partido Nacional
 # sacar URLs
 tweets_pn$full_text <- str_replace_all(tweets_pn$full_text, "http[[:alnum;]]*","")
 tweets_pn$full_text <- str_replace_all(tweets_pn$full_text, "s://t.co/[[:alnum;]]*","")
@@ -51,8 +41,6 @@ tweets_pn$full_text <- str_replace(tweets_pn$full_text,"RT @[a-z,A-Z]*: ","")
 tweets_pn$full_text <- str_replace_all(tweets_pn$full_text,"#[a-z,A-Z]*","")
 # sacar referencias a otros screen_names
 tweets_pn$full_text <- str_replace_all(tweets_pn$full_text,"@[a-z,A-Z]*","")
-
-
 
 
 ##creo y limpio: Frente Amplio
@@ -87,6 +75,7 @@ midic <- dictionary(list(social = c("social","politica social","politicas social
 ### Aplico el diccionario en mi dfm y saco el porcentaje
 
 
+
 midic_result_fa<-dfm_lookup(dfm_fa,dictionary=midic,nomatch="no_aparece")
 midic_result_fa=convert(midic_result_fa, to = "data.frame") 
 midic_result_fa$partido="Frente Amplio"
@@ -97,59 +86,65 @@ midic_result_pn$partido="Partido Nacional"
 
 midic_result=rbind(midic_result_fa,midic_result_pn)
 
+
+##Armo una tabla resumen
 tabla = midic_result  %>%
   group_by(partido)%>%
-  summarise(social = sum(social), social_prop = (sum(social)/sum(social,economia,seguridad,no_aparece))*100, 
-            economia = sum(economia), economia_prop = (sum(economia)/sum(social,economia,seguridad,no_aparece))*100,
-            seguridad = sum(seguridad), seguridad_prop = (sum(seguridad)/sum(social,economia,seguridad,no_aparece))*100)
+  tidyr::pivot_longer(cols = c(social,economia,seguridad,no_aparece))%>%
+  filter(name!="no_aparece")%>%
+  group_by(partido, name)%>%
+  summarise(N = sum(value)) %>%
+  mutate(Prop = round((N/sum(N))*100,1))
 
 
+##Ejemplo con base bibliográfica para ver co-ocurrencia de palabras claves. 
 
-
-
-##Aplico un diccionario ya existente para analizar emociones: 
-#Diccionario LWIC-Spanish 
-
-
-lwic <- readRDS("Clase6/Material/EmoPosNeg_SPA.rds")
-
-sent_dfm_fa <- dfm_lookup(dfm_fa, dictionary = lwic)
-
-sent_fa=convert(sent_dfm_fa, to = "data.frame") 
-
-##creo un score que es la difrencia entre términos positivos y negativos, y los vinculo con las variables de agregación de los documentos
-sent_fa$puntaje <- sent_fa$EmoPos-sent_fa$EmoNeg
-sent_fa$sentimiento=ifelse(sent_fa$puntaje<0,"Negativo","Positivo")
-sent_fa$sentimiento=ifelse(sent_fa$puntaje==0,"Neutral",sent_fa$sentimiento)
-sent_fa$partido="Frente Amplio"
-
-sent_dfm_pn <- dfm_lookup(dfm_pn, dictionary = lwic)
-sent_pn=convert(sent_dfm_pn, to = "data.frame") 
-##creo un score que es la difrencia entre términos positivos y negativos, y los vinculo con las variables de agregación de los documentos
-sent_pn$puntaje <- sent_pn$EmoPos-sent_pn$EmoNeg
-sent_pn$sentimiento=ifelse(sent_pn$puntaje<0,"Negativo","Positivo")
-sent_pn$sentimiento=ifelse(sent_pn$puntaje==0,"Neutral",sent_pn$sentimiento)
-sent_pn$partido="Partido Nacional"
-
-
-sentimiento=rbind(sent_fa,sent_pn)
-
-
+library(quanteda)
 library(dplyr)
-library(ggplot2)
+library(stringr)
+
+##a) Cargo la base de bibliografía
+base=openxlsx::read.xlsx("Clase6/Material/base.xlsx")
+
+##b) Tokenizo la variable donde tengo alojadas las palabras claves separadas por ";"
+toks <- tokens(base$Author.Keywords, remove_punct = TRUE)
+
+##c) Las separo en variables diferentes con la función tidyr::separate() 
+convars=base %>% 
+  tidyr::separate(col=Author.Keywords,into = "X", sep=";") 
+
+##d) Les saco espacios adelante y atras con str_trim()
+palabras=str_trim(c(convars$X1, convars$X2,convars$X3,convars$X4,
+                    convars$X5,convars$X6,convars$X7,convars$X8,
+                    convars$X9,convars$X10,convars$X11,convars$X12,
+                    convars$X13,convars$X14,convars$X15,convars$X16))
+
+##e) Armo diccionario con vector de cada columna  
+palabras = quanteda::dictionary(list(palabras=palabras))
+
+##f) Armo un DFM a partir de las keywords y aplico quanteda::tokens_compound() ya que
+##son términos multi-palabra. Selecciono sólo las que están en mi vector "palabras"
+##que sé que aparecen. Pondero tfidf. 
+
+dfm <- quanteda::dfm(quanteda::tokens_compound(quanteda::tokens(base$Author.Keywords,
+remove_punct = TRUE,remove_numbers = TRUE),palabras),tolower = TRUE,  verbose = FALSE)%>%
+  dfm_tfidf()
 
 
-sentimiento_tabla <- sentimiento %>% filter(sentimiento!="Neutral") %>%group_by(partido,sentimiento) %>% summarise(count=n()) %>% 
-mutate(per = prop.table(count)*100)
-library(ggplot2)
-ggplot(sentimiento_tabla, aes(x=partido, y=per, fill=sentimiento))+
-  geom_bar(position="dodge", stat="identity")+
-  scale_fill_manual(values = c("#EB594D","#98E898"))
+##g) Armo la matriz de co-ocurrencias y armo red con 80 términos principales
+base_fcm= dfm %>%
+  fcm(context = "document")
+
+feat <- names(topfeatures(base_fcm, 80)) ##cambia la cantidad de palabras
+base_fcm_select <- fcm_select(base_fcm, pattern = feat, selection = "keep")
+size <- log(colSums(dfm_select(base_fcm, feat, selection = "keep")))
+quanteda.textplots::textplot_network(base_fcm_select, min_freq = 0.8, 
+vertex_size = size / max(size) * 3,
+edge_color="#eb6864")
 
 
 
-
-##Método Syuzhet
+##2. Diccionarios de sentimientos. Método Syuzhet
 
 #https://cran.r-project.org/web/packages/syuzhet/vignettes/syuzhet-vignette.html
 #https://arxiv.org/pdf/1901.08319.pdf
@@ -157,7 +152,6 @@ ggplot(sentimiento_tabla, aes(x=partido, y=per, fill=sentimiento))+
 #install.packages("syuzhet")
 library(syuzhet)
 
-#Otro método
 
 tweets_fa$screen_name = "Frente Amplio"
 tweets_pn$screen_name = "Partido Nacional"
@@ -198,7 +192,7 @@ ggplot(tweets_sent_puntaje, aes(x=puntaje, y=count, fill=screen_name))+
 
 
 
-##grafico sentimiento y partido agrupado
+##Grafico sentimiento y partido agrupado
 
 
 a=tweets_df_senti  %>%
@@ -219,7 +213,8 @@ a=tweets_df_senti  %>%
         legend.position = "none") 
 
 
-##Modelado de topicos 
+
+##3. Modelado de topicos 
 library(topicmodels)
 
 dtm <- convert(dfm_fa, to = "topicmodels")
