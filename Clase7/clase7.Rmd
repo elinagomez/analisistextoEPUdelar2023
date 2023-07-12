@@ -69,6 +69,20 @@ Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAl
      
 * [¿Por qué es tan importante?](https://www.youtube.com/watch?v=s3JldKoA0zw)
 
+# Instalación
+
+
+
+```{r eval=FALSE}
+
+install.packages(c("rmarkdown","tinytex"))
+
+##Instalo lo que necesito de latex para correr documentos en pdf:
+tinytex::install_tinytex()
+
+```
+
+
 # Formatos prestablecidos
 
 - [Artículos](https://github.com/rstudio/rticles)
