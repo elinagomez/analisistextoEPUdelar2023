@@ -1,5 +1,5 @@
 ---
-title: R aplicado al análisis cualitativo / FCS-UdelaR
+title: Recuperación y análisis de texto con R
 subtitle: Clase 7 - Educación Permanente FCS
    
 output: 
@@ -28,15 +28,23 @@ knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
 
 <center>
 
-![](imagenes/eg.png){ width=25% } 
+<!-- ![](imagenes/eg.png){ width=25% }  -->
 </center>
 
 
-**Mag. Elina Gómez (UMAD/FCS)**
+**Mag. Elina Gómez (UMAD)**
 
 [elina.gomez@cienciassociales.edu.uy](elina.gomez@cienciassociales.edu.uy)
 
 [www.elinagomez.com](www.elinagomez.com)
+
+
+\
+
+**Mag. Gustavo Méndez Barbato**
+
+[gustavo.mendez@cienciassociales.edu.uy](gustavo.mendez@cienciassociales.edu.uy)
+
 
 
 #
@@ -44,8 +52,8 @@ knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
 
 ![](imagenes/by-nc-sa.png){ width=18% }  
 
-Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
 
+Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
 
 
 
