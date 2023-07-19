@@ -59,11 +59,15 @@ Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAl
 
 # Objetivos de hoy
 
-- R Markdown
+1. R Markdown
 
-- Repaso general y cierre
+2. Repaso general
 
-# Qué es R Markdown?
+3. Consigna de trabajo final e intercambio
+
+# 1. R Markdown
+
+- Qué es R Markdown?
 
 > \"_Los documentos de **R Markdown** son totalmente reproducibles. Utilizando una interfaz como RStudio para unir el texto narrativo y el código para producir resultados elegantemente formateados. Permitiendo compaginar varios lenguajes, incluidos LaTeX, R, Python y SQL._\" (<https://rmarkdown.rstudio.com/>)
      
@@ -218,6 +222,9 @@ Se debe utilizar una \\ antes del símbolo
 # Nota al pie
 
 * Para poner una nota al pie debo escribir [^1], y posteriormente en otra linea poner el contenido de la nota como se ve a continuación.  
+
+`[^1]: Dejo un espacio y acá escribo la nota al pie.`
+
 
 [^1]: Dejo un espacio y acá escribo la nota al pie.
 
@@ -411,3 +418,95 @@ Los parámetros están disponibles dentro del entorno de `knitr` como una lista 
 Si modificamos el argumento de params al renderizar el documento, se crea un informe que usa el nuevo conjunto de valores de parámetros. Aquí modificamos nuestro informe para usar la variable "A1_2":
 
 > render("Informe_ENAJ.Rmd", params = list(variable = "A1_2"))
+
+
+# 2. Repaso general
+
+# **Objetivos del curso**
+
+**Bases teóricas:** 
+
+- Contextualizar las **Ciencias sociales computacionales**
+
+- Emergencia de nuevos recursos y técnicas para la investigación social en la era digital. 
+
+
+
+# **Objetivos del curso**
+
+**Generalidades del lenguaje R:** 
+
+- R como software libre y gratuito  
+- Comunidades y foros 
+- Tidyverse
+- Manipulación básica de strings
+
+# **Objetivos del curso**
+
+**Exploración de fuentes de datos textuales:** 
+
+- Exploración y obtención de datos de diversa índole, contemplando las diferentes fuentes posibles: OCR, web sacraping, prensa digital, redes sociales, audio, Youtube, APIs. 
+
+
+# **Objetivos del curso**
+
+**Análisis textual:** 
+
+- Codificación manual de textos y creación de redes multinivel (categorías, códigos y citas) mediante la plataforma RQDA().
+- Abordaje de los requerimientos previos (limpieza y homogeneización) para el análisis de textos.
+- Trabajo con minería de textos, el cual se centrará en la noción de _corpus_ y sus posibilidades analíticas, desde lo más descriptivo a la aplicación de técnicas más complejas. 
+
+# **Objetivos del curso**
+
+**Análisis textual:** 
+
+- Trabajo con diccionarios: Introducción al uso de diccionarios (manuales y automáticos), para la clasificación de documentos masivos según intereses particulares.
+
+- Clasificación de textos:  clasificación de textos según temas o emociones asociadas a partir de la aplicación de diferentes técnicas existentes. 
+
+
+
+# **Objetivos del curso**
+
+**Visualización:** 
+
+- Exploración de las diferentes posibilidades gráficas de visualización de los resultados del análisis textual (nubes de palabras, frecuencias, dendrogramas, etc.) y algunos ejemplos de visualización interactiva. 
+
+
+# **Esquema del curso**
+
+![](imagenes/esquema.png)
+
+# **Metodología**
+
+- El enfoque del curso es práctico (hands-on)
+
+- Trabajaremos con estretagia de live-coding y ejercicios prácticos para cada tema.
+
+- Posibilidad de clonar repositorio GitHub y trabajar con proyecto y control de versiones.
+
+- [https://github.com/elinagomez/analisistextoEPUdelar2023](https://github.com/elinagomez/analisistextoEPUdelar2023)
+
+[Tutorial R+ GitHub](http://destio.us.es/calvo/asignaturas/ge_esco/tutorialusargitgithubrstudio/UsarGitGithubconRStudio.html)
+
+# **Consejo**
+
+- Elegir un tema de interés
+- Hacerse una pregunta inicial
+- Identificar una fuente textual para responderla
+
+
+# 3. Consigna de trabajo final e intercambio
+
+- Consigna de trabajo final
+
+
+# 3. Consigna de trabajo final e intercambio
+
+## Intercambio
+
+1. Tema / Pregunta
+2. Recuperación
+3. Pre-procesamiento
+4. Análisis
+5. Visualización

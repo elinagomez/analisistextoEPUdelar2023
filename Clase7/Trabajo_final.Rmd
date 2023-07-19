@@ -1,0 +1,45 @@
+---
+title: "Recuperación y análisis de texto con R"
+subtitle: "Educación Permanente FCS"
+author: "Consigna de Trabajo Final"
+date: "2023"
+output: pdf_document
+header-includes:
+- \pagenumbering{gobble}
+---
+
+
+
+**Características generales** 
+
+Trabajo individual para aprobación del curso _Recuperación y análisis de texto con R_ - Educación Permanente (Facultad de Ciencias Sociales - UdelaR). 
+
+**Plazo de entrega** 
+
+\textcolor{blue}{13/8/2023 a las 23:59 horas}
+
+**Formato** 
+
+Subir a la plataforma EVA (Educación Permanente FCS) o por correo electrónico (elina.gomez@cienciassociales.edu.uy | gustavo.mendez@cienciassociales.edu.uy | educacion.permanente@cienciassociales.edu.uy) un archivo .Rmd, .pdf y/o .html correspondiente a su compilación o .doc y .pdf, así como archivos y/o base de datos si son de libre acceso (o una muestra de las mismas) que permita la reproducción del documento.
+
+**Consigna**
+
+- _Recuperación:_ Elegir una fuente de datos de las vistas en el curso (archivos de texto brutos, OCR, web scraping, scrapeo parlamentario, prensa digital, búsquedas de google, transcripción de audio, subtítulos de YouTube, APIs de Google o Twitter, entre otras) e incluir el proceso de extracción o reconstrucción de la información. 
+
+- _Pre-procesamiento:_ Crear un corpus de datos textuales tabulados, realizar el pre-procesamiento utilizando alguna/s de las herramientas vistas en el curso (manipulación de strings, limpieza o pre/codificación manual)
+
+- _Análisis:_ Incluir al menos tres técnicas de minería de texto vistas en el curso (frecuencia de ocurrencia, asociación de palabras, contexto de aparición de palabras o frases, diccionarios, análisis de sentimiento, modelado de temas, entre otros posibles)
+
+- _Visualización:_ Ilustrar el documento con al menos dos visualizaciones que surjan del procesamiento del texto precedente y den cuenta de los resultados del mismo.
+
+
+*Se valorará*
+
+- Propuesta de fuentes de datos novedosa
+- Originalidad en las técnicas de procesamiento
+- Resultados e interpretaciones relevantes 
+
+
+**Consultas** 
+
+elina.gomez@cienciassociales.edu.uy | gustavo.mendez@cienciassociales.edu.uy
