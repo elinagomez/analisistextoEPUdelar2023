@@ -1,0 +1,109 @@
+---
+title: "Ejercicios Clase 7"
+author: ""
+date: "08/11/2022"
+output: pdf_document
+---
+header-includes:
+    - \usepackage{bbm}
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(quanteda) #librerías
+library(knitr)
+library(quanteda.textplots)
+library(quanteda.textstats)
+
+base_final_grande <- read.delim2("C:/Users/elina/OneDrive/Documentos/analisistextoEPUdelar2023/Clase1/Material/base_genero_final.txt",sep="\t",header = F)
+```
+
+
+
+```{r tokens, message=FALSE, warning=FALSE, include=FALSE}
+
+
+dfm <- dfm(tokens(base_final_grande$V2, remove_punct = TRUE,remove_numbers = TRUE),
+              tolower = TRUE,
+              remove_punct = TRUE, 
+              remove_numbers = TRUE,
+           remove = c(stopwords("spanish"))) %>%
+  dfm_remove(min_nchar=3) %>%
+  dfm_trim(min_termfreq = 50, min_docfreq = 2)
+
+```
+
+
+# Introducción
+
+El presente **documento** contiene algunos resultados del procesamiento de menciones parlamentarias realizadas en el marco del curso de *R aplicado al análisis cualitativo*. 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+palabras=topfeatures(dfm,10)
+
+knitr::kable(palabras, caption = "Palabras más mencionadas", col.names = c("N"))
+
+```
+
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+#hago un corpus nuevo y aplico kwic
+
+kw_ddhhsspp <- kwic(base_final_grande$V2, pattern = phrase(c("derechos humanos", "salud pública")))
+
+dfm_2 <- dfm(tokens(kw_ddhhsspp$pre, remove_punct = TRUE,remove_numbers = TRUE),
+              tolower = TRUE,
+              remove_punct = TRUE,
+              remove_numbers = TRUE,
+           remove = c(stopwords("spanish"))) %>%
+  dfm_remove(min_nchar=3)%>%
+  dfm_group(groups = kw_ddhhsspp$keyword)
+
+
+```
+
+
+\newpage
+
+
+# Nubes de palabras
+
+## General 
+
+
+
+A continuación hago una nube de palabras general y por grupos.
+
+
+```{r echo=FALSE, fig.cap="Nube", message=FALSE, warning=FALSE, out.width="80%"}
+
+textplot_wordcloud(dfm_2, min.count = 4,max_words = 100,random.order = TRUE,
+                   rot.per = .50, colors = RColorBrewer::brewer.pal(8,"Dark2"))
+
+```
+
+
+##Grupos
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,out.width = "100%",fig.cap="Nube de palabras por grupos"}
+
+textplot_wordcloud(dfm_2, min.count = 1,max_words = 100,random.order = TRUE,
+                   rot.per = .50, colors = RColorBrewer::brewer.pal(8,"Dark2"),comparison = TRUE)
+
+```
+
+
+
+
+
+
+
+
+

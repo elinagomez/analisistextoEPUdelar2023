@@ -1,0 +1,407 @@
+---
+title: Recuperación y análisis de texto con R
+subtitle: Liecenciatura en Ciencia Política - FCS
+   
+output: 
+        beamer_presentation: 
+                theme: "Antibes"
+                colortheme: "seagull"
+                fonttheme: "structurebold"
+urlcolor: blue
+---
+
+
+```{r echo=FALSE}
+knitr::knit_hooks$set(mysize = function(before, options, envir) {
+  if (before) 
+    return(options$size)
+})
+```
+
+
+```{r include=FALSE}
+knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
+
+```
+
+
+
+<center>
+
+<!-- ![](imagenes/eg.png){ width=25% }  -->
+</center>
+
+
+**Mag. Elina Gómez (UMAD)**
+
+[elina.gomez@cienciassociales.edu.uy](elina.gomez@cienciassociales.edu.uy)
+
+[www.elinagomez.com](www.elinagomez.com)
+
+
+
+![](imagenes/by-nc-sa.png){ width=18% }  
+
+
+Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
+
+
+
+# Objetivos de hoy
+
+1. R Markdown
+
+# 1. R Markdown
+
+- Qué es R Markdown?
+
+> \"_Los documentos de **R Markdown** son totalmente reproducibles. Utilizando una interfaz como RStudio para unir el texto narrativo y el código para producir resultados elegantemente formateados. Permitiendo compaginar varios lenguajes, incluidos LaTeX, R, Python y SQL._\" (<https://rmarkdown.rstudio.com/>)
+     
+* [¿Por qué es tan importante?](https://www.youtube.com/watch?v=s3JldKoA0zw)
+
+# Instalación
+
+
+
+```{r eval=FALSE}
+
+install.packages(c("rmarkdown","tinytex"))
+
+##Instalo lo que necesito de latex para correr documentos en pdf:
+tinytex::install_tinytex()
+
+```
+
+
+# Formatos prestablecidos
+
+- [Artículos](https://github.com/rstudio/rticles)
+- [PDF](https://bookdown.org/yihui/rmarkdown/pdf-document.html)
+- [Documentos Word](https://bookdown.org/yihui/rmarkdown/word-document.html)
+- [Presentaciones Beamer](https://bookdown.org/yihui/rmarkdown/beamer-presentation.html)
+- [Libros](https://bookdown.org/)
+- [Tesis](https://github.com/ismayc/thesisdown)
+- [y varios más](https://www.overleaf.com/latex/templates/)
+
+
+# Encabezados
+
+Se define título, autor/a, tipo de documento (html_document, pdf_document, word_document, beamer_presentation, ioslides_presentation), y se cargan librerías \LaTeX.
+    
+# Listas de contenido, figuras y tablas (PDF)
+
+```{tidy=T}
+---
+title: "Titulo"  
+author: "Nombre"    
+output:    
+    pdf_document:    
+     fig_caption: true    
+     number_sections: true    
+     toc: true    
+--- 
+```
+
+  
+# Listas de contenido, figuras y tablas (HTML)
+
+
+```{tidy=T}
+---
+title: "Titulo"  
+author: "Nombre"    
+output:    
+    html_document:    
+     toc: true    
+     toc_depth: 3    
+     number_sections: true    
+--- 
+```
+
+
+# Partes del documento
+
+```{}
+
+# Título de orden 1 
+## Título de orden 2 
+### Título de orden 3
+#### Título de orden 4 
+##### Título de orden 5 
+```
+
+
+# Efectos de fuentes
+
+- `_italicas_ o *italicas* : `_italicas_ o *italicas*   
+- `__negritas__ o **negritas** : `__negritas__ o **negritas**  
+- `**_negrita e itálica_** o __*alternativamente*__ : `**_negrita e itálica_** o __*alternativamente*__  
+- `~~tachado~~ : `~~tachado~~  
+- `Subindices y superíndices: SO~4~^2^ : `Subindices y superíndices: SO~4~^2^  
+- `Fórmulas: $\frac{\sqrt{\lambda} }{n_i}$, $\mbox{SO}_4^=$ : ` $\frac{\sqrt{\lambda} }{n_i}$, $\mbox{SO}_4^=$ 
+- y varios más
+
+# Viñetas
+
+`* Francia`
+
+
+`- Croacia`
+
+
+`+ Bélgica`
+
+* Francia
+- Croacia
++ Bélgica
+
+
+
+# Enumeración
+
+`1. Francia`
+
+
+`    1. Croacia`
+
+
+`        1. Bélgica`
+
+1. Francia
+    1. Croacia
+        1. Bélgica
+
+# Enumeración 
+
+`(@uno) Francia`
+
+
+`(@dos) Croacia`
+
+
+`(@tres) Bélgica`
+
+
+`* ¿Quién salió campeon @uno, @dos? o @tres?`
+
+(@uno) Punto uno
+(@dos) Punto dos
+(@tres) Punto tres
+
+* ¿Qué es el punto @uno? ¿y el @dos? ¿o el @tres?
+        
+# Caracteres especiales
+
+Para que se impriman caracteres especiales tales como: 
+
+* Contra barra y espacio: \\ \
+* Tilde grave: \`
+* Asterisco: \*
+* Barra baja:  \_
+* Paréntesis: \{\} \[\] \(\)
+* Numeral: \#
+* Otros: \+ \- \. \! \: \|
+
+Se debe utilizar una \\ antes del símbolo  
+
+
+# Nota al pie
+
+* Para poner una nota al pie debo escribir [^1], y posteriormente en otra linea poner el contenido de la nota como se ve a continuación.  
+
+`[^1]: Dejo un espacio y acá escribo la nota al pie.`
+
+
+[^1]: Dejo un espacio y acá escribo la nota al pie.
+
+
+# Incluir imágenes
+
+* Poner una imagen desde un archivo:    
+    
+`![](imagenes/logoFCS_UdelaR_n2_RGB.jpg)`
+
+![](imagenes/logoFCS_UdelaR_n2_RGB.jpg)
+
+# Parametros imágenes
+
+Las opciones son lo que le pasamos al comando entre los corchetes y nos permiten controlar cosas de la imagen. Aquí os recopilo las que yo uso más:
+
+- _height_: la altura que debe tener la figura, escalará el gráfico hasta que tenga esta altura
+- _width_: la anchura que debe tener la figura, escalará el gráfico hasta que tenga esta anchura
+- _scale_: cuánto hay que escalar la figura, sobre 1
+- _angle_: cuánto hay que girar la figura, en grados
+
+# Hipervínculos 
+
+Se puede poner un enlace con un texto:
+
+[Página principal de RMarkdown](https://rmarkdown.rstudio.com/) 
+
+o directamente:
+
+<https://rmarkdown.rstudio.com/>
+
+
+
+* `[Página principal de RMarkdown](https://rmarkdown.rstudio.com/)`
+
+* `<https://rmarkdown.rstudio.com/>`
+
+
+# Poner código R
+
+* Código incrustado en el texto
+
+
+Somos \` r 2 + 2 \`
+
+Somos `r 2 + 2`
+
+o
+
+La cantidad de titulares de TUS es de \` r nrow(tus) \` 
+ 
+
+# Chunks
+
+Hay tres formas de insertar rápidamente un _chunk_ en el documento:
+
+- con el atajo de teclado **Ctrl + Alt + i**
+- con el botón de la barra superior (incluso ya pudiendo definir el lenguaje a utilizar)
+- o directamente tipeando los delimitadores $''' \{ r \}$ y  $'''$.
+
+Cuando se renderice el archivo .Rmd, R Markdown ejecutará cada fragmento de código (chunk) e insertará los resultados debajo del fragmento de código en su informe final.
+
+# Opciones del Chunk 
+
+El resultado de cada Chunk puede personalizarse con opciones de la librería _knitr_ , sus  argumentos se definen entre $\{\}$ del encabezado del chunk. Aquí, el top five de argumentos:
+
+- **include = FALSE** impide que el código y los resultados aparezcan en el archivo renderizado. R Markdown de todos modos ejecuta el código en el chunk, y los resultados pueden ser utilizados por otros chunks
+- **echo = FALSE** impide mostrar el código, pero no los resultados que aparecen en el archivo terminado. Esta es una forma útil de insertar figuras.
+
+
+# Opciones del Chunk 
+
+- **message = FALSE** impide que los mensajes generados por código aparezcan en el archivo final.
+- **warning = FALSE** evita que las advertencias generadas por el código aparezcan en el final.
+- **fig.cap = "..."** agrega un título a los resultados gráficos.
+
+**Otras opciones:**
+
+Para la lista completa de opciones se puede ver la [Guia de R Markdown](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf) o la propia página de [ _knitr_ ](https://yihui.name/knitr/options/).
+
+
+# Opciones globales
+
+para definir opciones globalmente, que apliquen a todos los chunks de tu archivo, debemos usar: `knitr::opts_chunk$set` en cualquier chunk. Knitr tratará cada option definida por `knitr::opts_chunk$set` como la opción predeterminada para todo el documento, pero puede ser redefinido individualmente en cada encabezado de chunk.
+
+
+# Recursos útiles 
+
+* **Hoja de Referencia RMarkdown:**
+
+<https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-spanish.pdf>
+
+* **Tutorial:**
+
+<http://fobos.inf.um.es/R/taller5j/30-markdown/guiabreve.pdf>
+
+* **Libro en repositorio:**
+
+<https://github.com/rstudio/rmarkdown-book>
+
+
+# Tabla simple 
+
+| Centrado | Derecha | Izquierda |
+|:--------:|--------:|:----------|
+| valor    | 10      |  200      |
+| 10       | 200     | valor     |
+|200       | valor   | 10        |
+
+Table: Título
+
+`| Centrado | Derecha | Izquierda |`     
+`|:--------:|--------:|:----------|`     
+\ \      
+\ \      
+`Table: Título`
+
+# Función knitr::kable() 
+
+Por defecto hace unas tablas muy bonitas. Tiene pocas opciones, así que, por un lado es muy fácil de aprender a usar pero, por otro, si queremos algo más concreto puede quedarse corta. Una característica a destacar es que en un pdf, si quedara muy larga la tabla para una página, por defecto kable() la divide en dos y la continúa en la siguiente.
+
+# Función knitr::kable() 
+
+<!-- > `install.packages("knitr")`    -->
+<!-- > `library(knitr)`    -->
+<!-- > `data("airquality")`    -->
+<!-- > `df <- head(airquality, 15)`    -->
+
+```{}
+kable( df, caption = "BBDD airquality con kable()",
+                align = c('l', 'c', 'r', 'r', 'c', 'l'),   
+                col.names = c("Ozono","Solar.R","Viento","Temp","Mes","Día"),   
+                row.names = TRUE,   
+                digits = 1,   
+                format.args = list( decimal.mark = ",")   
+      )  
+```
+
+# Función knitr::kable()       
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
+#install.packages("knitr")
+library(knitr)
+data("airquality")
+df <- head(airquality, 15)
+kable( df , caption = "BBDD airquality con kable()"
+       , align = c('l', 'c', 'r', 'r', 'c', 'l')
+       , col.names = c("Ozono","Solar.R","Viento","Temp","Mes","Día")
+       , row.names = TRUE
+       , digits = 1
+       , format.args = list( decimal.mark = ",")
+      )
+```
+      
+      
+# Parámetros
+
+Los documentos R Markdown pueden incluir uno o más parámetros cuyos valores se pueden establecer cuando se procesa el informe. Por ejemplo, el archivo siguiente utiliza un parámetro de variable que determina qué variable será utlizada en el informe. Los parametros son declarados usando el campo `params` dentro del preámbulo (YAML) al inicio del documento.
+
+> `title: "Documento_prueba"`    
+> `output: pdf_document`    
+> `params:`    
+> \ \ variable: "A1_1"
+
+
+# Usando Parametros (I)
+
+Los parámetros están disponibles dentro del entorno de `knitr` como una lista de solo lectura llamada `params`. Para acceder a un parámetro en el código, lo debemos llamar mediante ` params$<nombre del parametro>`
+
+> \ \ 
+> \ \     
+> Aquí se analiza la variable \' r params\$variable \' , que presenta una media de \' r mean(enaj_chica[params\$variable]) \' y ....
+
+# Usando Parametros (II)
+
+Los parámetros están disponibles dentro del entorno de `knitr` como una lista de solo lectura llamada `params`. Para acceder a un parámetro en el código, lo debemos llamar mediante ` params$<nombre del parametro>`
+
+```{r attach, echo=TRUE, message=FALSE, warning=FALSE, cache=TRUE, cache.lazy=FALSE, results='asis'}
+# Primero uso la función attach() 
+# para juntar la base y la variable de interés
+# attach(enaj_chica$A1_1)
+```
+
+> \ \ 
+> \ \     
+> Aquí se analiza la variable \' r params\$A1_1 \' , que presenta una media de \' r mean(params\$A1_1) \' y ....
+
+
+# Renderizando con otro parametro
+
+Si modificamos el argumento de params al renderizar el documento, se crea un informe que usa el nuevo conjunto de valores de parámetros. Aquí modificamos nuestro informe para usar la variable "A1_2":
+
+> render("Informe_ENAJ.Rmd", params = list(variable = "A1_2"))
+

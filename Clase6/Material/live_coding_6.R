@@ -97,6 +97,9 @@ tabla = midic_result  %>%
   mutate(Prop = round((N/sum(N))*100,1))
 
 
+
+openxlsx::write.xlsx(base,"")
+
 ##Ejemplo con base bibliográfica para ver co-ocurrencia de palabras claves. 
 
 library(quanteda)
@@ -128,7 +131,10 @@ palabras = quanteda::dictionary(list(palabras=palabras))
 
 dfm <- quanteda::dfm(quanteda::tokens_compound(quanteda::tokens(base$Author.Keywords,
 remove_punct = TRUE,remove_numbers = TRUE),palabras),tolower = TRUE,  verbose = FALSE)%>%
+ dfm_select(palabras,selection = "keep") %>%
   dfm_tfidf()
+
+tweets_fa$fa=stringr::str_detect(tweets_fa$text,pattern = c("Frente"))
 
 
 ##g) Armo la matriz de co-ocurrencias y armo red con 80 términos principales

@@ -1,0 +1,647 @@
+---
+title: Recuperación y análisis de texto con R 
+subtitle: Licenciatura en Ciencia Política (FCS-UdelaR)
+   
+output: 
+        beamer_presentation: 
+                theme: "Antibes"
+                colortheme: "seagull"
+                fonttheme: "structurebold"
+urlcolor: blue
+---
+
+
+```{r echo=FALSE}
+knitr::knit_hooks$set(mysize = function(before, options, envir) {
+  if (before) 
+    return(options$size)
+})
+```
+
+
+```{r include=FALSE}
+knitr::opts_chunk$set(mysize = TRUE, size = "\\tiny")
+
+```
+
+
+
+<center>
+
+<!-- ![](imagenes/eg.png){ width=25% }  -->
+</center>
+
+
+**Mag. Elina Gómez (UMAD)**
+
+[elina.gomez@cienciassociales.edu.uy](elina.gomez@cienciassociales.edu.uy)
+
+[www.elinagomez.com](www.elinagomez.com)
+
+
+
+#
+
+
+![](imagenes/by-nc-sa.png){ width=18% }  
+
+
+Este trabajo se distribuye con una licencia Creative Commons Attribution-ShareAlike 4.0 International License
+
+
+# Objetivos de hoy
+
+```{r echo=FALSE, out.width = "80%", out.height = "80%", fig.align = "center"}
+knitr::include_graphics("imagenes/explore.png")
+```
+
+
+
+# Fuentes de datos
+
+Las fuentes de datos que vamos a ver son:
+
+1. Recuperación de documentos en imagen o pdf (OCR) 
+
+2. Scraping web y parlamentario
+
+3. Prensa digital
+
+4. Google Trends
+
+5. Audio
+
+6. YouTube
+
+
+
+# Objetivos de hoy
+
+- Fuentes de datos:
+
+1. Recuperación de documentos en imagen o pdf (OCR) 
+
+2. Scraping web y parlamentario
+
+3. Prensa digital
+
+
+# Previo: carga de archivos de texto
+
+Existen diferentes librerías de R que nos permiten recuperar documentos en diferentes formatos:
+
+
+- [readtext](https://cran.r-project.org/web/packages/readtext/vignettes/readtext_vignette.html)
+
+- [pdftools](https://docs.ropensci.org/pdftools/)
+
+
+# readtext
+
+- El paquete [readtext](https://cran.r-project.org/web/packages/readtext/vignettes/readtext_vignette.html) tiene una función con le mismo nombre _readtext()_ que permite cargar archivos en cualquier formato de texto (txt, pdf, doc, docx, odt o incluso alojado en uno de estos formatos en la web).
+
+- `readtext::readtext()`
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+library(readtext)
+##Abro los textos en formato .txt y visualizo cómo los carga
+txt <- readtext::readtext("Clase2/Material/Mujeres_Adultos_1.txt")
+# Determinamos el pdf con el que trabajar
+pdf <- readtext("Clase2/Material/text.pdf")
+url <- readtext("https://www.ingenieria.unam.mx/dcsyhfi/material_didactico/Literatura_Hispanoamericana_Contemporanea/Autores_B/BENEDETTI/Poemas.pdf")
+```
+
+# pdftools
+
+Para recuperar textos en pdf existe la librería [pdftools](https://docs.ropensci.org/pdftools/) que se basa en el paquete _Rpoppler_ (Kurt Hornik).
+
+- `pdftools::pdf_text()`
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+library(pdftools)
+# Extraemos el texto
+pdf_texto <- pdf_text("Clase2/Material/marcha_1973.pdf")
+```
+
+
+# 1. Recuperación de documentos en imagen o pdf (OCR)
+
+Tesseract es un motor de OCR _(reconocimiento óptico de caracteres)_ para varios sistemas operativos. Es software libre, liberado bajo la licencia Apache, Versión 2.0 y su desarrollo es financiado por Google desde el 2006.
+
+[Acá se encuentra la documentación](https://opensource.google/projects/tesseract), cuenta con *más de 100 idiomas.*
+
+# tesseract OCR
+
+Existe un paquete de R [bien documentado](https://cran.r-project.org/web/packages/tesseract/vignettes/intro.html) que se llama _tesseract_ y que cuenta con funciones que permiten el reconocimiento de caracteres incluso en español, descargando una base de entrenamiento del motor.
+
+# tesseract OCR 
+
+Descargo un documento histórico del repositorio [Internet Archive](https://archive.org/search.php?query=creator%3A%22Ateneo+del+Uruguay%22)
+
+```{r message=FALSE, warning=FALSE, eval=FALSE}
+##Chequear los idiomas disponibles 
+tesseract_info()
+# Bajar por unicamente español para entrenar
+tesseract_download("spa")
+# asignar
+(espanol <- tesseract("spa"))
+#Probamos:
+transcribopdf <- ocr("analesUruguay.pdf", engine = espanol)
+
+```
+
+# tesseract OCR
+
+La función _ocr_data()_ devuelve una tabla dónde cada fila es una palabra con la confianza asociada a la misma y la ubicación exacta. 
+
+
+# magick
+
+El paquete _magick_ complementa a _tesseract_ en cuento a mejora de la calidad de las imagenes que sirven de input. Cuenta con varias funciones para mejorar la resolución, el color, contraste, espacios en blanco. Puede ser utilizado como paso previo. 
+
+# Ejercicio 1
+
+## Reconocimiento óptico de caracteres
+
+1. Replicar el OCR para los archivos _analesUruguay3_ y _marcha_1973_
+
+2. Hacer la tabla de ambas 
+
+
+# 2. Web scraping
+
+
+*¿Qué es web scraping?*
+
+__Web scraping__ es una __técnica__ para obtener datos no estructurado (etiquetas HTML) de una página web, a un formato estructurado de columnas y renglones, en los cuales se puede acceder y usar más fácilmente.
+
+
+
+# 2. Web scraping
+
+*¿Para qué sirve Web scraping?*
+
+- Obtener datos de texto.
+- Consolidar datos de redes sociales o extraer comentarios de usuarios/as.
+- Precios de tiendas online, a través del análisis histórico de la competencia.
+- Búsqueda en Google de diversas palabras clave.
+- Etiquetas de imágenes, para clasificación de imágenes.
+
+
+
+# 2. Scraping web y parlamentario
+
+
+En el curso vamos a ver tres formas de Web scraping:
+
+- Paquete _rvest_
+- Paquete _speech_ (Uruguay)
+- Gdelt project
+
+
+# rvest
+
+*rvest* es un paquete para scraping (raspado) y análisis web de Hadley Wickham.
+
+[Documentación](https://cran.r-project.org/web/packages/rvest/rvest.pdf)
+
+- Tutorial recomendado de Riva Quiroga (Chile)
+
+[https://programminghistorian.org/es/lecciones/introduccion-al-web-scraping-usando-r](https://programminghistorian.org/es/lecciones/introduccion-al-web-scraping-usando-r)
+
+
+
+# ¿Cómo usar rvest?
+
+Para usar rvest, se requiere conocer las instrucciones en código, a las que llamaremos funciones, para para hacer las tareas más comunes en la extracción y manipulación de datos web. 
+
+- `read_html(«url»)` con esta función se crea un objeto que contiene todo el código o etiquetas HTML.
+- `html_elements(«objeto html», «etiqueta css»)` se usa para seleccionar partes del objeto que contiene todo el código html. El segundo parámetros es la clase CSS que está relacionada con la sección que deseamos extraer. 
+
+# ¿Cómo usar rvest?
+
+- `html_elements()` devuelve los elementos html seleccionados
+- `html_name()` devuelve el nombre de un elemento html
+- `html_attr()` regresa los atributos específicos html (ej. href)
+- `html_text()` extrae el texto html
+- `html_table()` convierte una tabla html en una estructura de datos en R
+
+
+# Ejemplo rvest: texto
+
+- Opción 1: Descargo la extensión del [SelectorGadget](http://selectorgadget.com/) de Chrome e [instalo](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb) y busco el nombre del nodo o elementos en una pagina que me interese scrapear 
+
+- Opción 2: Usar las herramientas de desarrollo de los navegadores a través de la opción _inspect_ o _inspeccionar_ que muestra el código html de la página y las reglas de estilo (CSS)
+
+- Opción 3: Usar plataformas web con herramientas de scrapeo como [Apify](https://apify.com/)
+
+
+# Ejemplo rvest: texto
+
+```{r message=FALSE, warning=FALSE, eval=FALSE}
+library(rvest)
+library(dplyr)
+
+#Defino mi sitio html: Montevideo portal
+mvdportal = read_html("https://www.montevideo.com.uy/index.html") 
+
+resumenes = mvdportal %>%
+  html_elements(".text")%>% #defino los elementos que identifiqué con el SelectorGadget 
+  html_text()
+
+titulares = mvdportal %>%
+  html_elements("a")%>%
+  html_text()
+
+```
+
+# Ejemplo rvest: texto
+
+[Un ejemplo](https://d4tagirl.com/2018/04/scrapeando-las-sesiones-parlamentarias-de-uruguay) concreto para el caso uruguayo !
+
+
+# Ejemplo rvest: tabla
+
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+url <- 'https://es.wikipedia.org/wiki/Anexo:Ríos_de_Uruguay'
+
+url %>% read_html() %>%
+  html_elements(css = '.wikitable') %>%
+  html_table() 
+
+```
+
+# Ejercicio 2
+
+## Scrapeo web con rvest
+
+1. Descargar noticias o información de otra web
+2. Scapear dos elementos html diferentes 
+
+
+
+# _speech_
+
+![](imagenes/speech.png)
+
+# _speech_
+
+El [paquete speech](https://CRAN.R-project.org/package=speech) convierte los diarios de sesiones legisladorxs uruguayxs, en un marco de datos ordenado donde cada observación es la intervención de unx solx legisladorx.
+
+Acá se encuentra la [documentación](https://cran.r-project.org/web/packages/speech/speech.pdf) del paquete con descripción de las funciones y argumentos.
+
+
+
+# _speech_
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+##Recomiendo instalar versión en desarrollo:
+
+if (!require("remotes")) install.packages("remotes")
+remotes::install_github("Nicolas-Schmidt/speech")
+
+library(speech)
+
+```
+
+
+# _speech_
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+url <- "https://parlamento.gub.uy/documentosyleyes/documentos/diarios-de-sesion/5515/IMG"
+
+sesion <- speech::speech_build(file = url)
+
+```
+
+
+# _speech_
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+#Función completa
+
+sesion <- speech::speech_build(file = url, 
+#url a pdf
+compiler = FALSE, 
+#compila discursos de unx mismx legisladorx
+quality = TRUE,
+#aporta dos índices de calidad
+add.error.sir = c("SEf'IOR"),
+##forma errónea que lo que identifica a el/la legisladorx
+rm.error.leg = c("PRtSIDENTE", "SUB", "PRfSlENTE"))
+##identifica a el/la legisladorx que debe eliminarse
+```
+
+# _speech_
+
+Variables que incluye la tabla ordenada:
+
+- legislator: nombre
+- speech: discurso/s
+- date: fecha de sesión
+- id: identificador
+- legislature: número de legislatura
+- chamber:  cámara del documento (representantes, senadores, asamblea general, comisión permanente)  
+
+Si quality es TRUE:
+
+- index_1: index_1. Proporción del documento recuperado con respecto al original. 
+- index_2: index_2. Proporción del documento final en función del recuperado. Proporción del documento donde hay intervenciones de lxs legisladorxs.
+
+
+# _puy_
+
+- Es posible combinar con el paquete _puy_ para recuperar el dato del partido político al que pertenece 
+
+- `puy::add_party()`
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+#agrego partido político
+sesion <- puy::add_party(sesion)
+
+```
+
+# _speech App_
+
+- Existe una Shiny de speech que permite descargar de forma tabulada las sesiones sin escribir código: [https://bancodedatos-fcs.shinyapps.io/shiny_speech/](https://bancodedatos-fcs.shinyapps.io/shiny_speech/)
+
+
+# Ejercicio 3
+
+## Scrapeo parlamentario con speech
+
+1. Elegir una sesión parlamentaria
+2. Aplicar la funcion speech_build 
+3. Agregar etiqueta partidaria 
+4. Guardar en formato tabulado 
+
+
+# 3. Prensa digital
+
+**Monitor de prensa**
+
+- Existe un monitor de prensa (en Twitter) que permite descargar [http://137.184.138.178](http://137.184.138.178)
+
+- Desarrollada por Leandro Domínguez, Guillermo Eijo y Sebastian Felix en el marco del proyecto de grado "Análisis de publicaciones sobre seguridad ciudadana en redes sociales" (FING-Udelar) - Agosto 2022
+
+- Acumula desde enero 2009. Tiene tres módulos: Indicadores, Entidades y Cluster.
+
+_Consulta combinada de palabras claves: ["Lacalle Pou", "Cabildo Abierto"] -> Lacalle Pou y Cabildo Abierto_
+
+
+# _Proyecto Gdelt_
+
+[El proyecto GDELT](https://www.gdeltproject.org/) cuenta con _una base de datos global de la sociedad que monitorea las noticias de impresas y web del mundo desde casi todos los rincones de cada país en más de 100 idiomas e identifica las personas, ubicaciones, organizaciones, temas, fuentes, emociones, recuentos, citas, imágenes y eventos que impulsan nuestra sociedad global cada segundo de cada día, creando una plataforma abierta y gratuita para la informática en todo el mundo._
+
+
+# _Proyecto Gdelt_
+
+
+Existe un paquete de R llamado [gdeltr2](https://github.com/abresler/gdeltr2) que no se encuentra bien documentado pero que cuenta con mucho potencial. Las consultas a la base pueden hacerse también desde [Big Query de Google](https://console.cloud.google.com/bigquery?utm_source=bqui&utm_medium=link&utm_campaign=classic&project=snappy-flash-295118&pli=1) y procesamiento posterior en R. 
+
+
+# _Proyecto Gdelt_
+
+- GDELT Events Database [EVENTS]: Global Events, 1979 to present.
+- GDELT Global Knowledge Graph [GKG] : GDELT’s Knowledge Graph, April 2013 to present.
+- GDELT Full Text API [Full Text API]: Full text search for all monitored sources within a 24 hour window. Output includes raw data, sentiment, and word counts.
+- GDELT Visual Knowledge Graph VGKG: Google Cloud Vision API output for every indexed piece of GKG media.
+
+
+# _Proyecto Gdelt_
+
+
+[Proyecto reciente en Argentina](https://www.youtube.com/watch?v=s_9GAeNSWkw) usando Gdelt para obtener noticias sobre antivacunismo. 
+
+
+# _gdelt2_
+
+[Tutorial](https://asbcllc.com/blog/2017/august/intro_to_programming_with_gdeltr2/index.html)
+
+Instalación:
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+devtools::install_github("hadley/devtools")
+devtools::install_github("hafen/trelliscopejs")
+devtools::install_github("abresler/gdeltr2")
+
+```
+
+
+
+# _gdelt2_
+
+El mode _ArtList_ recupera todo los artículos que tienen esa mención en un determinado tiempo. Está restringido a 250 resultados y 52 semanas.  Para hacer búsquedas combinadas: '"Lacalle Pou" covid'
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+articulos  = gdeltr2::ft_v2_api(
+  terms = c("Lacalle Pou"),
+  modes = c("ArtList"),
+  visualize_results = F,
+  timespans = "55 days",
+  source_countries = "UY")
+
+```
+
+# _gdelt2_
+
+El mode _TimelineVol_ recupera una métrica diaria de la intensidad del volumen de los artículos que coinciden con una búsqueda específica. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+intensidad = gdeltr2::ft_v2_api(
+  terms = c("Lacalle Pou"),
+  modes = c("TimelineVol"),
+  visualize_results = F,
+  timespans = "55 days",
+  source_countries = "UY"
+) 
+
+```
+
+
+# _gdelt2_
+
+El mode _TimelineVol_ recupera una métrica diaria de la intensidad del volumen de los artículos que coinciden con una búsqueda específica. El mode _TimelineVolInfo_ es igual pero con información anexa y desagregada para cada artículo. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+intensidad = gdeltr2::ft_v2_api(
+  terms = c("Lacalle Pou"),
+  modes = c("TimelineVol"),
+  visualize_results = F,
+  timespans = "55 days",
+  source_countries = "UY"
+) 
+
+```
+
+
+# _gdelt2_
+
+El mode _TimelineTone_ recupera el tono (positivo y negativo) de los artículos que coniciden con la búsqueda, por día. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+tono_diario = gdeltr2::ft_v2_api(
+  terms = c("Lacalle Pou"),
+  modes = c("TimelineTone"),
+  visualize_results = F,
+  timespans = "30 days",
+  source_countries = "UY"
+) 
+
+```
+
+# _gdelt2_
+
+El mode _ToneChart_ recupera el tono (positivo y negativo) de los artículos que coniciden con la búsqueda, por artículo. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+prueba4 = gdeltr2::ft_v2_api(
+  terms = c("Lacalle Pou"),
+  modes = c("ToneChart"),
+  visualize_results = F,
+  timespans = "30 days",
+  source_countries = "UY"
+) 
+
+```
+
+# _gdelt2_
+
+Últimos términos, lugares, personas, cosas, de los últimos 15 minutos a nivel mundial.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+ultimo = gdeltr2::ft_trending_terms() 
+
+```
+
+# _gdelt2_
+
+Tablas de inestabilidad con variables _'instability', 'tone', 'protest', 'conflict','artvolnorm'_ . Es posible visualizar gráficos. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+inestabilidad_zona <-
+  gdeltr2::instability_api_locations(
+    location_ids = c("UY"),
+    use_multi_locations = c(T, F),
+    variable_names = c('instability', 'tone', 'protest', 'conflict','artvolnorm'),
+    time_periods = c('daily'),
+    nest_data = F,
+    days_moving_average = NA,
+    return_wide = T,
+    return_message = T,
+    visualize = T
+  )
+
+```
+
+
+# _gdelt2_
+
+Por último, recuperar temas pre-calasificados con AA (IA), hay 59840.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+##cargo códigos de temas
+df_gkg <-
+  gdeltr2::dictionary_ft_codebook(code_book = "gkg")
+
+
+tema =  ft_v2_api(gkg_themes = "WB_2901_GENDER_BASED_VIOLENCE",modes = c("Artlist"),
+                    visualize_results = F,
+                    timespans = "55 days")
+
+```
+
+# Ejercicio 4
+
+## Prensa digital
+
+1. Aplicar dos de las funciones vistas sobre un tema diferente  
+
+
+<!-- # 6. APIs de redes sociales  -->
+
+<!-- *¿Qué son las API?* -->
+
+<!-- API significa _Application Programming Interfaces_ o _interfaz de programación de aplicaciones_ (en español), son un conjunto de protocolos usados para desarrollar aplicaciones y sirven para definir la comunicación entre dos aplicaciones de software a través de un conjunto de reglas ([ver más](https://www.xataka.com/basics/api-que-sirve)). -->
+
+<!-- Las aplicaciones de redes sociales, por ejemplo, asignan algunos permisos de acceso a desarrolladores para interactuar con las mismas. El nivel de acceso varía de una a otra red. -->
+
+
+<!-- # 3. APIs de redes sociales: Twitter -->
+
+<!-- En este caso, veremos el caso de *Twitter* como una de las redes sociales que podemos conectar desde R para realizar análisis variados.  -->
+
+<!-- Existen dos paquetes para esto: _twitteR_ y _rtweet_ -->
+
+<!-- # ¿Por qué Twitter? -->
+
+<!-- En mayo de 2020 -->
+
+<!-- - *6.000 tweets por segundo* -->
+<!-- - *350.000 tweets por minuto* -->
+<!-- - *500 millones de tweets por día* -->
+<!-- - *200 billones de tweets por día* -->
+
+<!-- # ¿Por qué Twitter? -->
+
+<!-- ![](imagenes/twt.png)  -->
+
+<!-- # API de Twitter -->
+
+<!-- - Twitter disponibiliza los datos en diferentes niveles a los que llama **puntos de conexión**. En este caso nos interesa acceder a los _Tweets y respuestas_ emitidos para su posterior clasificación, procesamiento y análisis.   -->
+
+<!-- - Más información al respecto en: [Twitter API](https://help.twitter.com/es/rules-and-policies/twitter-api) -->
+
+
+<!-- # Restricciones -->
+
+<!-- * La antiguedad permitida para la obtención de tweets es de *8 días* -->
+
+<!-- * Se pueden bajar 18 mil tweets que coincidan con la búsqueda de forma aleatoria. -->
+
+<!-- * Si la búsqueda subera los 18 mil tweets se puede iterar la función para ampliar la búsqueda (hasta 54 mil tweets por hora!) -->
+
+
+<!-- [Artículo recomendado!](https://rdrr.io/github/arcruz0/libroadp/f/qta.Rmd)  -->
+
+<!-- # ¿Cómo me conecto a la API de Twitter desde RStudio?  -->
+
+<!-- 1. Entro a la pagina para desarrolladores de Twitter [https://developer.twitter.com/en/apps](https://developer.twitter.com/en/apps)  -->
+<!-- 2. Me logeo en Twitter con mi cuenta de usuario personal. -->
+
+<!-- # ¿Cómo me conecto a la API de Twitter desde RStudio?  -->
+<!-- 3. Voy a la opción **Create an app** -->
+
+<!-- ![](imagenes/twapi1.png)  -->
+
+<!-- # ¿Cómo me conecto a la API de Twitter desde RStudio?  -->
+
+<!-- 4. Se debe especificar el usuario que se utilizará, los fines (organización o uso personal), área de interés vinculada al uso, país y descripción general de la aplicación. -->
+
+<!-- 5. Vamos a la pestaña **Keys and tokens** dónde estarán todas las claves que necesito para hacer la conexión con R.  -->
+
+<!-- # ¿Cómo me conecto a la API de Twitter desde RStudio?  -->
+
+<!-- ![](imagenes/twapi2.png)  -->
+
+
+
+
+
+
+
+
+

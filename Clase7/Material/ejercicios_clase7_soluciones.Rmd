@@ -1,9 +1,9 @@
 ---
-title: "Ejercicios Clase 7"
+title: "Ejercicios Clase 6"
 author: ""
 header-includes:
    - \usepackage{bbm}
-date: "08/11/2022"
+date: "30/10/2024"
 output: pdf_document
 ---
 
@@ -20,7 +20,8 @@ library(knitr)
 library(quanteda.textplots)
 library(quanteda.textstats)
 
-base_final_grande <- read.delim2("C:/Users/Usuario/Documents/rcuali2022/Clase7/Material/base_genero_final.txt",sep="\t",header = T)
+base_final_grande <- read.delim2("/Clase7/Material/base_genero_final.txt",sep="\t",header = T,encoding = "latin1")
+
 ```
 
 

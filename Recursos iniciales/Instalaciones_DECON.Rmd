@@ -1,0 +1,96 @@
+---
+title: "Instalaciones - Datos no estructurados y semiestructurados (DECON-Udelar)"
+author: "Mag. Elina Gómez"
+date: "Mayo 2024"
+output: pdf_document
+urlcolor: blue
+number_sections: true
+---
+
+
+## 1. R y RStudio
+
+- Instalar el R básico desde el repositorio CRAN: [Última versión R 4.3.0](https://cran.r-project.org/)
+- [Instalar RStudio](https://www.rstudio.com/products/rstudio/download/)
+
+(para ambos casos existen indicaciones para el sistema operativo específico)
+
+## 2. Librerías 
+
+```{r eval=FALSE}
+
+##Desde CRAN
+
+install.packages(c("knitr","tidyverse","quanteda", "quanteda.textplots", 
+                   "quanteda.textstats", "remotes", "topicmodels", "readtext",
+                   "pdftools","devtools","stringi","gridExtra","knitr", "plotly",
+                   "kableExtra","rvest","rtweet", "gmodels","forcats", 
+                   "RSQLite", "gtrendsR", "DBI", "igraph", "av", "udpipe", "spacyr", 
+                   "syuzhet", "tesseract"))
+
+##Desde GitHub
+
+remotes::install_github("Nicolas-Schmidt/speech") # devel version 0.1.6
+remotes::install_github("Nicolas-Schmidt/puy")
+devtools::install_github("ben-aaron188/rgpt3")
+devtools::install_github("abresler/gdeltr2")
+## Instalar RTools 4.3: https://cran.r-project.org/bin/windows/Rtools/rtools43/rtools.html
+remotes::install_github("bnosac/audio.whisper", ref = "0.2.1")
+
+```
+
+\newpage
+
+## 3. Youtubecaption
+
+```{r eval=FALSE}
+
+##1) Descargar e instalar Python: https://www.python.org/downloads/
+
+##2) Descargar e instalar Anaconda: https://www.anaconda.com/download/
+
+##3) Instalar reticulate, librería que permite usar Python en R
+install.packages("reticulate")
+
+##4) Conectar R y Python
+library(reticulate)
+use_condaenv("ruta_carpeta_anaconda3_en_tu_pc") #ruta en pc a carpeta anaconda3
+
+##5) Instalar "youtubecaption"
+if(!require(remotes)) {
+install.packages("remotes")
+}
+
+remotes::install_github("jooyoungseo/youtubecaption")
+
+##6) Cargo y chequeo que esté bien
+library(youtubecaption)
+url <- "https://www.youtube.com/watch?v=cpbtcsGE0OA"
+caption <- get_caption(url)
+# Si funciona bien deberían ver un objeto tibble: 1,420 x 5 
+
+```
+
+\newpage
+
+## 5. Otras librerías
+
+Este listado incluye todos los paquetes utilizados por estudiantes en trabajos finales de ediciones anteriores del curso. No es necesaria su instalación, pero es una buena guía para la exploración. 
+Están ordenados alfabéticamente. Hay paquetes queestán subsumidos en paquetes más abarcativos, como por ejemplo los paquetes de tidyverse.
+
+```{r eval=FALSE}
+
+## Desde CRAN
+
+install.packages(c('av', 'colorspace', 'corpus', 'cowplot', 'cvTools', 'devtools',
+'dplyr', 'DT', 'forcats', 'gapminder', 'ggnetwork', 'ggplot2', 'ggpubr', 'ggraph', 
+'ggrepel', 'gmodels', 'grid', 'gridExtra', 'gtrendsR', 'httpuv', 'igraph', 
+'kableExtra', 'knitr', 'lubridate', 'magrittr', 'markdown', 'pdftools', 'purrr',
+'quanteda', 'quanteda.textplots', 'quanteda.textstats', 'RColorBrewer', 'Rcpp', 
+'readr', 'readtext', 'remotes', 'reshape2', 'RGtk2', 'RSQLite', 'rtweet', 
+'rvest', 'scales', 'SnowballC', 'speech', 'stm', 'stopwords', 'stringi', 
+'stringr', 'syuzhet', 'textplot', 'tidyr', 'tidytext', 'tidyverse', 'tm', 'tmap', 
+'topicmodels', 'unnest', 'widyr', 'wordcloud', 'wordcloud2'))
+
+```
+

@@ -1,0 +1,33 @@
+---
+title: "Recuperación y análisis de texto con R"
+subtitle: "Licenciatura en Ciencia Política (FCS-UdelaR)"
+author: "Consigna de Trabajo intermedio"
+date: "2024"
+output: pdf_document
+header-includes:
+- \pagenumbering{gobble}
+---
+
+
+
+**Características generales** 
+
+Trabajo individual (domiciliario) intermedio del curso _Recuperación y análisis de texto con R_ - Licenciatura en Ciencia Política (FCS-UdelaR). 
+
+**Plazo de entrega** 
+
+\textcolor{blue}{02/10/2024 a las 23:59 horas}
+
+**Formato** 
+
+Subir a la plataforma EVA (tarea), un script .R y una base de datos.
+
+**Consigna**
+
+- _Corpus:_ Elegir una fuente de datos de las vistas en el curso (archivos de texto brutos, OCR, web scraping, scrapeo parlamentario, prensa digital, búsquedas de google, transcripción de audio, subtítulos de YouTube, APIs de Google, entre otras) e incluir el proceso de extracción o reconstrucción de la información. 
+- _Documentación del proceso:_ Inlcuir un texto (no más de dos carillas) que describa la idea inicial de corpus y cómo se trabajó la recuperación del mismo (fuentes, paquetes utilizados, dificultades encontradas, entre otros). 
+
+
+**Consultas** 
+
+elina.gomez@cienciassociales.edu.uy 
